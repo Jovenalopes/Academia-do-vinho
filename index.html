@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wine World Academy — Escola Mundial do Vinho</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>
+tailwind.config = {
+    darkMode: 'class',
+    theme: {
+        extend: {
+            fontFamily: { serif: ['Cormorant Garamond','serif'], sans: ['Inter','sans-serif'] },
+            colors: {
+                wine: { 50:'#fdf2f4',100:'#fce7eb',200:'#f9d0d9',300:'#f4a9ba',400:'#ec7894',500:'#df4d6f',600:'#c93055',700:'#a82343',800:'#8c203b',900:'#771f37',950:'#420c1a' },
+                gold: { 400:'#d6b83f',500:'#c7a230',600:'#ab7f26',700:'#895e22' },
+                cream: '#faf7f2', beige: '#f5f0e8'
+            }
+        }
+    }
+}
+</script>
+<style>
+body { font-family: 'Inter', sans-serif; }
+h1,h2,h3,h4,h5,h6 { font-family: 'Cormorant Garamond', serif; }
+.wine-gradient { background: linear-gradient(135deg, #771f37 0%, #420c1a 100%); }
+.gold-gradient { background: linear-gradient(135deg, #c7a230 0%, #ab7f26 100%); }
+.card-hover { transition: all 0.3s cubic-bezier(0.4,0,0.2,1); }
+.card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 40px -10px rgba(66,12,26,0.15); }
+.nav-item { transition: all 0.2s; }
+.nav-item.active { background: rgba(199,162,48,0.15); border-left: 3px solid #c7a230; }
+.fade-in { animation: fadeIn 0.4s ease-out; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+.map-path { transition: all 0.3s; cursor: pointer; }
+.map-path:hover { fill: #a82343; filter: drop-shadow(0 0 8px rgba(168,35,67,0.4)); }
+.glass { background: rgba(255,255,255,0.75); backdrop-filter: blur(12px); }
+.dark .glass { background: rgba(30,27,24,0.85); }
+.quiz-option { transition: all 0.2s; cursor: pointer; }
+.quiz-option:hover { background: rgba(199,162,48,0.1); }
+.quiz-option.correct { background: rgba(34,197,94,0.2); border-color: #22c55e; }
+.quiz-option.wrong { background: rgba(239,68,68,0.2); border-color: #ef4444; }
+.progress-bar { transition: width 0.6s ease-out; }
+@media(max-width:768px){ .mobile-pb { padding-bottom: 80px; } }
+</style>
+</head>
+<body class="bg-cream text-gray-800 dark:bg-gray-950 dark:text-gray-100 transition-colors duration-300">
+<div id="app" class="min-h-screen flex flex-col">
+
+<!-- Header Desktop -->
+<header class="hidden md:flex items-center justify-between px-8 py-4 glass sticky top-0 z-50 border-b border-wine-100 dark:border-gray-800">
+    <div class="flex items-center gap-3 cursor-pointer" onclick="go('home')">
+        <div class="w-10 h-10 wine-gradient rounded-xl flex items-center justify-center shadow-lg">
+            <i class="fas fa-wine-glass text-white text-lg"></i>
+        </div>
+        <div>
+            <h1 class="text-2xl font-bold text-wine-900 dark:text-wine-200 leading-none font-serif">Wine World Academy</h1>
+            <p class="text-xs text-wine-600 dark:text-wine-400 tracking-wider uppercase">Escola Mundial do Vinho</p>
+        </div>
+    </div>
+    <div class="flex-1 max-w-md mx-8">
+        <div class="relative">
+            <input type="text" id="globalSearch" placeholder="Pesquise vinho, uva, país ou região..." 
+                class="w-full pl-10 pr-4 py-2.5 rounded-full bg-white dark:bg-gray-900 border border-wine-200 dark:border-gray-700 text-sm focus:border-gold-500 focus:ring-2 focus:ring-gold-200 dark:focus:ring-gold-900 transition-all"
+                onkeyup="if(event.key==='Enter') doSearch(this.value)">
+            <i class="fas fa-search absolute left-3.5 top-3 text-wine-400"></i>
+        </div>
+    </div>
+    <div class="flex items-center gap-4">
+        <button onclick="toggleDark()" class="w-10 h-10 rounded-full bg-wine-50 dark:bg-gray-800 flex items-center justify-center hover:bg-wine-100 dark:hover:bg-gray-700 transition-colors">
+            <i class="fas fa-moon dark:hidden text-wine-700"></i>
+            <i class="fas fa-sun hidden dark:block text-gold-400"></i>
+        </button>
+        <div class="flex items-center gap-2 bg-gold-50 dark:bg-gold-950/30 px-4 py-2 rounded-full border border-gold-200 dark:border-gold-900">
+            <i class="fas fa-star text-gold-500 text-sm"></i>
+            <span id="xpDisplay" class="text-sm font-semibold text-gold-700 dark:text-gold-400">2.450 XP</span>
+        </div>
+    </div>
+</header>
+
+<!-- Header Mobile -->
+<header class="md:hidden flex items-center justify-between px-4 py-3 glass sticky top-0 z-50 border-b border-wine-100 dark:border-gray-800">
+    <div class="flex items-center gap-2" onclick="go('home')">
+        <div class="w-8 h-8 wine-gradient rounded-lg flex items-center justify-center">
+            <i class="fas fa-wine-glass text-white text-sm"></i>
+        </div>
+        <span class="font-serif font-bold text-lg text-wine-900 dark:text-wine-200">WWA</span>
+    </div>
+    <div class="flex items-center gap-3">
+        <button onclick="toggleDark()" class="w-8 h-8 rounded-full bg-wine-50 dark:bg-gray-800 flex items-center justify-center">
+            <i class="fas fa-moon dark:hidden text-wine-700 text-xs"></i>
+            <i class="fas fa-sun hidden dark:block text-gold-400 text-xs"></i>
+        </button>
+        <div class="bg-gold-50 dark:bg-gold-950/30 px-3 py-1 rounded-full border border-gold-200 dark:border-gold-900">
+            <span class="text-xs font-semibold text-gold-700 dark:text-gold-400">2.450 XP</span>
+        </div>
+    </div>
+</header>
+
+<div class="flex flex-1">
+<!-- Sidebar Desktop -->
+<aside class="hidden md:flex w-64 flex-col glass sticky top-[73px] h-[calc(100vh-73px)] border-r border-wine-100 dark:border-gray-800 overflow-y-auto">
+    <nav class="p-4 space-y-1">
+        <button onclick="go('home')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left" data-page="home"><i class="fas fa-home text-wine-600 dark:text-wine-400 w-5"></i><span class="font-medium text-sm">Início</span></button>
+        <button onclick="go('map')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left" data-page="map"><i class="fas fa-globe-americas text-wine-600 dark:text-wine-400 w-5"></i><span class="font-medium text-sm">Mapa Mundial</span></button>
+        <button onclick="go('grapes')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left" data-page="grapes"><i class="fas fa-seedling text-wine-600 dark:text-wine-400 w-5"></i><span class="font-medium text-sm">Uvas</span></button>
+        <button onclick="go('wines')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left" data-page="wines"><i class="fas fa-wine-bottle text-wine-600 dark:text-wine-400 w-5"></i><span class="font-medium text-sm">Vinhos</span></button>
+        <button onclick="go('courses')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left" data-page="courses"><i class="fas fa-graduation-cap text-wine-600 dark:text-wine-400 w-5"></i><span class="font-medium text-sm">Cursos</span></button>
+        <button onclick="go('videos')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left" data-page="videos"><i class="fas fa-play-circle text-wine-600 dark:text-wine-400 w-5"></i><span class="font-medium text-sm">Vídeos</span></button>
+        <button onclick="go('notebook')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left" data-page="notebook"><i class="fas fa-book-open text-wine-600 dark:text-wine-400 w-5"></i><span class="font-medium text-sm">Meu Caderno</span></button>
+        <button onclick="go('tasting')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left" data-page="tasting"><i class="fas fa-clipboard-list text-wine-600 dark:text-wine-400 w-5"></i><span class="font-medium text-sm">Ficha de Degustação</span></button>
+        <button onclick="go('pairing')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left" data-page="pairing"><i class="fas fa-utensils text-wine-600 dark:text-wine-400 w-5"></i><span class="font-medium text-sm">Harmonização</span></button>
+        <button onclick="go('quiz')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left" data-page="quiz"><i class="fas fa-brain text-wine-600 dark:text-wine-400 w-5"></i><span class="font-medium text-sm">Quiz</span></button>
+        <button onclick="go('progress')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left" data-page="progress"><i class="fas fa-chart-line text-wine-600 dark:text-wine-400 w-5"></i><span class="font-medium text-sm">Meu Progresso</span></button>
+        <button onclick="go('editor')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left" data-page="editor"><i class="fas fa-pen-fancy text-wine-600 dark:text-wine-400 w-5"></i><span class="font-medium text-sm">Editor de Estudos</span></button>
+    </nav>
+    <div class="mt-auto p-4">
+        <div class="bg-wine-50 dark:bg-wine-950/30 rounded-xl p-4 border border-wine-100 dark:border-wine-900">
+            <p class="text-xs text-wine-600 dark:text-wine-400 mb-2 font-medium">Continue estudando</p>
+            <p class="text-sm font-serif font-semibold text-wine-900 dark:text-wine-200 mb-2">Introdução ao Vinho</p>
+            <div class="w-full bg-wine-200 dark:bg-wine-900 rounded-full h-2 mb-2"><div class="bg-wine-600 h-2 rounded-full progress-bar" style="width:65%"></div></div>
+            <p class="text-xs text-wine-500">65% concluído</p>
+            <button onclick="go('courses')" class="mt-3 w-full py-2 bg-wine-700 hover:bg-wine-800 text-white text-xs rounded-lg transition-colors">Continuar</button>
+        </div>
+    </div>
+</aside>
+
+<main id="mainContent" class="flex-1 mobile-pb overflow-y-auto"></main>
+</div>
+
+<!-- Bottom Nav Mobile -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 glass border-t border-wine-100 dark:border-gray-800 z-50">
+    <div class="flex justify-around py-2">
+        <button onclick="go('home')" class="flex flex-col items-center gap-1 p-2 text-gray-400 dark:text-gray-600" data-mobile="home"><i class="fas fa-home text-lg"></i><span class="text-[10px] font-medium">Início</span></button>
+        <button onclick="go('map')" class="flex flex-col items-center gap-1 p-2 text-gray-400 dark:text-gray-600" data-mobile="map"><i class="fas fa-globe-americas text-lg"></i><span class="text-[10px] font-medium">Explorar</span></button>
+        <button onclick="go('courses')" class="flex flex-col items-center gap-1 p-2 text-gray-400 dark:text-gray-600" data-mobile="courses"><i class="fas fa-graduation-cap text-lg"></i><span class="text-[10px] font-medium">Cursos</span></button>
+        <button onclick="go('videos')" class="flex flex-col items-center gap-1 p-2 text-gray-400 dark:text-gray-600" data-mobile="videos"><i class="fas fa-play-circle text-lg"></i><span class="text-[10px] font-medium">Vídeos</span></button>
+        <button onclick="go('notebook')" class="flex flex-col items-center gap-1 p-2 text-gray-400 dark:text-gray-600" data-mobile="notebook"><i class="fas fa-book-open text-lg"></i><span class="text-[10px] font-medium">Caderno</span></button>
+    </div>
+</nav>
+</div>
+
+<script>
+// ===================== DATA =====================
+const DB = {
+    countries: [
+        {id:"france",name:"França",flag:"🇫🇷",wines:["Bordeaux","Bourgogne","Champagne","Loire","Rhone","Alsace","Provence"],grapes:["Cabernet Sauvignon","Merlot","Pinot Noir","Chardonnay","Syrah","Sauvignon Blanc"],desc:"Berço do vinho moderno, sinônimo de tradição e excelência.",climate:"Temperado oceânico, continental e mediterrâneo.",soil:"Calcário, argila, cascalho e xisto.",history:"Viticultura desde o século VI a.C.",famous:["Château Margaux","Romanée-Conti","Dom Pérignon"],temp:"Tinto 16-18°C, Branco 8-12°C",glass:"Taça Bordeaux para tintos, Bourgogne para Pinot"},
+        {id:"italy",name:"Itália",flag:"🇮🇹",wines:["Toscana","Piemonte","Veneto","Sicília","Puglia","Campania"],grapes:["Sangiovese","Nebbiolo","Barbera","Montepulciano","Primitivo","Pinot Grigio"],desc:"Maior produtor do mundo, com tradição milenar.",climate:"Mediterrâneo, com variações no norte.",soil:"Calcário, tufo, vulcânico, arenoso.",history:"Etruscos e romanos há 2.000 anos.",famous:["Barolo","Brunello di Montalcino","Amarone"],temp:"Tinto 16-18°C, Branco 8-10°C",glass:"Taça grande para Barolo, média para Chianti"},
+        {id:"spain",name:"Espanha",flag:"🇪🇸",wines:["Rioja","Ribera del Duero","Priorat","Rias Baixas","Jerez","Cava"],grapes:["Tempranillo","Garnacha","Monastrell","Albariño","Verdejo","Macabeo"],desc:"Mais hectares de vinhedos do mundo.",climate:"Mediterrâneo continental, árido.",soil:"Calcário, argila, xisto e arenoso.",history:"Refinada pelos monges na Idade Média.",famous:["Vega Sicilia","Pingus","López de Heredia"],temp:"Tinto 14-18°C, Branco 6-10°C",glass:"Taça universal ou Bordeaux"},
+        {id:"portugal",name:"Portugal",flag:"🇵🇹",wines:["Douro","Dão","Alentejo","Vinho Verde","Bairrada","Madeira"],grapes:["Touriga Nacional","Tinta Roriz","Alvarinho","Baga","Sercial","Loureiro"],desc:"Vinhos únicos, do Porto ao Vinho Verde.",climate:"Mediterrâneo atlântico.",soil:"Xisto, granito, calcário e argila.",history:"Expansão das uvas pelo mundo.",famous:["Barca Velha","Pêra-Manca","Graham's"],temp:"Porto 16-18°C, Vinho Verde 6-8°C",glass:"Taça de Porto ou universal"},
+        {id:"germany",name:"Alemanha",flag:"🇩🇪",wines:["Mosel","Rheingau","Pfalz","Baden","Franken","Nahe"],grapes:["Riesling","Spätburgunder","Silvaner","Grauburgunder","Dornfelder"],desc:"Referência em brancos de alta acidez.",climate:"Continental frio.",soil:"Xisto azul, quartzito, calcário.",history:"Floresceu com Carlos Magno no século IX.",famous:["Egon Müller","Dr. Loosen","Joh. Jos. Prüm"],temp:"Branco 6-10°C, Tinto 14-16°C",glass:"Taça alta para Riesling"},
+        {id:"usa",name:"Estados Unidos",flag:"🇺🇸",wines:["Napa Valley","Sonoma","Oregon","Washington","Paso Robles","Santa Barbara"],grapes:["Cabernet Sauvignon","Zinfandel","Pinot Noir","Chardonnay","Merlot"],desc:"Líder do Novo Mundo com tecnologia.",climate:"Mediterrâneo, marítimo e continental.",soil:"Vulcânico, aluvial, calcário.",history:"Indústria moderna no século XIX na Califórnia.",famous:["Opus One","Screaming Eagle","Dominus"],temp:"Tinto 16-18°C, Branco 8-12°C",glass:"Taça Bordeaux ou Bourgogne"},
+        {id:"chile",name:"Chile",flag:"🇨🇱",wines:["Maipo","Colchagua","Casablanca","Aconcagua","Leyda","Bio Bio"],grapes:["Carmenère","Cabernet Sauvignon","Merlot","Sauvignon Blanc","Syrah","Chardonnay"],desc:"Paraíso da Carmenère, excelente custo-benefício.",climate:"Mediterrâneo, seco e ensolarado.",soil:"Aluvial, coluvial, granito.",history:"Carmenère redescoberta em 1994.",famous:["Almaviva","Seña","Don Melchor"],temp:"Tinto 16-18°C, Branco 8-10°C",glass:"Taça Bordeaux"},
+        {id:"argentina",name:"Argentina",flag:"🇦🇷",wines:["Mendoza","Salta","Patagônia","San Juan","La Rioja"],grapes:["Malbec","Bonarda","Cabernet Sauvignon","Torrontés","Syrah"],desc:"Terra do Malbec nas alturas dos Andes.",climate:"Continental árido, grande amplitude térmica.",soil:"Aluvial, pedregoso, calcário.",history:"Imigração europeia no século XIX.",famous:["Catena Zapata","Achaval-Ferrer","Trapiche"],temp:"Tinto 16-18°C, Branco 8-10°C",glass:"Taça Bordeaux"},
+        {id:"brazil",name:"Brasil",flag:"🇧🇷",wines:["Vale dos Vinhedos","Serra Gaúcha","Campanha","São Francisco"],grapes:["Merlot","Cabernet Sauvignon","Tannat","Moscato","Pinot Noir"],desc:"Cena emergente no sul e Vale do São Francisco.",climate:"Subtropical úmido e tropical semiárido.",soil:"Basáltico, arenoso, cascalho.",history:"Imigração italiana no século XIX.",famous:["Miolo","Salton","Casa Valduga"],temp:"Tinto 14-16°C, Branco 6-8°C",glass:"Taça universal"},
+        {id:"australia",name:"Austrália",flag:"🇦🇺",wines:["Barossa Valley","Margaret River","Yarra Valley","Coonawarra","Hunter Valley"],grapes:["Shiraz","Cabernet Sauvignon","Chardonnay","Riesling","Grenache","Semillon"],desc:"Vinhos potentes, Shiraz como estrela.",climate:"Mediterrâneo e continental.",soil:"Terra rossa, xisto, calcário.",history:"James Busby importou mudas em 1831.",famous:["Penfolds Grange","Henschke","Leeuwin Estate"],temp:"Tinto 16-18°C, Branco 8-12°C",glass:"Taça grande para Shiraz"},
+        {id:"newzealand",name:"Nova Zelândia",flag:"🇳🇿",wines:["Marlborough","Central Otago","Hawke's Bay","Wairarapa"],grapes:["Sauvignon Blanc","Pinot Noir","Chardonnay","Riesling","Pinot Gris"],desc:"Revolucionou o Sauvignon Blanc mundial.",climate:"Marítimo fresco.",soil:"Aluvial, xisto, cascalho.",history:"Indústria moderna desde os anos 70.",famous:["Cloudy Bay","Greywacke","Felton Road"],temp:"Branco 6-8°C, Tinto 14-16°C",glass:"Taça média para Sauvignon"},
+        {id:"southafrica",name:"África do Sul",flag:"🇿🇦",wines:["Stellenbosch","Paarl","Swartland","Walker Bay","Franschhoek"],grapes:["Chenin Blanc","Pinotage","Cabernet Sauvignon","Shiraz","Sauvignon Blanc"],desc:"Tradição europeia e terroir africano.",climate:"Mediterrâneo, influência dos dois oceanos.",soil:"Granito, xisto, calcário.",history:"Primeiras vinhas em 1652.",famous:["Kanonkop","Meerlust","Sadie Family"],temp:"Tinto 16-18°C, Branco 8-10°C",glass:"Taça universal"}
+    ],
+    grapes: [
+        {id:"cabernet_sauvignon",name:"Cabernet Sauvignon",type:"Tinta",origin:"Bordeaux, França",climate:"Temperado a quente",soil:"Cascalho, calcário",style:"Encorpado, taninos firmes",aromas:["Cassis","Pimenta verde","Cedro","Tabaco"],flavors:["Groselha preta","Cereja","Chocolate amargo","Couro"],pairing:"Carnes vermelhas grelhadas, cordeiro, queijos curados",body:5,acidity:3,tannin:5,sweetness:1,regions:["Bordeaux","Napa Valley","Maipo","Coonawarra"]},
+        {id:"merlot",name:"Merlot",type:"Tinta",origin:"Bordeaux, França",climate:"Temperado a quente",soil:"Argila, calcário",style:"Médio a encorpado, macio",aromas:["Ameixa","Morango","Chocolate","Baunilha"],flavors:["Cereja preta","Ameixa","Cacau","Ervas"],pairing:"Carnes brancas, pato, queijos macios",body:4,acidity:3,tannin:3,sweetness:1,regions:["Bordeaux","Toscana","Washington"]},
+        {id:"pinot_noir",name:"Pinot Noir",type:"Tinta",origin:"Bourgogne, França",climate:"Fresco a temperado",soil:"Calcário, xisto",style:"Leve a médio, elegante",aromas:["Cereja","Framboesa","Terra","Especiarias"],flavors:["Cereja vermelha","Groselha","Cogumelo","Canela"],pairing:"Salmão, pato, cogumelos, queijos suaves",body:3,acidity:4,tannin:2,sweetness:1,regions:["Bourgogne","Oregon","Central Otago","Yarra Valley"]},
+        {id:"syrah",name:"Syrah / Shiraz",type:"Tinta",origin:"Rhone, França",climate:"Quente a muito quente",soil:"Xisto, granito",style:"Encorpado, especiado",aromas:["Amora","Pimenta","Flores violeta","Bacon"],flavors:["Amora","Mirtilo","Pimenta preta","Couro"],pairing:"Carnes de caça, churrasco, cordeiro especiado",body:5,acidity:3,tannin:4,sweetness:1,regions:["Rhone do Norte","Barossa","Swartland"]},
+        {id:"tempranillo",name:"Tempranillo",type:"Tinta",origin:"Ribera del Duero, Espanha",climate:"Continental",soil:"Calcário, argila",style:"Médio a encorpado",aromas:["Morango","Tomate","Tabaco","Couro"],flavors:["Cereja","Ameixa","Baunilha","Especiarias"],pairing:"Jamón ibérico, cordeiro, feijoada",body:4,acidity:3,tannin:3,sweetness:1,regions:["Rioja","Ribera del Duero","Toro"]},
+        {id:"nebbiolo",name:"Nebbiolo",type:"Tinta",origin:"Piemonte, Itália",climate:"Continental nebuloso",soil:"Calcário, tufo",style:"Leve de cor, mas poderoso",aromas:["Rosa","Alcatrão","Cereja","Terra"],flavors:["Cereja","Rosa","Especiarias","Taninos firmes"],pairing:"Trufas, risoto, carnes magras, queijos duros",body:4,acidity:5,tannin:5,sweetness:1,regions:["Barolo","Barbaresco","Gattinara"]},
+        {id:"sangiovese",name:"Sangiovese",type:"Tinta",origin:"Toscana, Itália",climate:"Mediterrâneo",soil:"Calcário, xisto, argila",style:"Médio a encorpado, ácido",aromas:["Cereja","Ervas secas","Tomate","Couro"],flavors:["Cereja vermelha","Ameixa","Alfazema","Especiarias"],pairing:"Pizza, massa com tomate, bistecca fiorentina",body:4,acidity:4,tannin:4,sweetness:1,regions:["Chianti","Brunello","Vino Nobile"]},
+        {id:"malbec",name:"Malbec",type:"Tinta",origin:"Cahors, França",climate:"Quente seco",soil:"Aluvial, calcário",style:"Encorpado, suave",aromas:["Ameixa","Cereja","Cacau","Tabaco"],flavors:["Amora","Ameixa","Chocolate","Couro"],pairing:"Churrasco argentino, empanadas, queijos fortes",body:5,acidity:3,tannin:4,sweetness:1,regions:["Mendoza","Cahors","Patagônia"]},
+        {id:"chardonnay",name:"Chardonnay",type:"Branca",origin:"Bourgogne, França",climate:"Fresco a temperado",soil:"Calcário, argila",style:"Leve a encorpado",aromas:["Maçã verde","Cidra","Baunilha","Manteiga"],flavors:["Limão","Maçã","Abacaxi","Carvalho"],pairing:"Frutos do mar, frango, molhos cremosos",body:4,acidity:3,tannin:1,sweetness:2,regions:["Bourgogne","Sonoma","Yarra Valley"]},
+        {id:"sauvignon_blanc",name:"Sauvignon Blanc",type:"Branca",origin:"Loire, França",climate:"Fresco",soil:"Calcário, xisto",style:"Leve, refrescante, herbáceo",aromas:["Grapefruit","Capim-limão","Maracujá","Flores"],flavors:["Limão","Gooseberry","Maracujá","Ervilha"],pairing:"Ostras, salada, sushi, queijos de cabra",body:2,acidity:5,tannin:1,sweetness:1,regions:["Sancerre","Marlborough","Loire"]},
+        {id:"riesling",name:"Riesling",type:"Branca",origin:"Alemanha",climate:"Fresco",soil:"Xisto, quartzito",style:"Leve a médio, aromático",aromas:["Limão","Pêssego","Petróleo","Jasmim"],flavors:["Maçã verde","Limão","Pêssego","Mel"],pairing:"Comida apimentada, porco agridoce, sushi",body:2,acidity:5,tannin:1,sweetness:3,regions:["Mosel","Alsace","Clare Valley"]},
+        {id:"albarinho",name:"Albariño",type:"Branca",origin:"Rias Baixas, Espanha",climate:"Oceânico fresco",soil:"Granito, xisto",style:"Leve, cítrico, salino",aromas:["Pêssego","Limão","Flor de laranjeira","Mar"],flavors:["Limão","Grapefruit","Pêssego","Salinidade"],pairing:"Mariscos, polvo, peixe grelhado",body:2,acidity:4,tannin:1,sweetness:1,regions:["Rias Baixas","Vinho Verde"]}
+    ],
+    courses: [
+        {id:"intro",title:"Introdução ao Vinho",level:1,desc:"Fundamentos essenciais para quem está começando.",duration:"4h 30min",lessons:6,completed:4,image:"🍷"},
+        {id:"tasting",title:"Arte da Degustação",level:2,desc:"Desenvolva seu paladar e técnica de prova.",duration:"5h 15min",lessons:7,completed:2,image:"👃"},
+        {id:"world",title:"Vinhos do Mundo",level:3,desc:"Explore as principais regiões produtoras.",duration:"12h 00min",lessons:15,completed:0,image:"🌍"},
+        {id:"sommelier",title:"Sommelier Profissional",level:4,desc:"Serviço, harmonização e gestão de carta.",duration:"8h 45min",lessons:10,completed:0,image:"🎩"}
+    ],
+    quizzes: [
+        {id:1,q:"Qual destas uvas é tradicionalmente associada a Bordeaux?",opts:["Chardonnay","Cabernet Sauvignon","Riesling","Pinot Grigio"],correct:1,exp:"Cabernet Sauvignon é uma das uvas principais de Bordeaux."},
+        {id:2,q:"Qual país é famoso pela uva Malbec?",opts:["França","Chile","Argentina","Austrália"],correct:2,exp:"A Argentina, especialmente Mendoza, é mundialmente famosa por seus Malbecs."},
+        {id:3,q:"Qual é a temperatura ideal para servir um vinho tinto encorpado?",opts:["6-8°C","12-14°C","16-18°C","20-22°C"],correct:2,exp:"Vinhos tintos encorpados devem ser servidos entre 16-18°C."},
+        {id:4,q:"Qual região francesa é famosa pelo Pinot Noir?",opts:["Bordeaux","Bourgogne","Champagne","Alsace"],correct:1,exp:"Bourgogne é a região mais prestigiada para Pinot Noir."},
+        {id:5,q:"O que significa 'terroir'?",opts:["Tipo de uva","Conjunto de fatores ambientais","Processo de fermentação","Nome do barril"],correct:1,exp:"Terroir é o conjunto de fatores naturais que influenciam o vinho."}
+    ],
+    pairings: [
+        {food:"Carnes Vermelhas",icon:"🥩",wines:["Cabernet Sauvignon","Malbec","Syrah","Tannat"],desc:"Taninos firmes cortam a gordura da carne."},
+        {food:"Peixes e Frutos do Mar",icon:"🐟",wines:["Sauvignon Blanc","Albariño","Chardonnay leve","Pinot Grigio"],desc:"Acidez refrescante complementa o sabor do mar."},
+        {food:"Massas",icon:"🍝",wines:["Sangiovese","Barbera","Chianti","Merlot"],desc:"Acidez média harmoniza com molhos de tomate."},
+        {food:"Queijos",icon:"🧀",wines:["Porto","Sauternes","Chardonnay","Cabernet Franc"],desc:"Vinho mais forte que o queijo é a regra de ouro."},
+        {food:"Sobremesas",icon:"🍰",wines:["Moscato","Sauternes","Tokaji","Porto"],desc:"Vinho mais doce que a sobremesa."},
+        {food:"Pizza",icon:"🍕",wines:["Chianti","Primitivo","Montepulciano","Lambrusco"],desc:"Vinhos italianos com acidez e fruta."}
+    ],
+    demoVideos: [
+        {id:"dQw4w9WgXcQ",title:"Como degustar um vinho",desc:"Aprenda os principais passos da degustação profissional.",country:"france",grape:"cabernet_sauvignon",tags:["degustação","básico"],done:false},
+        {id:"9bZkp7q19f0",title:"Entendendo o Terroir",desc:"O que faz cada vinho ser único segundo sua origem.",country:"france",grape:"pinot_noir",tags:["terroir","avançado"],done:false}
+    ]
+};
+
+// LocalStorage helpers
+const LS = {
+    get: function(k,def){ try{var v=localStorage.getItem('wwa_'+k); return v?JSON.parse(v):def;}catch(e){return def;} },
+    set: function(k,v){ localStorage.setItem('wwa_'+k,JSON.stringify(v)); }
+};
+
+let state = {
+    page:'home', params:{},
+    xp: LS.get('xp',2450),
+    notes: LS.get('notes',[]),
+    tastings: LS.get('tastings',[]),
+    favorites: LS.get('favorites',[]),
+    videos: LS.get('videos',DB.demoVideos),
+    studyPages: LS.get('studypages',[]),
+    progress: LS.get('progress',{intro:65,tasting:28}),
+    quizScore: 0, quizIndex: 0
+};
+
+function saveState(){ LS.set('xp',state.xp); LS.set('notes',state.notes); LS.set('tastings',state.tastings); LS.set('favorites',state.favorites); LS.set('videos',state.videos); LS.set('studypages',state.studyPages); LS.set('progress',state.progress); }
+
+function go(page, params){
+    if(!params) params={};
+    state.page=page; state.params=params;
+    updateNav(); render(); window.scrollTo(0,0);
+}
+
+function updateNav(){
+    document.querySelectorAll('.nav-item').forEach(function(el){ el.classList.toggle('active', el.dataset.page===state.page); });
+    document.querySelectorAll('[data-mobile]').forEach(function(el){
+        var active = el.dataset.mobile===state.page;
+        el.className = 'flex flex-col items-center gap-1 p-2 ' + (active ? 'text-wine-600 dark:text-wine-400' : 'text-gray-400 dark:text-gray-600');
+    });
+    var xpEl = document.getElementById('xpDisplay');
+    if(xpEl) xpEl.textContent = state.xp.toLocaleString() + ' XP';
+}
+
+function toggleDark(){
+    document.documentElement.classList.toggle('dark');
+    LS.set('dark',document.documentElement.classList.contains('dark'));
+}
+if(LS.get('dark')) document.documentElement.classList.add('dark');
+
+function doSearch(q){
+    q = q.toLowerCase().trim();
+    if(!q) return;
+    var results = [];
+    DB.countries.forEach(function(c){
+        if(c.name.toLowerCase().indexOf(q)>-1 || c.wines.some(function(w){return w.toLowerCase().indexOf(q)>-1;}))
+            results.push({type:'País',name:c.name+' '+c.flag,page:'country',id:c.id});
+    });
+    DB.grapes.forEach(function(g){
+        if(g.name.toLowerCase().indexOf(q)>-1)
+            results.push({type:'Uva',name:g.name,page:'grape',id:g.id});
+    });
+    state.notes.forEach(function(n){
+        if(n.title.toLowerCase().indexOf(q)>-1 || n.text.toLowerCase().indexOf(q)>-1)
+            results.push({type:'Anotação',name:n.title,page:'notebook'});
+    });
+    go('search',{query:q,results:results});
+}
+
+function render(){
+    var m = document.getElementById('mainContent');
+    switch(state.page){
+        case 'home': renderHome(m); break;
+        case 'map': renderMap(m); break;
+        case 'country': renderCountry(m,state.params); break;
+        case 'grapes': renderGrapes(m); break;
+        case 'grape': renderGrape(m,state.params); break;
+        case 'wines': renderWines(m); break;
+        case 'courses': renderCourses(m); break;
+        case 'videos': renderVideos(m); break;
+        case 'notebook': renderNotebook(m); break;
+        case 'tasting': renderTasting(m); break;
+        case 'pairing': renderPairing(m); break;
+        case 'quiz': renderQuiz(m); break;
+        case 'progress': renderProgress(m); break;
+        case 'editor': renderEditor(m); break;
+        case 'search': renderSearch(m,state.params); break;
+        default: renderHome(m);
+    }
+}
+
+// ===================== RENDERERS =====================
+function renderHome(el){
+    var pct = state.progress.intro || 0;
+    var html = '<div class="fade-in p-4 md:p-8 max-w-7xl mx-auto">';
+    html += '<div class="relative rounded-3xl overflow-hidden mb-8 wine-gradient text-white p-8 md:p-12">';
+    html += '<div class="absolute inset-0 opacity-10" style="background-image:radial-gradient(circle at 2px 2px,white 1px,transparent 0);background-size:30px 30px;"></div>';
+    html += '<div class="relative z-10">';
+    html += '<h1 class="text-4xl md:text-6xl font-bold mb-4 font-serif">Wine World Academy</h1>';
+    html += '<p class="text-lg md:text-xl text-wine-100 max-w-2xl mb-6">Explore os vinhos do mundo. Aprenda, compare, deguste e descubra.</p>';
+    html += '<div class="flex flex-wrap gap-3">';
+    html += '<button onclick="go(\'courses\')" class="px-6 py-3 bg-white text-wine-900 rounded-xl font-semibold hover:bg-wine-50 transition-colors shadow-lg"><i class="fas fa-play mr-2"></i>Começar a Aprender</button>';
+    html += '<button onclick="go(\'map\')" class="px-6 py-3 bg-wine-800/50 backdrop-blur text-white rounded-xl font-semibold hover:bg-wine-800/70 transition-colors border border-wine-400/30"><i class="fas fa-globe mr-2"></i>Explorar Mapa</button>';
+    html += '</div></div></div>';
+    
+    html += '<div class="bg-white dark:bg-gray-900 rounded-2xl p-6 mb-8 border border-wine-100 dark:border-gray-800 shadow-sm">';
+    html += '<div class="flex items-center justify-between mb-4">';
+    html += '<h2 class="text-xl font-bold text-wine-900 dark:text-wine-200 font-serif">Continue seus estudos</h2>';
+    html += '<button onclick="go(\'courses\')" class="text-sm text-gold-600 hover:text-gold-700 font-medium">Ver todos</button></div>';
+    html += '<div class="flex flex-col md:flex-row items-start md:items-center gap-4">';
+    html += '<div class="flex-1">';
+    html += '<p class="text-sm text-gray-500 dark:text-gray-400 mb-1">Último conteúdo acessado</p>';
+    html += '<h3 class="font-semibold text-wine-800 dark:text-wine-300 mb-2">Introdução ao Vinho — Aula 4: Tipos de Vinho</h3>';
+    html += '<div class="w-full bg-wine-100 dark:bg-wine-950 rounded-full h-3 mb-1"><div class="bg-gradient-to-r from-wine-600 to-wine-400 h-3 rounded-full progress-bar" style="width:'+pct+'%"></div></div>';
+    html += '<p class="text-xs text-wine-500">'+pct+'% concluído</p></div>';
+    html += '<button onclick="go(\'courses\')" class="px-5 py-2.5 bg-wine-700 hover:bg-wine-800 text-white rounded-xl text-sm font-medium transition-colors">Continuar estudando</button>';
+    html += '</div></div>';
+    
+    html += '<h2 class="text-2xl font-bold text-wine-900 dark:text-wine-200 font-serif mb-6">Explore</h2>';
+    html += '<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">';
+    var cards = [
+        ['🌎','Países e Regiões','Explore o mundo','map'],
+        ['🍇','Uvas','Biblioteca de castas','grapes'],
+        ['🍷','Vinhos','Enciclopédia completa','wines'],
+        ['🗺️','Mapa Mundial','Navegue interativamente','map'],
+        ['📚','Cursos','Aprenda por níveis','courses'],
+        ['🎥','Vídeos','Conteúdo multimídia','videos'],
+        ['📝','Meu Caderno','Suas anotações','notebook'],
+        ['⭐','Favoritos','Conteúdos salvos','progress']
+    ];
+    cards.forEach(function(c){
+        html += '<button onclick="go(\''+c[3]+'\')" class="card-hover bg-white dark:bg-gray-900 rounded-2xl p-5 border border-wine-100 dark:border-gray-800 text-left group">';
+        html += '<div class="w-12 h-12 bg-wine-50 dark:bg-wine-950/30 rounded-xl flex items-center justify-center text-2xl mb-3 group-hover:scale-110 transition-transform">'+c[0]+'</div>';
+        html += '<h3 class="font-semibold text-wine-900 dark:text-wine-200 text-sm mb-1">'+c[1]+'</h3>';
+        html += '<p class="text-xs text-gray-500 dark:text-gray-400">'+c[2]+'</p></button>';
+    });
+    html += '</div>';
+    
+    html += '<div class="grid grid-cols-2 md:grid-cols-4 gap-4">';
+    var stats = [
+        ['🌎','Países',12],
+        ['🍇','Uvas',42],
+        ['🎥','Vídeos',state.videos.length],
+        ['🧠','Quizzes',18]
+    ];
+    stats.forEach(function(s){
+        html += '<div class="bg-white dark:bg-gray-900 rounded-2xl p-5 border border-wine-100 dark:border-gray-800 text-center">';
+        html += '<div class="text-2xl mb-1">'+s[0]+'</div>';
+        html += '<div class="text-2xl font-bold text-wine-900 dark:text-wine-200 font-serif">'+s[2]+'</div>';
+        html += '<div class="text-xs text-gray-500 dark:text-gray-400">'+s[1]+'</div></div>';
+    });
+    html += '</div></div>';
+    el.innerHTML = html;
+}
+
+function renderMap(el){
+    var html = '<div class="fade-in p-4 md:p-8 max-w-7xl mx-auto">';
+    html += '<div class="mb-6"><h1 class="text-3xl md:text-4xl font-bold text-wine-900 dark:text-wine-200 font-serif mb-2">Mapa dos Vinhos do Mundo</h1>';
+    html += '<p class="text-gray-600 dark:text-gray-400">Clique em um país para explorar suas regiões, uvas e vinhos.</p></div>';
+    html += '<div class="grid lg:grid-cols-3 gap-6">';
+    html += '<div class="lg:col-span-2 bg-white dark:bg-gray-900 rounded-3xl p-6 border border-wine-100 dark:border-gray-800 shadow-sm">';
+    html += '<svg viewBox="0 0 1000 500" class="w-full h-auto">';
+    html += '<path d="M450,80 Q480,60 520,70 L540,100 Q530,130 500,140 Q470,130 450,100 Z" fill="#e5e7eb" class="map-path dark:fill-gray-700" onclick="go(\'country\',{id:\'germany\'})\"><title>Alemanha</title></path>';
+    html += '<path d="M430,100 Q460,90 480,110 L470,150 Q440,160 420,140 Q410,120 430,100 Z" fill="#e5e7eb" class="map-path dark:fill-gray-700" onclick="go(\'country\',{id:\'france\'})\"><title>França</title></path>';
+    html += '<path d="M480,110 Q510,100 530,120 L520,170 Q490,180 470,160 Q460,130 480,110 Z" fill="#e5e7eb" class="map-path dark:fill-gray-700" onclick="go(\'country\',{id:\'italy\'})\"><title>Itália</title></path>';
+    html += '<path d="M420,140 Q440,130 460,150 L450,190 Q420,200 400,180 Q390,160 420,140 Z" fill="#e5e7eb" class="map-path dark:fill-gray-700" onclick="go(\'country\',{id:\'spain\'})\"><title>Espanha</title></path>';
+    html += '<path d="M390,150 Q410,140 420,160 L410,200 Q380,210 370,190 Q360,170 390,150 Z" fill="#e5e7eb" class="map-path dark:fill-gray-700" onclick="go(\'country\',{id:\'portugal\'})\"><title>Portugal</title></path>';
+    html += '<path d="M200,100 Q280,80 350,100 L380,150 Q360,200 300,220 Q220,200 180,150 Q160,120 200,100 Z" fill="#e5e7eb" class="map-path dark:fill-gray-700" onclick="go(\'country\',{id:\'usa\'})\"><title>Estados Unidos</title></path>';
+    html += '<path d="M280,320 Q320,300 360,320 L380,380 Q340,420 300,400 Q260,380 280,320 Z" fill="#e5e7eb" class="map-path dark:fill-gray-700" onclick="go(\'country\',{id:\'chile\'})\"><title>Chile</title></path>';
+    html += '<path d="M380,320 Q420,300 460,320 L480,380 Q440,420 400,400 Q360,380 380,320 Z" fill="#e5e7eb" class="map-path dark:fill-gray-700" onclick="go(\'country\',{id:\'argentina\'})\"><title>Argentina</title></path>';
+    html += '<path d="M420,280 Q460,260 500,280 L520,340 Q480,380 440,360 Q400,340 420,280 Z" fill="#e5e7eb" class="map-path dark:fill-gray-700" onclick="go(\'country\',{id:\'brazil\'})\"><title>Brasil</title></path>';
+    html += '<path d="M750,350 Q820,330 880,360 L900,420 Q840,460 780,440 Q720,420 750,350 Z" fill="#e5e7eb" class="map-path dark:fill-gray-700" onclick="go(\'country\',{id:\'southafrica\'})\"><title>África do Sul</title></path>';
+    html += '<path d="M850,150 Q920,130 960,160 L980,220 Q920,260 860,240 Q800,220 850,150 Z" fill="#e5e7eb" class="map-path dark:fill-gray-700" onclick="go(\'country\',{id:\'australia\'})\"><title>Austrália</title></path>';
+    html += '<path d="M920,80 Q960,70 980,100 L970,140 Q930,150 910,120 Q900,90 920,80 Z" fill="#e5e7eb" class="map-path dark:fill-gray-700" onclick="go(\'country\',{id:\'newzealand\'})\"><title>Nova Zelândia</title></path>';
+    html += '<text x="440" y="130" class="text-[10px] fill-wine-800 dark:fill-wine-300 pointer-events-none font-semibold">França</text>';
+    html += '<text x="490" y="150" class="text-[10px] fill-wine-800 dark:fill-wine-300 pointer-events-none font-semibold">Itália</text>';
+    html += '<text x="420" y="170" class="text-[10px] fill-wine-800 dark:fill-wine-300 pointer-events-none font-semibold">Espanha</text>';
+    html += '<text x="260" y="150" class="text-[10px] fill-wine-800 dark:fill-wine-300 pointer-events-none font-semibold">EUA</text>';
+    html += '<text x="310" y="370" class="text-[10px] fill-wine-800 dark:fill-wine-300 pointer-events-none font-semibold">Chile</text>';
+    html += '<text x="410" y="370" class="text-[10px] fill-wine-800 dark:fill-wine-300 pointer-events-none font-semibold">Argentina</text>';
+    html += '<text x="890" y="200" class="text-[10px] fill-wine-800 dark:fill-wine-300 pointer-events-none font-semibold">Austrália</text>';
+    html += '</svg>';
+    html += '<p class="text-center text-xs text-gray-400 mt-2">Mapa ilustrativo. Clique para explorar.</p></div>';
+    
+    html += '<div class="space-y-3">';
+    html += '<h3 class="font-serif font-bold text-lg text-wine-900 dark:text-wine-200 mb-3">Países Produtores</h3>';
+    DB.countries.forEach(function(c){
+        html += '<button onclick="go(\'country\',{id:\''+c.id+'\'})" class="w-full flex items-center gap-3 p-3 bg-white dark:bg-gray-900 rounded-xl border border-wine-100 dark:border-gray-800 hover:border-wine-300 transition-colors text-left">';
+        html += '<span class="text-2xl">'+c.flag+'</span>';
+        html += '<div class="flex-1"><p class="font-semibold text-sm text-wine-900 dark:text-wine-200">'+c.name+'</p><p class="text-xs text-gray-500">'+c.wines.length+' regiões</p></div>';
+        html += '<i class="fas fa-chevron-right text-wine-300 text-xs"></i></button>';
+    });
+    html += '</div></div></div>';
+    el.innerHTML = html;
+}
+
+function renderCountry(el, params){
+    var c = DB.countries.find(function(x){ return x.id === params.id; });
+    if(!c) return go('map');
+    var html = '<div class="fade-in">';
+    html += '<div class="relative h-56 md:h-72 wine-gradient overflow-hidden">';
+    html += '<div class="absolute inset-0 opacity-20" style="background-image:radial-gradient(circle,white 1px,transparent 0);background-size:25px 25px;"></div>';
+    html += '<div class="absolute inset-0 flex items-center justify-center">';
+    html += '<div class="text-center text-white p-8">';
+    html += '<div class="text-6xl mb-3">'+c.flag+'</div>';
+    html += '<h1 class="text-4xl md:text-5xl font-bold font-serif mb-2">'+c.name+'</h1>';
+    html += '<p class="text-wine-100 max-w-xl mx-auto">'+c.desc+'</p>';
+    html += '</div></div></div>';
+    
+    html += '<div class="p-4 md:p-8 max-w-6xl mx-auto -mt-8 relative z-10">';
+    html += '<div class="grid md:grid-cols-3 gap-4 mb-8">';
+    var infoCards = [['🌡️ Clima',c.climate],['🪨 Solo',c.soil],['📜 História',c.history]];
+    infoCards.forEach(function(ic){
+        html += '<div class="bg-white dark:bg-gray-900 rounded-2xl p-5 border border-wine-100 dark:border-gray-800 shadow-sm">';
+        html += '<div class="text-xl mb-2">'+ic[0]+'</div>';
+        html += '<p class="text-sm text-gray-600 dark:text-gray-400">'+ic[1]+'</p></div>';
+    });
+    html += '</div>';
+    
+    html += '<div class="grid md:grid-cols-2 gap-8 mb-8">';
+    html += '<div class="bg-white dark:bg-gray-900 rounded-2xl p-6 border border-wine-100 dark:border-gray-800">';
+    html += '<h3 class="text-xl font-bold text-wine-900 dark:text-wine-200 font-serif mb-4">🍇 Principais Uvas</h3>';
+    html += '<div class="flex flex-wrap gap-2">';
+    c.grapes.forEach(function(g){
+        var gid = DB.grapes.find(function(x){ return x.name === g; });
+        gid = gid ? gid.id : '';
+        html += '<button onclick="go(\'grape\',{id:\''+gid+'\'})" class="px-3 py-1.5 bg-wine-50 dark:bg-wine-950/30 text-wine-700 dark:text-wine-300 rounded-full text-sm border border-wine-200 dark:border-wine-800 hover:bg-wine-100 transition-colors">'+g+'</button>';
+    });
+    html += '</div></div>';
+    
+    html += '<div class="bg-white dark:bg-gray-900 rounded-2xl p-6 border border-wine-100 dark:border-gray-800">';
+    html += '<h3 class="text-xl font-bold text-wine-900 dark:text-wine-200 font-serif mb-4">🍷 Regiões Principais</h3>';
+    html += '<div class="space-y-2">';
+    c.wines.forEach(function(w){
+        html += '<div class="flex items-center gap-3 p-2 rounded-lg hover:bg-wine-50 dark:hover:bg-wine-950/20 transition-colors"><i class="fas fa-map-marker-alt text-wine-400"></i><span class="text-sm font-medium text-wine-800 dark:text-wine-300">'+w+'</span></div>';
+    });
+    html += '</div></div></div>';
+    
+    html += '<div class="bg-white dark:bg-gray-900 rounded-2xl p-6 border border-wine-100 dark:border-gray-800 mb-8">';
+    html += '<h3 class="text-xl font-bold text-wine-900 dark:text-wine-200 font-serif mb-4">⭐ Vinhos Famosos</h3>';
+    html += '<div class="grid grid-cols-1 md:grid-cols-3 gap-3">';
+    c.famous.forEach(function(f){
+        html += '<div class="p-4 bg-wine-50 dark:bg-wine-950/20 rounded-xl border border-wine-100 dark:border-wine-900"><p class="font-semibold text-wine-800 dark:text-wine-300 text-sm">'+f+'</p></div>';
+    });
+    html += '</div></div>';
+    
+    html += '<div class="grid md:grid-cols-2 gap-6 mb-8">';
+    html += '<div class="bg-white dark:bg-gray-900 rounded-2xl p-6 border border-wine-100 dark:border-gray-800">';
+    html += '<h3 class="text-xl font-bold text-wine-900 dark:text-wine-200 font-serif mb-3">🌡️ Temperatura de Serviço</h3>';
+    html += '<p class="text-sm text-gray-600 dark:text-gray-400">'+c.temp+'</p></div>';
+    html += '<div class="bg-white dark:bg-gray-900 rounded-2xl p-6 border border-wine-100 dark:border-gray-800">';
+    html += '<h3 class="text-xl font-bold text-wine-900 dark:text-wine-200 font-serif mb-3">🍷 Taças Recomendadas</h3>';
+    html += '<p class="text-sm text-gray-600 dark:text-gray-400">'+c.glass+'</p></div>';
+    html += '</div>';
+    
+    html += '<div class="flex gap-3">';
+    html += '<button onclick="go(\'map\')" class="px-5 py-2.5 border border-wine-300 dark:border-wine-700 text-wine-700 dark:text-wine-300 rounded-xl text-sm hover:bg-wine-50 dark:hover:bg-wine-950/30 transition-colors"><i class="fas fa-arrow-left mr-2"></i>Voltar ao Mapa</button>';
+    html += '<button onclick="go(\'grapes\')" class="px-5 py-2.5 bg-wine-700 hover:bg-wine-800 text-white rounded-xl text-sm transition-colors">Explorar Uvas<i class="fas fa-arrow-right ml-2"></i></button>';
+    html += '</div></div></div>';
+    el.innerHTML = html;
+}
+
+function renderGrapes(el){
+    var html = '<div class="fade-in p-4 md:p-8 max-w-7xl mx-auto">';
+    html += '<h1 class="text-3xl md:text-4xl font-bold text-wine-900 dark:text-wine-200 font-serif mb-2">Biblioteca de Uvas</h1>';
+    html += '<p class="text-gray-600 dark:text-gray-400 mb-6">Conheça as principais castas do mundo.</p>';
+    html += '<div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">';
+    DB.grapes.forEach(function(g){
+        html += '<button onclick="go(\'grape\',{id:\''+g.id+'\'})" class="card-hover bg-white dark:bg-gray-900 rounded-2xl p-5 border border-wine-100 dark:border-gray-800 text-left w-full">';
+        html += '<div class="flex items-start justify-between mb-3">';
+        html += '<div><span class="inline-block px-2 py-0.5 bg-wine-100 dark:bg-wine-900 text-wine-700 dark:text-wine-300 text-xs rounded-full mb-2">'+g.type+'</span>';
+        html += '<h3 class="font-bold text-lg text-wine-900 dark:text-wine-200 font-serif">'+g.name+'</h3></div>';
+        html += '<span class="text-2xl">'+(g.type==='Tinta'?'🍇':'🥂')+'</span></div>';
+        html += '<p class="text-xs text-gray-500 dark:text-gray-400 mb-3">'+g.origin+'</p>';
+        html += '<div class="space-y-1.5">';
+        [['Corpo',g.body],['Acidez',g.acidity],['Taninos',g.tannin],['Doçura',g.sweetness]].forEach(function(sc){
+            html += '<div class="flex items-center gap-2"><span class="text-xs text-gray-500 w-14">'+sc[0]+'</span><div class="flex gap-1">';
+            for(var i=1;i<=5;i++){ html += '<div class="w-2.5 h-2.5 rounded-full '+(i<=sc[1]?'bg-wine-500':'bg-gray-200 dark:bg-gray-700')+'"></div>'; }
+            html += '</div></div>';
+        });
+        html += '</div></button>';
+    });
+    html += '</div></div>';
+    el.innerHTML = html;
+}
+
+function renderGrape(el, params){
+    var g = DB.grapes.find(function(x){ return x.id === params.id; });
+    if(!g) return go('grapes');
+    var html = '<div class="fade-in p-4 md:p-8 max-w-4xl mx-auto">';
+    html += '<button onclick="go(\'grapes\')" class="mb-4 text-sm text-wine-600 hover:text-wine-700"><i class="fas fa-arrow-left mr-1"></i>Voltar</button>';
+    html += '<div class="bg-white dark:bg-gray-900 rounded-3xl p-6 md:p-8 border border-wine-100 dark:border-gray-800 shadow-sm mb-6">';
+    html += '<div class="flex items-start justify-between mb-6">';
+    html += '<div><span class="inline-block px-3 py-1 bg-wine-100 dark:bg-wine-900 text-wine-700 dark:text-wine-300 text-sm rounded-full mb-3">'+g.type+'</span>';
+    html += '<h1 class="text-3xl md:text-4xl font-bold text-wine-900 dark:text-wine-200 font-serif">'+g.name+'</h1></div>';
+    html += '<div class="text-4xl">'+(g.type==='Tinta'?'🍇':'🥂')+'</div></div>';
+    
+    html += '<div class="grid md:grid-cols-2 gap-6 mb-6">';
+    [['🌎 Origem',g.origin],['🌡️ Clima Ideal',g.climate],['🪨 Solo',g.soil],['🍷 Estilo',g.style]].forEach(function(ic){
+        html += '<div class="p-4 bg-wine-50 dark:bg-wine-950/20 rounded-xl"><div class="text-sm font-medium text-wine-800 dark:text-wine-300 mb-1">'+ic[0]+'</div><p class="text-sm text-gray-600 dark:text-gray-400">'+ic[1]+'</p></div>';
+    });
+    html += '</div>';
+    
+    html += '<div class="mb-6"><h3 class="font-bold text-wine-900 dark:text-wine-200 font-serif mb-3">Escala Visual</h3><div class="space-y-3">';
+    [['Corpo',g.body],['Acidez',g.acidity],['Taninos',g.tannin],['Doçura',g.sweetness]].forEach(function(sc){
+        html += '<div class="flex items-center gap-4"><span class="text-sm font-medium w-20 text-gray-600 dark:text-gray-400">'+sc[0]+'</span><div class="flex gap-2">';
+        for(var i=1;i<=5;i++){ html += '<div class="w-4 h-4 rounded-full '+(i<=sc[1]?'bg-wine-600':'bg-gray-200 dark:bg-gray-700')+'"></div>'; }
+        html += '</div><span class="text-sm text-wine-600 font-semibold">'+sc[1]+'/5</span></div>';
+    });
+    html += '</div></div>';
+    
+    html += '<div class="grid md:grid-cols-2 gap-6 mb-6">';
+    html += '<div><h3 class="font-bold text-wine-900 dark:text-wine-200 font-serif mb-2">👃 Aromas</h3><div class="flex flex-wrap gap-2">';
+    g.aromas.forEach(function(a){ html += '<span class="px-3 py-1 bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 rounded-full text-sm">'+a+'</span>'; });
+    html += '</div></div>';
+    html += '<div><h3 class="font-bold text-wine-900 dark:text-wine-200 font-serif mb-2">👅 Sabores</h3><div class="flex flex-wrap gap-2">';
+    g.flavors.forEach(function(f){ html += '<span class="px-3 py-1 bg-orange-50 dark:bg-orange-950/30 text-orange-700 dark:text-orange-400 rounded-full text-sm">'+f+'</span>'; });
+    html += '</div></div></div>';
+    
+    html += '<div class="p-4 bg-gold-50 dark:bg-gold-950/20 rounded-xl border border-gold-200 dark:border-gold-900 mb-6">';
+    html += '<h3 class="font-bold text-gold-800 dark:text-gold-400 font-serif mb-1">🍽️ Harmonização</h3>';
+    html += '<p class="text-sm text-gold-700 dark:text-gold-500">'+g.pairing+'</p></div>';
+    
+    html += '<div><h3 class="font-bold text-wine-900 dark:text-wine-200 font-serif mb-2">📍 Principais Regiões</h3><div class="flex flex-wrap gap-2">';
+    g.regions.forEach(function(r){ html += '<span class="px-3 py-1 bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 rounded-full text-sm">'+r+'</span>'; });
+    html += '</div></div></div>';
+    
+    html += '<div class="flex gap-3">';
+    html += '<button onclick="addFav(\'grape\',\''+g.id+'\')" class="px-5 py-2.5 border border-wine-300 text-wine-700 rounded-xl text-sm hover:bg-wine-50 transition-colors"><i class="far fa-star mr-2"></i>Favoritar</button>';
+    html += '<button onclick="go(\'notebook\')" class="px-5 py-2.5 bg-wine-700 text-white rounded-xl text-sm hover:bg-wine-800 transition-colors"><i class="fas fa-pen mr-2"></i>Fazer Anotação</button>';
+    html += '</div></div>';
+    el.innerHTML = html;
+}
+
+function renderWines(el){
+    var html = '<div class="fade-in p-4 md:p-8 max-w-7xl mx-auto">';
+    html += '<h1 class="text-3xl md:text-4xl font-bold text-wine-900 dark:text-wine-200 font-serif mb-2">Enciclopédia de Vinhos</h1>';
+    html += '<p class="text-gray-600 dark:text-gray-400 mb-6">Pesquise e filtre vinhos do mundo inteiro.</p>';
+    html += '<div class="bg-white dark:bg-gray-900 rounded-2xl p-4 border border-wine-100 dark:border-gray-800 mb-6">';
+    html += '<div class="flex flex-wrap gap-2">';
+    var filters = ['Todos','🍷 Tinto','🥂 Branco','🌸 Rosé','🍾 Espumante','🍯 Sobremesa','🥃 Fortificado'];
+    filters.forEach(function(f,i){
+        var active = i===0;
+        html += '<button class="px-4 py-2 rounded-full text-sm border '+(active?'bg-wine-700 text-white border-wine-700':'bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 border-wine-200 dark:border-gray-700 hover:bg-wine-50 dark:hover:bg-wine-950/20')+' transition-colors">'+f+'</button>';
+    });
+    html += '</div></div>';
+    html += '<div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">';
+    DB.grapes.slice(0,6).forEach(function(g){
+        html += '<div class="bg-white dark:bg-gray-900 rounded-2xl overflow-hidden border border-wines.slice(0,6).forEach(function(g){
+        html += '<div class="bg-white dark:bg-gray-900 rounded-2xl overflow-hidden border border-wine-100 dark:border-gray-800 card-hover">';
+        html += '<div class="h-32 wine-gradient flex items-center justify-center text-white text-4xl">'+(g.type==='Tinta'?'🍷':'🥂')+'</div>';
+        html += '<div class="p-5">';
+        html += '<div class="flex items-center justify-between mb-2"><span class="text-xs text-wine-500 font-medium">'+g.regions[0]+'</span><span class="text-xs text-gray-400">'+g.type+'</span></div>';
+        html += '<h3 class="font-bold text-lg text-wine-900 dark:text-wine-200 font-serif mb-1">'+g.name+'</h3>';
+        html += '<p class="text-xs text-gray-500 dark:text-gray-400 mb-3 line-clamp-2">'+g.style+'</p>';
+        html += '<div class="flex items-center gap-3 text-xs text-gray-500"><span><i class="fas fa-thermometer-half mr-1"></i>'+g.climate+'</span></div>';
+        html += '</div></div>';
+    });
+    html += '</div></div>';
+    el.innerHTML = html;
+}
+
+function renderCourses(el){
+    var html = '<div class="fade-in p-4 md:p-8 max-w-7xl mx-auto">';
+    html += '<h1 class="text-3xl md:text-4xl font-bold text-wine-900 dark:text-wine-200 font-serif mb-2">Cursos</h1>';
+    html += '<p class="text-gray-600 dark:text-gray-400 mb-6">Organizados por níveis do básico ao avançado.</p>';
+    html += '<div class="space-y-4">';
+    DB.courses.forEach(function(c){
+        var realPct = state.progress[c.id] || 0;
+        html += '<div class="bg-white dark:bg-gray-900 rounded-2xl p-6 border border-wine-100 dark:border-gray-800 shadow-sm">';
+        html += '<div class="flex flex-col md:flex-row md:items-center gap-4">';
+        html += '<div class="w-16 h-16 bg-wine-50 dark:bg-wine-950/30 rounded-2xl flex items-center justify-center text-3xl border border-wine-100 dark:border-wine-900">'+c.image+'</div>';
+        html += '<div class="flex-1">';
+        html += '<div class="flex items-center gap-2 mb-1"><span class="px-2 py-0.5 bg-gold-100 dark:bg-gold-900 text-gold-700 dark:text-gold-400 text-xs rounded-full font-semibold">Nível '+c.level+'</span><span class="text-xs text-gray-400">'+c.duration+'</span></div>';
+        html += '<h3 class="text-xl font-bold text-wine-900 dark:text-wine-200 font-serif mb-1">'+c.title+'</h3>';
+        html += '<p class="text-sm text-gray-500 dark:text-gray-400 mb-3">'+c.desc+'</p>';
+        html += '<div class="flex items-center gap-3">';
+        html += '<div class="flex-1 bg-wine-100 dark:bg-wine-950 rounded-full h-2.5"><div class="bg-wine-600 h-2.5 rounded-full progress-bar" style="width:'+realPct+'%"></div></div>';
+        html += '<span class="text-xs font-semibold text-wine-600">'+realPct+'%</span></div>';
+        html += '<p class="text-xs text-gray-400 mt-1">'+Math.floor((realPct/100)*c.lessons)+' de '+c.lessons+' aulas</p></div>';
+        html += '<button onclick="alert(\'Curso: '+c.title+'\\nAulas: '+c.lessons+'\')" class="px-5 py-2.5 bg-wine-700 hover:bg-wine-800 text-white rounded-xl text-sm font-medium transition-colors whitespace-nowrap"><i class="fas fa-play mr-2"></i>Continuar</button>';
+        html += '</div></div>';
+    });
+    html += '</div></div>';
+    el.innerHTML = html;
+}
+
+function renderVideos(el){
+    var html = '<div class="fade-in p-4 md:p-8 max-w-7xl mx-auto">';
+    html += '<h1 class="text-3xl md:text-4xl font-bold text-wine-900 dark:text-wine-200 font-serif mb-2">Vídeos</h1>';
+    html += '<p class="text-gray-600 dark:text-gray-400 mb-6">Adicione vídeos do YouTube para enriquecer seus estudos.</p>';
+    html += '<div class="bg-white dark:bg-gray-900 rounded-2xl p-6 border border-wine-100 dark:border-gray-800 mb-6">';
+    html += '<h3 class="font-bold text-wine-900 dark:text-wine-200 font-serif mb-3">🎥 Adicionar Vídeo do YouTube</h3>';
+    html += '<div class="flex gap-3">';
+    html += '<input type="text" id="ytInput" placeholder="Cole o link do YouTube aqui..." class="flex-1 px-4 py-2.5 rounded-xl border border-wine-200 dark:border-gray-700 bg-wine-50 dark:bg-gray-900 text-sm focus:border-gold-500 outline-none">';
+    html += '<button onclick="addVideo()" class="px-5 py-2.5 bg-wine-700 hover:bg-wine-800 text-white rounded-xl text-sm font-medium transition-colors">Adicionar</button>';
+    html += '</div></div>';
+    html += '<div class="grid md:grid-cols-2 gap-4">';
+    state.videos.forEach(function(v){
+        html += '<div class="bg-white dark:bg-gray-900 rounded-2xl overflow-hidden border border-wine-100 dark:border-gray-800 card-hover">';
+        html += '<div class="aspect-video bg-gray-900 relative">';
+        html += '<iframe class="w-full h-full" src="https://www.youtube.com/embed/'+v.id+'" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+        html += '</div><div class="p-4">';
+        html += '<h3 class="font-bold text-wine-900 dark:text-wine-200 font-serif mb-1">'+v.title+'</h3>';
+        html += '<p class="text-xs text-gray-500 dark:text-gray-400 mb-3">'+v.desc+'</p>';
+        html += '<div class="flex flex-wrap gap-2 mb-3">';
+        v.tags.forEach(function(t){ html += '<span class="px-2 py-0.5 bg-wine-50 dark:bg-wine-950/30 text-wine-600 dark:text-wine-400 text-xs rounded-full">'+t+'</span>'; });
+        html += '</div>';
+        html += '<div class="flex gap-2">';
+        html += '<button onclick="toggleVidDone(\''+v.id+'\')" class="flex-1 py-2 text-xs rounded-lg border '+(v.done?'bg-green-50 border-green-200 text-green-700':'border-wine-200 text-wine-600 hover:bg-wine-50')+' transition-colors"><i class="fas '+(v.done?'fa-check':'fa-circle')+' mr-1"></i>'+(v.done?'Concluído':'Marcar concluído')+'</button>';
+        html += '<button onclick="go(\'notebook\')" class="px-3 py-2 text-xs rounded-lg border border-wine-200 text-wine-600 hover:bg-wine-50 transition-colors"><i class="fas fa-pen"></i></button>';
+        html += '</div></div></div>';
+    });
+    html += '</div></div>';
+    el.innerHTML = html;
+}
+
+function addVideo(){
+    var input = document.getElementById('ytInput');
+    var url = input.value.trim();
+    if(!url) return;
+    var match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/);
+    if(!match){ alert('Link inválido. Use um link do YouTube válido.'); return; }
+    var id = match[1];
+    state.videos.unshift({id:id,title:'Vídeo do YouTube',desc:'Adicionado pelo usuário',country:'',grape:'',tags:['estudo'],done:false});
+    saveState(); render();
+}
+
+function toggleVidDone(id){
+    var v = state.videos.find(function(x){ return x.id === id; });
+    if(v){ v.done = !v.done; if(v.done) state.xp += 50; saveState(); render(); }
+}
+
+function renderNotebook(el){
+    var html = '<div class="fade-in p-4 md:p-8 max-w-4xl mx-auto">';
+    html += '<div class="flex items-center justify-between mb-6">';
+    html += '<div><h1 class="text-3xl md:text-4xl font-bold text-wine-900 dark:text-wine-200 font-serif">Meu Caderno</h1><p class="text-gray-600 dark:text-gray-400">Suas anotações pessoais.</p></div>';
+    html += '<button onclick="addNote()" class="px-4 py-2 bg-wine-700 hover:bg-wine-800 text-white rounded-xl text-sm"><i class="fas fa-plus mr-2"></i>Nova Nota</button></div>';
+    html += '<div class="space-y-3">';
+    if(state.notes.length === 0){
+        html += '<div class="text-center py-12 text-gray-400"><i class="fas fa-book-open text-4xl mb-3"></i><p>Nenhuma anotação ainda.</p></div>';
+    } else {
+        state.notes.forEach(function(n,i){
+            html += '<div class="bg-white dark:bg-gray-900 rounded-2xl p-5 border border-wine-100 dark:border-gray-800">';
+            html += '<div class="flex items-start justify-between mb-2">';
+            html += '<h3 class="font-bold text-wine-900 dark:text-wine-200 font-serif">'+(n.title||'Sem título')+'</h3>';
+            html += '<div class="flex gap-2">';
+            html += '<button onclick="editNote('+i+')" class="text-wine-400 hover:text-wine-600"><i class="fas fa-pen text-xs"></i></button>';
+            html += '<button onclick="delNote('+i+')" class="text-red-400 hover:text-red-600"><i class="fas fa-trash text-xs"></i></button>';
+            html += '</div></div>';
+            html += '<p class="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap">'+n.text+'</p>';
+            html += '<div class="flex items-center gap-3 mt-3 text-xs text-gray-400">';
+            html += '<span>'+n.date+'</span>';
+            if(n.country) html += '<span class="px-2 py-0.5 bg-blue-50 text-blue-600 rounded-full">'+n.country+'</span>';
+            if(n.grape) html += '<span class="px-2 py-0.5 bg-purple-50 text-purple-600 rounded-full">'+n.grape+'</span>';
+            html += '</div></div>';
+        });
+    }
+    html += '</div></div>';
+    el.innerHTML = html;
+}
+
+function addNote(){
+    var title = prompt('Título da anotação:'); if(!title) return;
+    var text = prompt('Conteúdo:'); if(text === null) return;
+    state.notes.unshift({title:title,text:text,date:new Date().toLocaleDateString('pt-BR'),country:'',grape:''});
+    state.xp += 25; saveState(); render();
+}
+
+function editNote(i){
+    var n = state.notes[i];
+    var t = prompt('Editar título:',n.title); if(t === null) return;
+    var tx = prompt('Editar conteúdo:',n.text); if(tx === null) return;
+    n.title = t; n.text = tx; saveState(); render();
+}
+
+function delNote(i){
+    if(confirm('Excluir esta nota?')){ state.notes.splice(i,1); saveState(); render(); }
+}
+
+function renderTasting(el){
+    var html = '<div class="fade-in p-4 md:p-8 max-w-3xl mx-auto">';
+    html += '<h1 class="text-3xl md:text-4xl font-bold text-wine-900 dark:text-wine-200 font-serif mb-6">Ficha de Degustação</h1>';
+    html += '<div class="bg-white dark:bg-gray-900 rounded-2xl p-6 border border-wine-100 dark:border-gray-800 shadow-sm">';
+    html += '<div class="grid md:grid-cols-2 gap-4 mb-6">';
+    ['Vinho','Safra','Produtor','Região','País','Uva'].forEach(function(f){
+        html += '<input type="text" placeholder="'+f+'" class="tasting-field w-full px-4 py-2.5 rounded-xl border border-wine-200 dark:border-gray-700 bg-wine-50 dark:bg-gray-900 text-sm focus:border-gold-500 outline-none">';
+    });
+    html += '</div>';
+    
+    html += '<div class="mb-6"><h3 class="font-bold text-wine-900 dark:text-wine-200 font-serif mb-3">👁️ Visual — Intensidade da Cor</h3>';
+    html += '<div class="flex gap-2">';
+    ['Muito clara','Clara','Média','Intensa'].forEach(function(opt){
+        html += '<button onclick="selectTasting(this)" class="flex-1 py-2 text-sm border border-wine-200 dark:border-gray-700 rounded-xl hover:bg-wine-50 dark:hover:bg-wine-950/20 transition-colors tasting-sel">'+opt+'</button>';
+    });
+    html += '</div></div>';
+    
+    html += '<div class="mb-6"><h3 class="font-bold text-wine-900 dark:text-wine-200 font-serif mb-3">👃 Aromas</h3>';
+    html += '<div class="flex flex-wrap gap-2">';
+    ['🍓 Frutas vermelhas','🍒 Cereja','🍇 Frutas negras','🌿 Ervas','🌸 Flores','🌶️ Especiarias','🪵 Carvalho','🍫 Chocolate','☕ Café'].forEach(function(a){
+        html += '<button onclick="toggleTasting(this)" class="px-3 py-1.5 text-sm border border-wine-200 dark:border-gray-700 rounded-full hover:bg-wine-50 dark:hover:bg-wine-950/20 transition-colors tasting-toggle">'+a+'</button>';
+    });
+    html += '</div></div>';
+    
+    html += '<div class="mb-6"><h3 class="font-bold text-wine-900 dark:text-wine-200 font-serif mb-3">👅 Boca</h3><div class="space-y-3">';
+    ['Acidez','Taninos','Álcool','Corpo','Doçura'].forEach(function(attr){
+        html += '<div class="flex items-center gap-3"><span class="text-sm w-20 text-gray-600 dark:text-gray-400">'+attr+'</span><input type="range" min="1" max="5" class="flex-1 accent-wine-600"><span class="text-xs text-gray-400">1-5</span></div>';
+    });
+    html += '</div></div>';
+    
+    html += '<div class="mb-6"><h3 class="font-bold text-wine-900 dark:text-wine-200 font-serif mb-3">⭐ Avaliação</h3>';
+    html += '<div class="flex gap-2" id="tastingStars">';
+    for(var i=1;i<=5;i++){
+        html += '<button onclick="setTastingStar('+i+')" class="text-2xl text-gray-300 hover:text-gold-400 transition-colors tasting-star" data-star="'+i+'">★</button>';
+    }
+    html += '</div></div>';
+    
+    html += '<div class="mb-6"><textarea placeholder="Nota pessoal..." class="w-full px-4 py-3 rounded-xl border border-wine-200 dark:border-gray-700 bg-wine-50 dark:bg-gray-900 text-sm focus:border-gold-500 outline-none h-24 resize-none"></textarea></div>';
+    html += '<button onclick="saveTasting()" class="w-full py-3 bg-wine-700 hover:bg-wine-800 text-white rounded-xl font-medium transition-colors">💾 Salvar Ficha</button>';
+    html += '</div></div>';
+    el.innerHTML = html;
+}
+
+function selectTasting(btn){
+    var parent = btn.parentElement;
+    parent.querySelectorAll('button').forEach(function(b){ b.classList.remove('bg-wine-600','text-white'); b.classList.add('border-wine-200'); });
+    btn.classList.add('bg-wine-600','text-white'); btn.classList.remove('border-wine-200');
+}
+
+function toggleTasting(btn){
+    btn.classList.toggle('bg-wine-100'); btn.classList.toggle('border-wine-400'); btn.classList.toggle('text-wine-700');
+}
+
+function setTastingStar(n){
+    document.querySelectorAll('.tasting-star').forEach(function(s,i){
+        s.classList.toggle('text-gold-400', i < n);
+        s.classList.toggle('text-gray-300', i >= n);
+    });
+}
+
+function saveTasting(){
+    alert('Ficha de degustação salva! +100 XP'); state.xp += 100; state.tastings.push({date:new Date().toLocaleDateString('pt-BR')});
+    saveState(); go('progress');
+}
+
+function renderPairing(el){
+    var html = '<div class="fade-in p-4 md:p-8 max-w-7xl mx-auto">';
+    html += '<h1 class="text-3xl md:text-4xl font-bold text-wine-900 dark:text-wine-200 font-serif mb-2">Harmonização</h1>';
+    html += '<p class="text-gray-600 dark:text-gray-400 mb-6">Descubra o que combina com cada tipo de comida.</p>';
+    html += '<div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">';
+    DB.pairings.forEach(function(p){
+        html += '<div class="bg-white dark:bg-gray-900 rounded-2xl p-6 border border-wine-100 dark:border-gray-800 card-hover">';
+        html += '<div class="text-4xl mb-3">'+p.icon+'</div>';
+        html += '<h3 class="font-bold text-lg text-wine-900 dark:text-wine-200 font-serif mb-2">'+p.food+'</h3>';
+        html += '<p class="text-sm text-gray-500 dark:text-gray-400 mb-3">'+p.desc+'</p>';
+        html += '<div class="flex flex-wrap gap-2">';
+        p.wines.forEach(function(w){ html += '<span class="px-2 py-1 bg-wine-50 dark:bg-wine-950/30 text-wine-700 dark:text-wine-300 text-xs rounded-lg border border-wine-200 dark:border-wine-900">'+w+'</span>'; });
+        html += '</div></div>';
+    });
+    html += '</div></div>';
+    el.innerHTML = html;
+}
+
+function renderQuiz(el){
+    if(state.quizIndex >= DB.quizzes.length){
+        var html = '<div class="fade-in p-4 md:p-8 max-w-2xl mx-auto text-center">';
+        html += '<div class="text-6xl mb-4">🏆</div>';
+        html += '<h1 class="text-3xl font-bold text-wine-900 dark:text-wine-200 font-serif mb-2">Quiz Concluído!</h1>';
+        html += '<p class="text-gray-600 dark:text-gray-400 mb-6">Você acertou '+state.quizScore+' de '+DB.quizzes.length+' perguntas.</p>';
+        html += '<div class="bg-white dark:bg-gray-900 rounded-2xl p-6 border border-wine-100 dark:border-gray-800 mb-6">';
+        html += '<p class="text-sm text-gray-500 mb-1">Pontuação ganha</p>';
+        html += '<p class="text-3xl font-bold text-gold-600 font-serif;">+'+(state.quizScore * 100)+' XP</p></div>';
+        html += '<button onclick="state.quizIndex=0; state.quizScore=0; render();" class="px-6 py-3 bg-wine-700 hover:bg-wine-800 text-white rounded-xl font-medium">Refazer Quiz</button>';
+        html += '</div>';
+        el.innerHTML = html;
+        return;
+    }
+    var q = DB.quizzes[state.quizIndex];
+    var html = '<div class="fade-in p-4 md:p-8 max-w-2xl mx-auto">';
+    html += '<div class="flex items-center justify-between mb-6">';
+    html += '<h1 class="text-2xl font-bold text-wine-900 dark:text-wine-200 font-serif">Quiz</h1>';
+    html += '<span class="text-sm text-gray-500">'+(state.quizIndex+1)+' / '+DB.quizzes.length+'</span></div>';
+    html += '<div class="bg-white dark:bg-gray-900 rounded-2xl p-6 border border-wine-100 dark:border-gray-800 shadow-sm mb-4">';
+    html += '<p class="text-lg font-medium text-wine-900 dark:text-wine-200 mb-6">'+q.q+'</p>';
+    html += '<div class="space-y-3" id="quizOptions">';
+    q.opts.forEach(function(opt,i){
+        html += '<button onclick="answerQuiz('+i+')" class="quiz-option w-full p-4 text-left border border-wine-200 dark:border-gray-700 rounded-xl hover:border-wine-400 dark:hover:border-wine-600 transition-all" data-idx="'+i+'">';
+        html += '<span class="font-semibold mr-2">'+String.fromCharCode(65+i)+'.</span>'+opt+'</button>';
+    });
+    html += '</div>';
+    html += '<div id="quizFeedback" class="hidden mt-4 p-4 rounded-xl"></div>';
+    html += '</div>';
+    html += '<div class="w-full bg-wine-100 dark:bg-wine-950 rounded-full h-2"><div class="bg-wine-600 h-2 rounded-full progress-bar" style="width:'+((state.quizIndex/DB.quizzes.length)*100)+'%"></div></div>';
+    html += '</div>';
+    el.innerHTML = html;
+}
+
+function answerQuiz(idx){
+    var q = DB.quizzes[state.quizIndex];
+    var opts = document.querySelectorAll('.quiz-option');
+    opts.forEach(function(o,i){
+        o.disabled = true;
+        o.classList.add(i===q.correct?'correct':'wrong');
+        o.classList.remove('hover:bg-wine-50');
+    });
+    var fb = document.getElementById('quizFeedback');
+    fb.classList.remove('hidden');
+    if(idx === q.correct){
+        fb.className = 'mt-4 p-4 rounded-xl bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900 text-green-800 dark:text-green-400';
+        fb.innerHTML = '<strong>✅ Correto!</strong><p class="text-sm mt-1">'+q.exp+'</p>';
+        state.quizScore++; state.xp += 100;
+    } else {
+        fb.className = 'mt-4 p-4 rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 text-red-800 dark:text-red-400';
+        fb.innerHTML = '<strong>❌ Errado!</strong><p class="text-sm mt-1">'+q.exp+'</p>';
+    }
+    setTimeout(function(){ state.quizIndex++; saveState(); render(); }, 2500);
+}
+
+function renderProgress(el){
+    var achievements = [
+        {id:'first',name:'Primeiro Vinho',icon:'🍷',desc:'Estudou seu primeiro vinho',got:true},
+        {id:'grape',name:'Mestre das Uvas',icon:'🍇',desc:'Estudou 10 uvas',got:state.notes.filter(function(n){return n.grape;}).length>=10},
+        {id:'old',name:'Velho Mundo',icon:'🌍',desc:'Visitou 3 países europeus',got:true},
+        {id:'new',name:'Novo Mundo',icon:'🌎',desc:'Visitou 3 países do Novo Mundo',got:true},
+        {id:'taste',name:'Especialista',icon:'👃',desc:'Completou degustação',got:state.tastings.length>0}
+    ];
+    var html = '<div class="fade-in p-4 md:p-8 max-w-4xl mx-auto">';
+    html += '<h1 class="text-3xl md:text-4xl font-bold text-wine-900 dark:text-wine-200 font-serif mb-6">Meu Progresso</h1>';
+    html += '<div class="grid md:grid-cols-2 gap-4 mb-8">';
+    var stats = [
+        ['📚 Cursos',state.progress.intro||0],
+        ['🍇 Uvas',Math.min(100,Math.round((42/60)*100))],
+        ['🌎 Países',Math.min(100,Math.round((12/20)*100))],
+        ['🎥 Vídeos',Math.min(100,Math.round((state.videos.filter(function(v){return v.done;}).length/30)*100))]
+    ];
+    stats.forEach(function(s){
+        html += '<div class="bg-white dark:bg-gray-900 rounded-2xl p-5 border border-wine-100 dark:border-gray-800">';
+        html += '<div class="flex items-center justify-between mb-2"><span class="font-semibold text-wine-800 dark:text-wine-300">'+s[0]+'</span><span class="text-sm font-bold text-wine-600">'+s[1]+'%</span></div>';
+        html += '<div class="w-full bg-wine-100 dark:bg-wine-950 rounded-full h-3"><div class="bg-wine-600 h-3 rounded-full progress-bar" style="width:'+s[1]+'%"></div></div>';
+        html += '</div>';
+    });
+    html += '</div>';
+    html += '<div class="bg-white dark:bg-gray-900 rounded-2xl p-6 border border-wine-100 dark:border-gray-800 mb-8">';
+    html += '<div class="flex items-center justify-between mb-4">';
+    html += '<h3 class="font-bold text-wine-900 dark:text-wine-200 font-serif text-xl">⭐ Pontuação</h3>';
+    html += '<span class="text-2xl font-bold text-gold-600 font-serif;">'+state.xp.toLocaleString()+' XP</span></div></div>';
+    html += '<h3 class="font-bold text-wine-900 dark:text-wine-200 font-serif text-xl mb-4">🏆 Conquistas</h3>';
+    html += '<div class="grid grid-cols-2 md:grid-cols-3 gap-3">';
+    achievements.forEach(function(a){
+        html += '<div class="'+(a.got?'bg-white dark:bg-gray-900':'bg-gray-100 dark:bg-gray-800 opacity-60')+' rounded-2xl p-4 border '+(a.got?'border-wine-100 dark:border-gray-800':'border-transparent')+' text-center">';
+        html += '<div class="text-3xl mb-2">'+a.icon+'</div>';
+        html += '<p class="font-semibold text-sm text-wine-900 dark:text-wine-200">'+a.name+'</p>';
+        html += '<p class="text-xs text-gray-500">'+a.desc+'</p></div>';
+    });
+    html += '</div></div>';
+    el.innerHTML = html;
+}
+
+function renderEditor(el){
+    var html = '<div class="fade-in p-4 md:p-8 max-w-5xl mx-auto">';
+    html += '<h1 class="text-3xl md:text-4xl font-bold text-wine-900 dark:text-wine-200 font-serif mb-2">Editor de Estudos</h1>';
+    html += '<p class="text-gray-600 dark:text-gray-400 mb-6">Crie suas próprias páginas de estudo.</p>';
+    html += '<div class="bg-white dark:bg-gray-900 rounded-2xl border border-wine-100 dark:border-gray-800 shadow-sm overflow-hidden">';
+    html += '<div class="p-4 border-b border-wine-100 dark:border-gray-800 flex flex-wrap gap-2">';
+    html += '<button onclick="addEditorBlock(\'text\')" class="px-3 py-1.5 text-xs rounded-lg border border-wine-200 hover:bg-wine-50 dark:border-gray-700 dark:hover:bg-wine-950/20 transition-colors">📝 Texto</button>';
+    html += '<button onclick="addEditorBlock(\'youtube\')" class="px-3 py-1.5 text-xs rounded-lg border border-wine-200 hover:bg-wine-50 dark:border-gray-700 dark:hover:bg-wine-950/20 transition-colors">🎥 YouTube</button>';
+    html += '<button onclick="addEditorBlock(\'image\')" class="px-3 py-1.5 text-xs rounded-lg border border-wine-200 hover:bg-wine-50 dark:border-gray-700 dark:hover:bg-wine-950/20 transition-colors">🖼️ Imagem</button>';
+    html += '<button onclick="addEditorBlock(\'table\')" class="px-3 py-1.5 text-xs rounded-lg border border-wine-200 hover:bg-wine-50 dark:border-gray-700 dark:hover:bg-wine-950/20 transition-colors">📊 Tabela</button>';
+    html += '<button onclick="addEditorBlock(\'quote\')" class="px-3 py-1.5 text-xs rounded-lg border border-wine-200 hover:bg-wine-50 dark:border-gray-700 dark:hover:bg-wine-950/20 transition-colors">💡 Curiosidade</button>';
+    html += '</div>';
+    html += '<div id="editorCanvas" class="p-6 min-h-[400px] space-y-4">';
+    html += '<input type="text" placeholder="Título da página..." class="w-full text-2xl font-serif font-bold bg-transparent border-none outline-none text-wine-900 dark:text-wine-200 placeholder-gray-300">';
+    html += '<input type="text" placeholder="Subtítulo..." class="w-full text-sm bg-transparent border-none outline-none text-gray-500 placeholder-gray-300">';
+    html += '</div>';
+    html += '<div class="p-4 border-t border-wine-100 dark:border-gray-800 bg-wine-50 dark:bg-wine-950/20">';
+    html += '<button onclick="saveStudyPage()" class="px-5 py-2 bg-wine-700 hover:bg-wine-800 text-white rounded-xl text-sm font-medium"><i class="fas fa-save mr-2"></i>Salvar Página</button>';
+    html += '</div></div>';
+    if(state.studyPages.length > 0){
+        html += '<div class="mt-6"><h3 class="font-bold text-wine-900 dark:text-wine-200 font-serif mb-3">Páginas Salvas</h3><div class="space-y-2">';
+        state.studyPages.forEach(function(sp,i){
+            html += '<div class="bg-white dark:bg-gray-900 rounded-xl p-4 border border-wine-100 dark:border-gray-800 flex items-center justify-between">';
+            html += '<span class="font-medium text-sm">'+(sp.title||'Sem título')+'</span>';
+            html += '<button onclick="alert(\'Página carregada (simulação)\')" class="text-wine-600 text-sm"><i class="fas fa-eye mr-1"></i>Ver</button></div>';
+        });
+        html += '</div></div>';
+    }
+    html += '</div>';
+    el.innerHTML = html;
+}
+
+function addEditorBlock(type){
+    var canvas = document.getElementById('editorCanvas');
+    if(!canvas) return;
+    if(type === 'text'){
+        canvas.insertAdjacentHTML('beforeend','<div class="p-3 bg-wine-50 dark:bg-wine-950/20 rounded-xl"><textarea placeholder="Digite seu texto..." class="w-full bg-transparent text-sm outline-none resize-none h-20 text-gray-700 dark:text-gray-300"></textarea></div>');
+    }
+    if(type === 'youtube'){
+        var id = prompt('Cole o ID ou link do YouTube:');
+        if(id){
+            var vid = id.match(/([a-zA-Z0-9_-]{11})/);
+            vid = vid ? vid[1] : id;
+            canvas.insertAdjacentHTML('beforeend','<div class="aspect-video bg-gray-900 rounded-xl overflow-hidden"><iframe class="w-full h-full" src="https://www.youtube.com/embed/'+vid+'" frameborder="0" allowfullscreen></iframe></div>');
+        }
+    }
+    if(type === 'image'){
+        canvas.insertAdjacentHTML('beforeend','<div class="p-4 border-2 border-dashed border-wine-200 dark:border-gray-700 rounded-xl text-center text-sm text-gray-400">[Área para imagem — em produção, adicione URL]</div>');
+    }
+    if(type === 'table'){
+        canvas.insertAdjacentHTML('beforeend','<div class="overflow-x-auto"><table class="w-full text-sm"><tr class="bg-wine-50 dark:bg-wine-950/30"><th class="p-2 text-left">Característica</th><th class="p-2 text-left">Valor</th></tr><tr><td class="p-2 border-b border-wine-100 dark:border-gray-800">Uva</td><td class="p-2 border-b border-wine-100 dark:border-gray-800">Cabernet Sauvignon</td></tr></table></div>');
+    }
+    if(type === 'quote'){
+        canvas.insertAdjacentHTML('beforeend','<div class="p-4 bg-gold-50 dark:bg-gold-950/20 border-l-4 border-gold-400 rounded-r-xl"><p class="text-sm italic text-gold-800 dark:text-gold-400">&quot;O vinho é a poesia da terra.&quot;</p></div>');
+    }
+}
+
+function saveStudyPage(){
+    state.studyPages.push({title:'Nova Página de Estudo',date:new Date().toLocaleDateString('pt-BR')});
+    state.xp += 75; saveState();
+    alert('Página salva! +75 XP'); render();
+}
+
+function renderSearch(el, params){
+    var html = '<div class="fade-in p-4 md:p-8 max-w-4xl mx-auto">';
+    html += '<h1 class="text-2xl font-bold text-wine-900 dark:text-wine-200 font-serif mb-2">Resultados para &quot;'+params.query+'&quot;</h1>';
+    html += '<p class="text-gray-500 text-sm mb-6">'+params.results.length+' resultados encontrados</p>';
+    html += '<div class="space-y-3">';
+    if(params.results.length === 0){
+        html += '<p class="text-gray-400">Nenhum resultado encontrado.</p>';
+    } else {
+        params.results.forEach(function(r){
+            html += '<button onclick="go(\''+r.page+'\',{id:\''+(r.id||'')+'\'})" class="w-full text-left bg-white dark:bg-gray-900 rounded-xl p-4 border border-wine-100 dark:border-gray-800 hover:border-wine-300 transition-colors">';
+            html += '<span class="text-xs text-gold-600 font-semibold uppercase tracking-wider">'+r.type+'</span>';
+            html += '<p class="font-semibold text-wine-900 dark:text-wine-200 mt-1">'+r.name+'</p></button>';
+        });
+    }
+    html += '</div></div>';
+    el.innerHTML = html;
+}
+
+function addFav(type,id){
+    state.favorites.push({type:type,id:id,date:new Date().toLocaleDateString('pt-BR')});
+    saveState(); alert('Adicionado aos favoritos!');
+}
+
+// Init
+document.addEventListener('DOMContentLoaded',function(){
+    updateNav(); render();
+});
+</script>
+</body>
+</html>
