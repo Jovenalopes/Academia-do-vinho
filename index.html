@@ -54,6 +54,20 @@ h1,h2,h3,h4,h5,h6,.font-serif{ font-family:'Fraunces',serif; }
 @keyframes toastOut{ to{opacity:0;transform:translateY(-8px)} }
 .wheel-seg{ transition:opacity .2s; cursor:pointer; }
 .wheel-seg:hover{ opacity:.75; }
+.quiz-panel{position:relative;overflow:hidden}
+.quiz-panel::before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(135deg,rgba(198,154,63,.08),transparent 45%,rgba(111,133,81,.06))}
+.quiz-question{position:relative}
+.quiz-answer{transition:all .2s ease;cursor:pointer}
+.quiz-answer:hover{transform:translateY(-1px);border-color:#c69a3f;box-shadow:0 8px 20px -14px rgba(43,10,18,.35)}
+.quiz-answer.quiz-correct{background:rgba(111,133,81,.16)!important;border-color:#6f8551!important}
+.quiz-answer.quiz-wrong{background:rgba(175,54,84,.12)!important;border-color:#af3654!important}
+.quiz-answer:disabled{cursor:default}
+.quiz-progress{height:7px;border-radius:999px;overflow:hidden;background:rgba(201,166,126,.22)}
+.quiz-progress>span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#8f2543,#c69a3f);transition:width .35s ease}
+.quiz-badge{letter-spacing:.08em}
+.quiz-result{animation:fadeIn .35s ease}
+.country-option{display:flex;align-items:center;gap:.45rem}
+
 </style>
 </head>
 <body class="text-cellar-900 dark:text-cellar-100 transition-colors duration-300">
@@ -639,7 +653,7 @@ function renderMap(el){
   DB.countries.forEach(function(c){
     html += '<button onclick="go(\'country\',{id:\''+c.id+'\'})" class="card w-full flex items-center gap-3 p-3 bg-white dark:bg-claret-950/40 rounded-xl border border-cellar-200/70 dark:border-claret-800/70 text-left group">';
     html += flagHtml(c.flag,'text-2xl');
-    html += '<div class="flex-1 min-w-0"><p class="font-semibold text-claret-900 dark:text-cellar-100 text-sm truncate">'+c.name+'</p>';
+    html += '<div class="flex-1 min-w-0"><p class="font-semibold text-claret-900 dark:text-cellar-100 text-sm truncate">'+flagHtml(c.flag,'text-base')+' '+c.name+'</p>';
     html += '<p class="text-xs text-cellar-500 dark:text-cellar-400">'+c.wines.length+' regiões · '+c.grapes.length+' uvas</p></div>';
     html += '<i class="fas fa-chevron-right text-cellar-300 dark:text-claret-700 group-hover:text-claret-500 transition-colors text-xs"></i></button>';
   });
@@ -659,7 +673,7 @@ function renderCountry(el, params){
   html += '<div class="relative h-60 md:h-72 claret-gradient overflow-hidden grain">';
   html += '<div class="absolute inset-0 flex items-center justify-center"><div class="text-center text-cellar-50 p-8">';
   html += '<div class="mb-3">'+flagHtml(c.flag,'text-5xl')+'</div>';
-  html += '<h1 class="text-4xl md:text-5xl font-bold font-serif mb-2">'+c.name+'</h1>';
+  html += '<h1 class="text-4xl md:text-5xl font-bold font-serif mb-2">'+flagHtml(c.flag,'text-4xl')+' '+c.name+'</h1>';
   html += '<p class="text-cellar-200 max-w-xl mx-auto">'+c.desc+'</p></div></div>';
   html += '<button onclick="toggleFav(\'countries\',\''+c.id+'\')" class="absolute top-4 right-4 w-10 h-10 rounded-full bg-cellar-50/15 backdrop-blur flex items-center justify-center hover:bg-cellar-50/25 transition-colors"><i class="'+(isFav?'fas':'far')+' fa-star text-gilt-400"></i></button>';
   html += '</div>';
@@ -828,7 +842,7 @@ function renderWines(el){
   html += sectionHeader('🍷','Enciclopédia de Vinhos','Filtre por país, uva ou estilo para descobrir rótulos icônicos.');
   html += '<div class="bg-white dark:bg-claret-950/40 rounded-2xl p-5 border border-cellar-200/70 dark:border-claret-800/70 mb-6">';
   html += '<div class="grid md:grid-cols-3 gap-3">';
-  html += '<select id="fCountry" onchange="applyWineFilter()" class="px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm"><option value="">Todos os países</option>'+DB.countries.map(function(c){ return '<option value="'+c.id+'" '+(f.country===c.id?'selected':'')+'>'+c.name+'</option>'; }).join('')+'</select>';
+  html += '<select id="fCountry" onchange="applyWineFilter()" class="px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm"><option value="">Todos os países</option>'+DB.countries.map(function(c){ return '<option value="'+c.id+'" '+(f.country===c.id?'selected':'')+'>'+c.flag+' '+c.name+'</option>'; }).join('')+'</select>';
   html += '<select id="fType" onchange="applyWineFilter()" class="px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm"><option value="">Todos os tipos</option>'+DB.wineTypes.map(function(t){ return '<option value="'+t+'" '+(f.type===t?'selected':'')+'>'+t+'</option>'; }).join('')+'</select>';
   html += '<select id="fGrape" onchange="applyWineFilter()" class="px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm"><option value="">Todas as uvas</option>'+DB.grapes.map(function(g){ return '<option value="'+esc(g.name)+'" '+(f.grape===g.name?'selected':'')+'>'+g.name+'</option>'; }).join('')+'</select>';
   html += '</div></div>';
@@ -950,7 +964,7 @@ function renderVideos(el){
     var c = v.country ? countryById(v.country) : null;
     var g = v.grape ? grapeById(v.grape) : null;
     html += '<div class="bg-white dark:bg-claret-950/40 rounded-2xl border border-cellar-200/70 dark:border-claret-800/70 overflow-hidden">';
-    html += '<div class="aspect-video bg-black"><iframe class="w-full h-full" src="https://www.youtube.com/embed/'+v.id+'?loop=1&playlist='+v.id+'&rel=0'" title="'+esc(v.title)+'" frameborder="0" allowfullscreen></iframe></div>';
+    html += '<div class="aspect-video bg-black"><iframe class="w-full h-full" src="https://www.youtube.com/embed/'+v.id+'?loop=1&playlist='+v.id+'&rel=0" title="'+esc(v.title)+'" frameborder="0" allowfullscreen></iframe></div>';
     html += '<div class="p-4">';
     html += '<h3 class="font-serif font-bold text-claret-900 dark:text-cellar-100">'+esc(v.title)+'</h3>';
     html += '<p class="text-sm text-cellar-600 dark:text-cellar-300 mt-1 mb-2">'+esc(v.desc)+'</p>';
@@ -982,12 +996,12 @@ function previewVideo(){
   var box = document.getElementById('ytPreview');
   if(!id){ box.innerHTML = '<p class="text-sm text-claret-600 dark:text-claret-400 mt-2"><i class="fas fa-circle-exclamation mr-1"></i>Link inválido. Cole um link completo do YouTube.</p>'; return; }
   var html = '<div class="mt-3 grid md:grid-cols-2 gap-4 items-start">';
-  html += '<div class="aspect-video bg-black rounded-lg overflow-hidden"><iframe class="w-full h-full" src="https://www.youtube.com/embed/'+id+'?loop=1&playlist='+id+'&rel=0'" frameborder="0" allowfullscreen></iframe></div>';
+  html += '<div class="aspect-video bg-black rounded-lg overflow-hidden"><iframe class="w-full h-full" src="https://www.youtube.com/embed/'+id+'?loop=1&playlist='+id+'&rel=0" frameborder="0" allowfullscreen></iframe></div>';
   html += '<div class="space-y-2">';
   html += '<input id="ytTitle" placeholder="Título do vídeo" class="w-full px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm">';
   html += '<textarea id="ytDesc" placeholder="Descrição" rows="2" class="w-full px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm"></textarea>';
   html += '<div class="grid grid-cols-2 gap-2">';
-  html += '<select id="ytCountry" class="px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm"><option value="">País (opcional)</option>'+DB.countries.map(function(c){ return '<option value="'+c.id+'">'+c.name+'</option>'; }).join('')+'</select>';
+  html += '<select id="ytCountry" class="px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm"><option value="">País (opcional)</option>'+DB.countries.map(function(c){ return '<option value="'+c.id+'">'+c.flag+' '+c.name+'</option>'; }).join('')+'</select>';
   html += '<select id="ytGrape" class="px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm"><option value="">Uva (opcional)</option>'+DB.grapes.map(function(g){ return '<option value="'+g.id+'">'+g.name+'</option>'; }).join('')+'</select></div>';
   html += '<input id="ytTags" placeholder="Tags separadas por vírgula" class="w-full px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm">';
   html += '<button onclick="addVideo(\''+id+'\')" class="w-full px-4 py-2 bg-vine-600 hover:bg-vine-700 text-white rounded-lg text-sm font-semibold"><i class="fas fa-plus mr-1"></i>Salvar vídeo na biblioteca</button>';
@@ -1020,7 +1034,7 @@ function renderNotebook(el){
   html += '<textarea id="noteText" placeholder="Escreva sua anotação..." rows="3" class="w-full px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm mb-2"></textarea>';
   html += '<div class="grid grid-cols-2 gap-2 mb-3">';
   html += '<select id="noteGrape" class="px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm"><option value="">Relacionar uva</option>'+DB.grapes.map(function(g){return '<option value="'+esc(g.name)+'">'+g.name+'</option>';}).join('')+'</select>';
-  html += '<select id="noteCountry" class="px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm"><option value="">Relacionar país</option>'+DB.countries.map(function(c){return '<option value="'+esc(c.name)+'">'+c.name+'</option>';}).join('')+'</select></div>';
+  html += '<select id="noteCountry" class="px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm"><option value="">Relacionar país</option>'+DB.countries.map(function(c){return '<option value="'+esc(c.name)+'">'+c.flag+' '+c.name+'</option>';}).join('')+'</select></div>';
   html += '<button onclick="addNote()" class="px-4 py-2 bg-claret-700 hover:bg-claret-800 text-white rounded-lg text-sm font-semibold"><i class="fas fa-plus mr-1"></i>Salvar anotação</button></div>';
 
   if(state.notes.length===0){ html += emptyState('📝','Nenhuma anotação ainda','Suas anotações de estudo aparecerão aqui.'); }
@@ -1301,7 +1315,7 @@ function renderBlockList(){
     else if(b.type==='pairing') html += '<label class="eyebrow text-cellar-500">🍽️ Harmonização sugerida</label><input value="'+esc(b.value)+'" oninput="editorBlocks['+idx+'].value=this.value" class="w-full mt-1 px-2 py-1.5 rounded border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm">';
     else if(b.type==='youtube'){
       html += '<label class="eyebrow text-cellar-500">🎥 Vídeo do YouTube</label><input placeholder="Cole o link aqui" title="O vídeo será reproduzido em loop automaticamente" value="'+esc(b.url||'')+'" oninput="editorBlocks['+idx+'].url=this.value; editorBlocks['+idx+'].ytid=extractYouTubeId(this.value);" class="w-full mt-1 px-2 py-1.5 rounded border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm">';
-      if(b.ytid) html += '<div class="aspect-video mt-2 rounded-lg overflow-hidden bg-black"><iframe class="w-full h-full" src="https://www.youtube.com/embed/'+b.ytid+'?loop=1&playlist='+b.ytid+'&rel=0'" frameborder="0" allowfullscreen></iframe></div>';
+      if(b.ytid) html += '<div class="aspect-video mt-2 rounded-lg overflow-hidden bg-black"><iframe class="w-full h-full" src="https://www.youtube.com/embed/'+b.ytid+'?loop=1&playlist='+b.ytid+'&rel=0" frameborder="0" allowfullscreen></iframe></div>';
     }
     html += '</div>';
   });
@@ -1323,21 +1337,298 @@ function deleteStudyPage(id){
   state.studyPages = state.studyPages.filter(function(sp){ return sp.id!==id; });
   saveState(); render();
 }
+
+// ===================== QUIZ DE FIXAÇÃO POR TÓPICO =====================
+function ensureTopicQuizState(){
+  if(!state.progress) state.progress = {};
+  if(!state.progress.topicQuizzes) state.progress.topicQuizzes = {};
+  return state.progress.topicQuizzes;
+}
+
+function topicQuizKey(pageId, topicIndex){
+  return String(pageId)+'::'+String(topicIndex);
+}
+
+function topicQuizFacts(topicTitle, topicText){
+  var hay = ((topicTitle||'')+' '+(topicText||'')).toLowerCase();
+  var facts = [];
+
+  // Países presentes no banco: perguntas objetivas derivadas do conteúdo estruturado do próprio app.
+  DB.countries.forEach(function(c){
+    var names = [c.name].concat(c.name.split(' ').filter(function(x){return x.length>4;}));
+    var matched = names.some(function(n){ return hay.indexOf(String(n).toLowerCase())>-1; });
+    if(matched){
+      facts.push({
+        kind:'country',
+        country:c,
+        q:'Qual país está sendo estudado neste tópico?',
+        answer:c.name
+      });
+      if(c.grapes && c.grapes.length){
+        facts.push({
+          kind:'grape',
+          country:c,
+          q:'Qual destas uvas está associada ao país estudado neste tópico?',
+          answer:c.grapes[0],
+          options:c.grapes.slice(0,4)
+        });
+      }
+      if(c.regions && c.regions.length){
+        facts.push({
+          kind:'region',
+          country:c,
+          q:'Qual região aparece entre as referências deste país no estudo?',
+          answer:c.regions[0].name,
+          options:c.regions.slice(0,4).map(function(r){return r.name;})
+        });
+      }
+    }
+  });
+
+  // Uvas presentes no banco.
+  DB.grapes.forEach(function(g){
+    if(hay.indexOf(String(g.name).toLowerCase())>-1){
+      facts.push({
+        kind:'grape-direct',
+        grape:g,
+        q:'Qual uva é o foco destacado neste tópico?',
+        answer:g.name
+      });
+    }
+  });
+
+  return facts;
+}
+
+function uniqueOptions(correct, candidates, fallback){
+  var arr=[];
+  (candidates||[]).forEach(function(x){
+    if(x && String(x)!==String(correct) && arr.indexOf(String(x))===-1) arr.push(String(x));
+  });
+  (fallback||[]).forEach(function(x){
+    if(x && String(x)!==String(correct) && arr.indexOf(String(x))===-1) arr.push(String(x));
+  });
+  return arr.slice(0,3);
+}
+
+function makeTopicQuiz(topicTitle, topicText, topicIndex, pageId){
+  var facts = topicQuizFacts(topicTitle, topicText);
+  var questions=[];
+
+  // Pergunta 1: identificação do tema, sempre ancorada no título real do tópico.
+  var otherTitles = [];
+  (state.studyPages||[]).forEach(function(sp){
+    (sp.blocks||[]).forEach(function(b){
+      if(b.type==='heading' && b.value && b.value.trim()!==topicTitle.trim()) otherTitles.push(b.value.trim());
+    });
+  });
+  var titleDistractors = uniqueOptions(topicTitle, otherTitles, ['Degustação','Terroir','Harmonização','Regiões vitivinícolas']);
+  questions.push({
+    q:'Qual é o tema principal desta seção de estudo?',
+    a:topicTitle,
+    opts:[topicTitle].concat(titleDistractors).slice(0,4)
+  });
+
+  // Perguntas objetivas do banco de dados do próprio estudo.
+  facts.slice(0,3).forEach(function(f){
+    if(questions.length>=3) return;
+    var candidates=[];
+    if(f.kind==='country'){
+      candidates=DB.countries.map(function(c){return c.name;});
+    }else if(f.kind==='grape' || f.kind==='grape-direct'){
+      candidates=DB.grapes.map(function(g){return g.name;});
+      if(f.options) candidates=f.options.concat(candidates);
+    }else if(f.kind==='region'){
+      candidates=[];
+      DB.countries.forEach(function(c){
+        (c.regions||[]).forEach(function(r){ candidates.push(r.name); });
+      });
+      if(f.options) candidates=f.options.concat(candidates);
+    }
+    questions.push({q:f.q,a:f.answer,opts:[f.answer].concat(uniqueOptions(f.answer,candidates,[])).slice(0,4)});
+  });
+
+  // Se o tópico não tiver entidade reconhecível, ainda há um quiz de fixação do tema.
+  while(questions.length<3){
+    var fallback = [
+      {q:'Qual é a melhor estratégia para aproveitar este tópico?',a:'Ler o conteúdo e testar a compreensão antes de avançar',opts:['Ler o conteúdo e testar a compreensão antes de avançar','Pular o conteúdo sem revisar','Memorizar apenas o título','Ignorar os exemplos']},
+      {q:'O que ajuda mais a consolidar o conhecimento deste tópico?',a:'Revisar e responder às questões do tópico',opts:['Revisar e responder às questões do tópico','Apenas assistir ao vídeo sem atenção','Avançar sem revisar','Decorar somente palavras soltas']},
+      {q:'Quando é melhor avançar para o próximo tópico?',a:'Depois de compreender e revisar o conteúdo atual',opts:['Depois de compreender e revisar o conteúdo atual','Imediatamente ao abrir a página','Antes de ler o conteúdo','Sem responder ao quiz']}
+    ];
+    questions.push(fallback[questions.length-1]);
+  }
+
+  // Garante exatamente 4 opções, sem duplicatas.
+  questions=questions.slice(0,3).map(function(item,idx){
+    var opts=[];
+    item.opts.forEach(function(o){ if(o && opts.indexOf(o)===-1) opts.push(o); });
+    var generic=['Outra referência do estudo','Um conceito diferente','Uma opção não relacionada','Uma alternativa de revisão'];
+    generic.forEach(function(o){ if(opts.length<4 && opts.indexOf(o)===-1 && o!==item.a) opts.push(o); });
+    return {id:'q'+idx,q:item.q,a:item.a,opts:opts.slice(0,4)};
+  });
+
+  return {
+    key:topicQuizKey(pageId,topicIndex),
+    title:topicTitle,
+    questions:questions
+  };
+}
+
+function renderTopicQuiz(topicTitle, topicText, topicIndex, pageId){
+  var quiz=makeTopicQuiz(topicTitle,topicText,topicIndex,pageId);
+  var key=quiz.key;
+  var saved=ensureTopicQuizState()[key] || {best:0,attempts:0};
+  window.__topicQuizzes=window.__topicQuizzes||{};
+  window.__topicQuizzes[key]=quiz;
+
+  var html='<section id="topicQuiz_'+esc(key).replace(/[^A-Za-z0-9_-]/g,'_')+'" class="quiz-panel bg-white dark:bg-claret-950/50 rounded-2xl p-5 md:p-6 border border-gilt-300/60 dark:border-gilt-700/40 shadow-sm my-7">';
+  html+='<div class="flex items-start justify-between gap-3 flex-wrap relative">';
+  html+='<div><p class="eyebrow text-gilt-700 dark:text-gilt-400 quiz-badge">DESAFIO DE FIXAÇÃO</p>';
+  html+='<h3 class="font-serif font-bold text-xl text-claret-900 dark:text-cellar-100 mt-1">🧠 Quiz: '+esc(topicTitle)+'</h3>';
+  html+='<p class="text-xs text-cellar-500 dark:text-cellar-400 mt-1">3 perguntas para reforçar o que você acabou de estudar.</p></div>';
+  html+='<div class="text-right"><span class="text-xs text-cellar-500 dark:text-cellar-400">Melhor resultado</span><div class="font-bold text-gilt-700 dark:text-gilt-400">'+(saved.best||0)+'/3</div></div></div>';
+  html+='<div class="quiz-progress mt-4"><span id="quizBar_'+esc(key).replace(/[^A-Za-z0-9_-]/g,'_')+'" style="width:0%"></span></div>';
+  html+='<div id="quizBody_'+esc(key).replace(/[^A-Za-z0-9_-]/g,'_')+'" class="relative mt-5"></div>';
+  html+='</section>';
+  setTimeout(function(){ startTopicQuiz(key); },0);
+  return html;
+}
+
+function startTopicQuiz(key){
+  var quiz=window.__topicQuizzes && window.__topicQuizzes[key];
+  if(!quiz) return;
+  var safe=key.replace(/[^A-Za-z0-9_-]/g,'_');
+  var body=document.getElementById('quizBody_'+safe);
+  var bar=document.getElementById('quizBar_'+safe);
+  if(!body) return;
+  var session={index:0,score:0,answered:false};
+  window.__topicQuizSessions=window.__topicQuizSessions||{};
+  window.__topicQuizSessions[key]=session;
+  function draw(){
+    var q=quiz.questions[session.index];
+    if(!q) return;
+    session.answered=false;
+    if(bar) bar.style.width=((session.index/quiz.questions.length)*100)+'%';
+    var letters=['A','B','C','D'];
+    var shuffled=q.opts.slice().sort(function(){return Math.random()-0.5;});
+    body.innerHTML='<div class="quiz-question">';
+    body.innerHTML+='<div class="flex items-center justify-between gap-2 mb-3"><span class="text-xs font-semibold text-cellar-500 dark:text-cellar-400">Pergunta '+(session.index+1)+' de '+quiz.questions.length+'</span><span class="text-xs font-bold text-claret-600 dark:text-gilt-400">'+session.score+' ponto(s)</span></div>';
+    body.innerHTML+='<p class="font-serif font-bold text-lg text-claret-900 dark:text-cellar-100 mb-4">'+esc(q.q)+'</p>';
+    body.innerHTML+='<div class="grid gap-2">';
+    shuffled.forEach(function(opt,i){
+      body.innerHTML+='<button type="button" class="quiz-answer w-full text-left p-3 rounded-xl border border-cellar-200 dark:border-claret-800 bg-cellar-50/60 dark:bg-claret-900/30 text-sm" data-opt="'+encodeURIComponent(opt)+'"><span class="inline-flex w-7 h-7 rounded-full bg-claret-50 dark:bg-claret-900 items-center justify-center font-bold text-claret-700 dark:text-gilt-400 mr-2">'+letters[i]+'</span>'+esc(opt)+'</button>';
+    });
+    body.innerHTML+='</div><p class="text-[11px] text-cellar-400 mt-3">Dica: compare cada alternativa com o conteúdo e as condições apresentadas no tópico.</p></div>';
+    body.querySelectorAll('.quiz-answer').forEach(function(btn){
+      btn.addEventListener('click',function(){
+        if(session.answered) return;
+        session.answered=true;
+        var selected=decodeURIComponent(btn.getAttribute('data-opt'));
+        var correct=selected===q.a;
+        if(correct){ session.score++; btn.classList.add('quiz-correct'); }
+        else {
+          btn.classList.add('quiz-wrong');
+          body.querySelectorAll('.quiz-answer').forEach(function(x){
+            if(decodeURIComponent(x.getAttribute('data-opt'))===q.a) x.classList.add('quiz-correct');
+          });
+        }
+        body.querySelectorAll('.quiz-answer').forEach(function(x){x.disabled=true;});
+        var feedback=document.createElement('div');
+        feedback.className='quiz-result mt-4 p-3 rounded-xl '+(correct?'bg-vine-500/10 border border-vine-500/30':'bg-claret-50 dark:bg-claret-900/40 border border-claret-200 dark:border-claret-800');
+        feedback.innerHTML='<p class="text-sm font-semibold '+(correct?'text-vine-600 dark:text-vine-400':'text-claret-700 dark:text-claret-300')+'">'+(correct?'✓ Excelente!':'Vamos revisar:')+'</p><p class="text-xs text-cellar-600 dark:text-cellar-300 mt-1">Resposta correta: <strong>'+esc(q.a)+'</strong></p>';
+        body.appendChild(feedback);
+        var next=document.createElement('button');
+        next.className='mt-3 px-4 py-2 bg-claret-700 hover:bg-claret-800 text-white rounded-lg text-sm font-semibold';
+        next.textContent=session.index===quiz.questions.length-1?'Ver resultado':'Próxima pergunta';
+        next.onclick=function(){
+          if(session.index===quiz.questions.length-1){ finishTopicQuiz(key); }
+          else { session.index++; draw(); }
+        };
+        body.appendChild(next);
+      });
+    });
+  }
+  draw();
+}
+
+function finishTopicQuiz(key){
+  var quiz=window.__topicQuizzes && window.__topicQuizzes[key];
+  var session=window.__topicQuizSessions && window.__topicQuizSessions[key];
+  if(!quiz || !session) return;
+  var store=ensureTopicQuizState();
+  var saved=store[key]||{best:0,attempts:0};
+  saved.attempts=(saved.attempts||0)+1;
+  if(session.score>(saved.best||0)){
+    saved.best=session.score;
+    state.xp += session.score*5;
+  }
+  store[key]=saved;
+  state.progress.quizzesTaken=(state.progress.quizzesTaken||0)+1;
+  state.progress.quizBest=Math.max(state.progress.quizBest||0,session.score);
+  saveState();
+  updateNav();
+  var safe=key.replace(/[^A-Za-z0-9_-]/g,'_');
+  var body=document.getElementById('quizBody_'+safe);
+  var bar=document.getElementById('quizBar_'+safe);
+  if(bar) bar.style.width='100%';
+  if(!body) return;
+  var pct=Math.round((session.score/quiz.questions.length)*100);
+  var msg=session.score===3?'Domínio excelente!':session.score===2?'Muito bom! Revise o ponto que errou.':'Continue praticando: uma nova tentativa pode melhorar seu resultado.';
+  body.innerHTML='<div class="quiz-result text-center py-4"><div class="text-4xl mb-2">'+(session.score===3?'🏆':session.score===2?'🥂':'🍷')+'</div><h4 class="font-serif font-bold text-xl text-claret-900 dark:text-cellar-100">Resultado: '+session.score+'/'+quiz.questions.length+'</h4><p class="text-sm text-cellar-600 dark:text-cellar-300 mt-1">'+pct+'% de aproveitamento. '+msg+'</p><p class="text-xs text-gilt-700 dark:text-gilt-400 font-semibold mt-2">+ '+(session.score*5)+' XP nesta tentativa</p>';
+  body.innerHTML+='<button onclick="startTopicQuiz(\''+key.replace(/'/g,"\\'")+'\')" class="mt-4 px-4 py-2 border border-gilt-500 text-gilt-700 dark:text-gilt-400 rounded-lg text-sm font-semibold hover:bg-gilt-50 dark:hover:bg-gilt-950/20"><i class="fas fa-rotate-right mr-1"></i>Tentar novamente</button></div>';
+}
+
 function renderStudyPageView(el,id){
   var sp = state.studyPages.find(function(x){ return x.id===id; });
   if(!sp) return go('editor');
-  var html = '<div class="fade-in p-4 md:p-8 max-w-3xl mx-auto">';
+  var html = '<div class="fade-in p-4 md:p-8 max-w-4xl mx-auto">';
   html += '<button onclick="go(\'editor\')" class="text-sm text-cellar-500 hover:text-claret-700 mb-4"><i class="fas fa-arrow-left mr-2"></i>Voltar ao editor</button>';
-  html += '<h1 class="text-3xl font-bold font-serif text-claret-900 dark:text-cellar-100 mb-6">'+esc(sp.title)+'</h1>';
-  sp.blocks.forEach(function(b){
-    if(b.type==='heading') html += '<h2 class="text-xl font-bold font-serif text-claret-800 dark:text-cellar-200 mt-6 mb-2">'+esc(b.value)+'</h2>';
-    else if(b.type==='text') html += '<p class="text-cellar-600 dark:text-cellar-300 leading-relaxed mb-4">'+esc(b.value)+'</p>';
-    else if(b.type==='quote') html += '<blockquote class="border-l-4 border-gilt-500 pl-4 italic text-cellar-600 dark:text-cellar-300 my-4">"'+esc(b.value)+'"</blockquote>';
-    else if(b.type==='tip') html += '<div class="bg-gilt-50 dark:bg-gilt-950/15 border border-gilt-300/50 dark:border-gilt-800/40 rounded-xl p-4 my-4 text-sm"><i class="fas fa-lightbulb text-gilt-500 mr-2"></i>'+esc(b.value)+'</div>';
-    else if(b.type==='list') html += '<ul class="list-disc pl-5 text-cellar-600 dark:text-cellar-300 my-4 space-y-1">'+b.value.split('\n').filter(Boolean).map(function(li){return '<li>'+esc(li)+'</li>';}).join('')+'</ul>';
-    else if(b.type==='pairing') html += '<div class="bg-vine-500/10 border border-vine-500/30 rounded-xl p-4 my-4 text-sm"><i class="fas fa-utensils text-vine-600 mr-2"></i>'+esc(b.value)+'</div>';
-    else if(b.type==='youtube' && b.ytid) html += '<div class="aspect-video rounded-xl overflow-hidden bg-black my-4"><iframe class="w-full h-full" src="https://www.youtube.com/embed/'+b.ytid+'?loop=1&playlist='+b.ytid+'&rel=0'" frameborder="0" allowfullscreen></iframe></div>';
+  html += '<div class="bg-white dark:bg-claret-950/50 rounded-2xl p-5 md:p-7 border border-cellar-200/70 dark:border-claret-800/70 mb-7">';
+  html += '<p class="eyebrow text-gilt-700 dark:text-gilt-400">ESTUDO PERSONALIZADO</p>';
+  html += '<h1 class="text-3xl md:text-4xl font-bold font-serif text-claret-900 dark:text-cellar-100 mt-1">'+esc(sp.title)+'</h1>';
+  html += '<p class="text-sm text-cellar-500 dark:text-cellar-400 mt-2">Estude cada tópico e responda ao desafio de fixação antes de avançar.</p>';
+  html += '</div>';
+
+  var topicIndex=0;
+  var pendingTopicText='';
+  sp.blocks.forEach(function(b,idx){
+    if(b.type==='heading'){
+      var title=b.value||('Tópico '+(topicIndex+1));
+      // Fecha o tópico anterior com seu quiz quando necessário.
+      if(topicIndex>0){
+        html += renderTopicQuiz(pendingTopicText.title,pendingTopicText.text,topicIndex-1,id);
+      }
+      pendingTopicText={title:title,text:''};
+      html += '<div class="flex items-center gap-3 mt-7 mb-3"><span class="w-9 h-9 rounded-full bg-claret-700 text-white flex items-center justify-center font-bold text-sm">'+(topicIndex+1)+'</span><h2 class="text-2xl font-bold font-serif text-claret-800 dark:text-cellar-200">'+esc(title)+'</h2></div>';
+      topicIndex++;
+    } else if(b.type==='text'){
+      pendingTopicText.text += ' '+(b.value||'');
+      html += '<p class="text-cellar-600 dark:text-cellar-300 leading-relaxed mb-4">'+esc(b.value)+'</p>';
+    } else if(b.type==='quote'){
+      pendingTopicText.text += ' '+(b.value||'');
+      html += '<blockquote class="border-l-4 border-gilt-500 pl-4 italic text-cellar-600 dark:text-cellar-300 my-4">"'+esc(b.value)+'"</blockquote>';
+    } else if(b.type==='tip'){
+      pendingTopicText.text += ' '+(b.value||'');
+      html += '<div class="bg-gilt-50 dark:bg-gilt-950/15 border border-gilt-300/50 dark:border-gilt-800/40 rounded-xl p-4 my-4 text-sm"><i class="fas fa-lightbulb text-gilt-500 mr-2"></i>'+esc(b.value)+'</div>';
+    } else if(b.type==='list'){
+      pendingTopicText.text += ' '+(b.value||'');
+      html += '<ul class="list-disc pl-5 text-cellar-600 dark:text-cellar-300 my-4 space-y-1">'+(b.value||'').split('\n').filter(Boolean).map(function(li){return '<li>'+esc(li)+'</li>';}).join('')+'</ul>';
+    } else if(b.type==='pairing'){
+      pendingTopicText.text += ' '+(b.value||'');
+      html += '<div class="bg-vine-500/10 border border-vine-500/30 rounded-xl p-4 my-4 text-sm"><i class="fas fa-utensils text-vine-600 mr-2"></i>'+esc(b.value)+'</div>';
+    } else if(b.type==='youtube' && b.ytid){
+      pendingTopicText.text += ' vídeo do YouTube '+b.ytid;
+      html += '<div class="aspect-video rounded-xl overflow-hidden bg-black my-4"><iframe class="w-full h-full" src="https://www.youtube.com/embed/'+b.ytid+'?loop=1&playlist='+b.ytid+'&rel=0" frameborder="0" allowfullscreen></iframe></div>';
+    }
   });
+
+  if(topicIndex>0){
+    html += renderTopicQuiz(pendingTopicText.title,pendingTopicText.text,topicIndex-1,id);
+  } else {
+    html += renderTopicQuiz(sp.title,sp.blocks.map(function(b){return b.value||'';}).join(' '),0,id);
+  }
+
+  html += '<div class="mt-8 p-4 rounded-xl bg-cellar-50 dark:bg-claret-900/30 border border-cellar-200 dark:border-claret-800 text-center"><p class="text-xs text-cellar-500 dark:text-cellar-400"><i class="fas fa-chart-line mr-1"></i>Seu desempenho nos quizzes é salvo automaticamente para acompanhar sua evolução.</p></div>';
   html += '</div>';
   el.innerHTML = html;
 }
@@ -1394,7 +1685,7 @@ function contextVideoBlock(ctxType, ctxId, ctxLabel){
     html += '<div class="grid sm:grid-cols-2 gap-4 mb-2">';
     vids.forEach(function(v){
       html += '<div class="rounded-xl overflow-hidden border border-cellar-200 dark:border-claret-800">';
-      html += '<div class="aspect-video bg-black"><iframe class="w-full h-full" src="https://www.youtube.com/embed/'+v.id+'?loop=1&playlist='+v.id+'&rel=0'" title="'+esc(v.title)+'" frameborder="0" allowfullscreen></iframe></div>';
+      html += '<div class="aspect-video bg-black"><iframe class="w-full h-full" src="https://www.youtube.com/embed/'+v.id+'?loop=1&playlist='+v.id+'&rel=0" title="'+esc(v.title)+'" frameborder="0" allowfullscreen></iframe></div>';
       html += '<div class="p-3 flex items-start justify-between gap-2"><div class="min-w-0"><p class="font-serif font-semibold text-sm text-claret-900 dark:text-cellar-100">'+esc(v.title)+'</p>';
       if(v.desc) html += '<p class="text-xs text-cellar-500 dark:text-cellar-400 mt-1">'+esc(v.desc)+'</p>';
       html += '</div><button onclick="promptDeleteVideo(\''+(v.uid||'')+'\')" class="shrink-0 w-7 h-7 rounded-full bg-cellar-50 dark:bg-claret-900 flex items-center justify-center text-claret-500 hover:text-claret-700 dark:hover:text-claret-300" title="Excluir vídeo"><i class="fas fa-trash-can text-xs"></i></button>';
@@ -1489,6 +1780,7 @@ DB.demoVideos = [
 DEFAULT_STATE.videos = DB.demoVideos.slice();
 
 var state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+if(!state.progress.topicQuizzes) state.progress.topicQuizzes = {};
 state.page = 'home';
 state.params = {};
 
@@ -1504,6 +1796,8 @@ async function loadState(){
       Object.keys(DEFAULT_STATE).forEach(function(k){
         if(saved[k]!==undefined) state[k] = saved[k];
       });
+      if(!state.progress) state.progress = {};
+      if(!state.progress.topicQuizzes) state.progress.topicQuizzes = {};
       // garante que vídeos padrão nunca somem, mesclando com os salvos do usuário
       if(!state.videos || state.videos.length===0) state.videos = DB.demoVideos.slice();
     }
