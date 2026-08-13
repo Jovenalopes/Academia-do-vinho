@@ -156,6 +156,29 @@ h1,h2,h3,h4,h5,h6,.font-serif{ font-family:'Fraunces',serif; }
 <div id="toastHost" class="fixed bottom-20 md:bottom-6 right-4 z-[100] flex flex-col gap-2 items-end"></div>
 
 <script>
+// ===================== ARMAZENAMENTO (localStorage nativo) =====================
+// Wrapper que imita a API window.storage, mas usando localStorage.
+// Isso garante persistência mesmo em ambiente sem window.storage.
+if (typeof window.storage === 'undefined') {
+  window.storage = {
+    async get(key, _) {
+      try {
+        const raw = localStorage.getItem(key);
+        return raw ? { value: raw } : null;
+      } catch (_e) {
+        return null;
+      }
+    },
+    async set(key, value, _) {
+      try {
+        localStorage.setItem(key, value);
+      } catch (_e) {
+        // ignora erros de quota ou permissão
+      }
+    }
+  };
+}
+
 // ===================== DADOS =====================
 const DB = {
 countries: [
@@ -293,6 +316,12 @@ pairings: [
 {food:"Aves e Carnes Brancas",icon:"🍗",wines:["Chardonnay","Pinot Noir","Merlot"],desc:"Corpo médio e taninos suaves acompanham sem dominar a delicadeza da carne branca."}
 ]
 };
+
+// Vídeos de demonstração (inseridos depois da definição do DB)
+DB.demoVideos = [
+  {id:"pJ_6QO-a5Us",uid:"demo1",title:"How To Taste Wine",desc:"Passo a passo da degustação: visual, olfativo e gustativo, direto ao ponto.",ctxType:"grape",ctxId:"cabernet_sauvignon",tags:["degustação","básico"]},
+  {id:"0oymQHQHR6U",uid:"demo2",title:"What is Terroir in Wine?",desc:"O que faz cada vinho ser único, segundo sua origem geográfica.",ctxType:"country",ctxId:"france",tags:["terroir","avançado"]}
+];
 
 </script>
 <script>
@@ -1766,55 +1795,80 @@ var DEFAULT_STATE = {
   notes: [],
   tastings: [],
   favorites: { countries:[], grapes:[], wines:[], videos:[] },
-  videos: (typeof DB!=='undefined' ? DB.demoVideos : []),
+  videos: (typeof DB!=='undefined' && DB.demoVideos ? DB.demoVideos.slice() : []),
   studyPages: [],
-  progress: { courses:{intro:0,tasting:0,world:0,sommelier:0}, lessonsDone:{}, quizzesTaken:0, quizBest:0, videosWatched:[], grapesViewed:[], countriesViewed:[] },
+  progress: { courses:{intro:0,tasting:0,world:0,sommelier:0}, lessonsDone:{}, quizzesTaken:0, quizBest:0, videosWatched:[], grapesViewed:[], countriesViewed:[], topicQuizzes:{} },
   compareGrapes: [],
   dark: false
 };
 
-DB.demoVideos = [
-  {id:"pJ_6QO-a5Us",uid:"demo1",title:"How To Taste Wine",desc:"Passo a passo da degustação: visual, olfativo e gustativo, direto ao ponto.",ctxType:"grape",ctxId:"cabernet_sauvignon",tags:["degustação","básico"]},
-  {id:"0oymQHQHR6U",uid:"demo2",title:"What is Terroir in Wine?",desc:"O que faz cada vinho ser único, segundo sua origem geográfica.",ctxType:"country",ctxId:"france",tags:["terroir","avançado"]}
-];
-DEFAULT_STATE.videos = DB.demoVideos.slice();
+// Garante que os vídeos de demonstração estejam sempre disponíveis
+if (DB.demoVideos && DEFAULT_STATE.videos.length === 0) {
+  DEFAULT_STATE.videos = DB.demoVideos.slice();
+}
 
 var state = JSON.parse(JSON.stringify(DEFAULT_STATE));
-if(!state.progress.topicQuizzes) state.progress.topicQuizzes = {};
 state.page = 'home';
 state.params = {};
 
 var STORAGE_KEY = 'wwa_state_v1';
-var storageReady = (typeof window!=='undefined' && window.storage);
+var storageReady = false;
 
 async function loadState(){
-  if(!storageReady){ return; }
+  // Usa o wrapper localStorage definido no início do script
+  if(!window.storage) return;
+  storageReady = true;
   try{
     var r = await window.storage.get(STORAGE_KEY, false);
     if(r && r.value){
       var saved = JSON.parse(r.value);
+      // Mescla profunda: preserva estruturas do DEFAULT_STATE que podem não estar no saved
       Object.keys(DEFAULT_STATE).forEach(function(k){
-        if(saved[k]!==undefined) state[k] = saved[k];
+        if(saved[k] !== undefined) {
+          if (k === 'progress' && saved[k]) {
+            // Mescla campos do progress que podem estar faltando
+            Object.keys(DEFAULT_STATE.progress).forEach(function(pk){
+              if (saved[k][pk] === undefined) saved[k][pk] = DEFAULT_STATE.progress[pk];
+            });
+            // Garante topicQuizzes existe
+            if (!saved[k].topicQuizzes) saved[k].topicQuizzes = {};
+          }
+          state[k] = saved[k];
+        }
       });
-      if(!state.progress) state.progress = {};
-      if(!state.progress.topicQuizzes) state.progress.topicQuizzes = {};
-      // garante que vídeos padrão nunca somem, mesclando com os salvos do usuário
-      if(!state.videos || state.videos.length===0) state.videos = DB.demoVideos.slice();
+      // Garante que todos os campos do progress existam
+      if (!state.progress) state.progress = JSON.parse(JSON.stringify(DEFAULT_STATE.progress));
+      if (!state.progress.topicQuizzes) state.progress.topicQuizzes = {};
+      // Garante vídeos de demonstração
+      if (state.videos.length === 0 && DB.demoVideos) {
+        state.videos = DB.demoVideos.slice();
+      }
+    } else {
+      // Primeira visita: popula vídeos demo
+      if (DB.demoVideos && state.videos.length === 0) {
+        state.videos = DB.demoVideos.slice();
+      }
     }
-  }catch(e){ /* primeira visita: sem dado salvo ainda */ }
+  }catch(e){
+    console.warn('Falha ao carregar estado, usando default:', e);
+    // Fallback: popula vídeos demo
+    if (DB.demoVideos) {
+      state.videos = DB.demoVideos.slice();
+    }
+  }
 }
 
 var saveTimer = null;
 function saveState(){
   updateNav();
-  if(!storageReady) return;
+  if(!storageReady || !window.storage) return;
   clearTimeout(saveTimer);
   saveTimer = setTimeout(async function(){
     try{
       var toSave = {};
       Object.keys(DEFAULT_STATE).forEach(function(k){ toSave[k]=state[k]; });
       await window.storage.set(STORAGE_KEY, JSON.stringify(toSave), false);
-    }catch(e){ console.error('Falha ao salvar estado', e); }
+    }catch(e){ console.warn('Falha ao salvar estado', e); }
   }, 400);
 }
 
@@ -1829,6 +1883,7 @@ function go(page, params){
 
 function render(){
   var m = document.getElementById('mainContent');
+  if(!m) return;
   switch(state.page){
     case 'home': renderHome(m); break;
     case 'map': renderMap(m); break;
