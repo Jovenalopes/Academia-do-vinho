@@ -533,12 +533,6 @@ function extractYouTubeId(url){
   if(m) return m[1];
   return null;
 }
-
-// ===================== FUNÇÃO PARA GERAR URL SEM PROPAGANDA =====================
-function getEmbedUrl(videoId) {
-  return 'https://www.youtube-nocookie.com/embed/' + videoId + '?rel=0&modestbranding=1&iv_load_policy=3&controls=1&autoplay=0';
-}
-
 function genUid(){ return 'v'+Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
 
 function sectionHeader(icon,title,sub){
@@ -956,7 +950,7 @@ function renderVideos(el){
     var c = v.country ? countryById(v.country) : null;
     var g = v.grape ? grapeById(v.grape) : null;
     html += '<div class="bg-white dark:bg-claret-950/40 rounded-2xl border border-cellar-200/70 dark:border-claret-800/70 overflow-hidden">';
-    html += '<div class="aspect-video bg-black"><iframe class="w-full h-full" src="'+getEmbedUrl(v.id)+'" title="'+esc(v.title)+'" frameborder="0" allowfullscreen></iframe></div>';
+    html += '<div class="aspect-video bg-black"><iframe class="w-full h-full" src="https://www.youtube.com/embed/'+v.id+'" title="'+esc(v.title)+'" frameborder="0" allowfullscreen></iframe></div>';
     html += '<div class="p-4">';
     html += '<h3 class="font-serif font-bold text-claret-900 dark:text-cellar-100">'+esc(v.title)+'</h3>';
     html += '<p class="text-sm text-cellar-600 dark:text-cellar-300 mt-1 mb-2">'+esc(v.desc)+'</p>';
@@ -988,7 +982,7 @@ function previewVideo(){
   var box = document.getElementById('ytPreview');
   if(!id){ box.innerHTML = '<p class="text-sm text-claret-600 dark:text-claret-400 mt-2"><i class="fas fa-circle-exclamation mr-1"></i>Link inválido. Cole um link completo do YouTube.</p>'; return; }
   var html = '<div class="mt-3 grid md:grid-cols-2 gap-4 items-start">';
-  html += '<div class="aspect-video bg-black rounded-lg overflow-hidden"><iframe class="w-full h-full" src="'+getEmbedUrl(id)+'" frameborder="0" allowfullscreen></iframe></div>';
+  html += '<div class="aspect-video bg-black rounded-lg overflow-hidden"><iframe class="w-full h-full" src="https://www.youtube.com/embed/'+id+'" frameborder="0" allowfullscreen></iframe></div>';
   html += '<div class="space-y-2">';
   html += '<input id="ytTitle" placeholder="Título do vídeo" class="w-full px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm">';
   html += '<textarea id="ytDesc" placeholder="Descrição" rows="2" class="w-full px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm"></textarea>';
@@ -1307,7 +1301,7 @@ function renderBlockList(){
     else if(b.type==='pairing') html += '<label class="eyebrow text-cellar-500">🍽️ Harmonização sugerida</label><input value="'+esc(b.value)+'" oninput="editorBlocks['+idx+'].value=this.value" class="w-full mt-1 px-2 py-1.5 rounded border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm">';
     else if(b.type==='youtube'){
       html += '<label class="eyebrow text-cellar-500">🎥 Vídeo do YouTube</label><input placeholder="Cole o link aqui" value="'+esc(b.url||'')+'" oninput="editorBlocks['+idx+'].url=this.value; editorBlocks['+idx+'].ytid=extractYouTubeId(this.value);" class="w-full mt-1 px-2 py-1.5 rounded border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm">';
-      if(b.ytid) html += '<div class="aspect-video mt-2 rounded-lg overflow-hidden bg-black"><iframe class="w-full h-full" src="'+getEmbedUrl(b.ytid)+'" frameborder="0" allowfullscreen></iframe></div>';
+      if(b.ytid) html += '<div class="aspect-video mt-2 rounded-lg overflow-hidden bg-black"><iframe class="w-full h-full" src="https://www.youtube.com/embed/'+b.ytid+'" frameborder="0" allowfullscreen></iframe></div>';
     }
     html += '</div>';
   });
@@ -1342,7 +1336,7 @@ function renderStudyPageView(el,id){
     else if(b.type==='tip') html += '<div class="bg-gilt-50 dark:bg-gilt-950/15 border border-gilt-300/50 dark:border-gilt-800/40 rounded-xl p-4 my-4 text-sm"><i class="fas fa-lightbulb text-gilt-500 mr-2"></i>'+esc(b.value)+'</div>';
     else if(b.type==='list') html += '<ul class="list-disc pl-5 text-cellar-600 dark:text-cellar-300 my-4 space-y-1">'+b.value.split('\n').filter(Boolean).map(function(li){return '<li>'+esc(li)+'</li>';}).join('')+'</ul>';
     else if(b.type==='pairing') html += '<div class="bg-vine-500/10 border border-vine-500/30 rounded-xl p-4 my-4 text-sm"><i class="fas fa-utensils text-vine-600 mr-2"></i>'+esc(b.value)+'</div>';
-    else if(b.type==='youtube' && b.ytid) html += '<div class="aspect-video rounded-xl overflow-hidden bg-black my-4"><iframe class="w-full h-full" src="'+getEmbedUrl(b.ytid)+'" frameborder="0" allowfullscreen></iframe></div>';
+    else if(b.type==='youtube' && b.ytid) html += '<div class="aspect-video rounded-xl overflow-hidden bg-black my-4"><iframe class="w-full h-full" src="https://www.youtube.com/embed/'+b.ytid+'" frameborder="0" allowfullscreen></iframe></div>';
   });
   html += '</div>';
   el.innerHTML = html;
@@ -1400,7 +1394,7 @@ function contextVideoBlock(ctxType, ctxId, ctxLabel){
     html += '<div class="grid sm:grid-cols-2 gap-4 mb-2">';
     vids.forEach(function(v){
       html += '<div class="rounded-xl overflow-hidden border border-cellar-200 dark:border-claret-800">';
-      html += '<div class="aspect-video bg-black"><iframe class="w-full h-full" src="'+getEmbedUrl(v.id)+'" title="'+esc(v.title)+'" frameborder="0" allowfullscreen></iframe></div>';
+      html += '<div class="aspect-video bg-black"><iframe class="w-full h-full" src="https://www.youtube.com/embed/'+v.id+'" title="'+esc(v.title)+'" frameborder="0" allowfullscreen></iframe></div>';
       html += '<div class="p-3 flex items-start justify-between gap-2"><div class="min-w-0"><p class="font-serif font-semibold text-sm text-claret-900 dark:text-cellar-100">'+esc(v.title)+'</p>';
       if(v.desc) html += '<p class="text-xs text-cellar-500 dark:text-cellar-400 mt-1">'+esc(v.desc)+'</p>';
       html += '</div><button onclick="promptDeleteVideo(\''+(v.uid||'')+'\')" class="shrink-0 w-7 h-7 rounded-full bg-cellar-50 dark:bg-claret-900 flex items-center justify-center text-claret-500 hover:text-claret-700 dark:hover:text-claret-300" title="Excluir vídeo"><i class="fas fa-trash-can text-xs"></i></button>';
