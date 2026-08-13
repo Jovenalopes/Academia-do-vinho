@@ -509,7 +509,15 @@ uruguay: {
 <script>
 // ===================== HELPERS DE UI =====================
 function esc(s){ return (s===undefined||s===null) ? '' : String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
-function flagHtml(emoji,size){ size=size||'text-xl'; return '<span class="'+size+' leading-none align-middle inline-block" style="font-family:\'Twemoji Country Flags\',\'Segoe UI Emoji\',sans-serif">'+emoji+'</span>'; }
+
+// ===== CORREÇÃO PRINCIPAL: BANDEIRAS COLORIDAS USANDO EMOJI NATIVO =====
+function flagHtml(emoji,size){
+  size = size || 'text-xl';
+  // Retorna o emoji diretamente, sem depender de fonte externa.
+  // Todos os navegadores modernos renderizam emojis de bandeira coloridos.
+  return '<span class="'+size+' leading-none align-middle inline-block">'+emoji+'</span>';
+}
+
 function countryById(id){ return DB.countries.find(function(c){ return c.id===id; }); }
 function grapeById(id){ return DB.grapes.find(function(g){ return g.id===id; }); }
 
@@ -677,10 +685,12 @@ function renderMap(el){
   html += '</svg>';
   html += '<p class="text-center text-xs text-cellar-400 mt-2">Mapa ilustrativo — não representa fronteiras geográficas exatas.</p></div>';
 
+  // ===== LISTA DE PAÍSES COM BANDEIRAS COLORIDAS (EMOJI) =====
   html += '<div class="space-y-2">';
   html += '<h3 class="font-serif font-bold text-lg text-claret-900 dark:text-cellar-100 mb-3 flex items-center gap-2"><i class="fas fa-flag text-claret-500 dark:text-gilt-500"></i> Países Produtores</h3>';
   DB.countries.forEach(function(c){
     html += '<button onclick="go(\'country\',{id:\''+c.id+'\'})" class="card w-full flex items-center gap-3 p-3 bg-white dark:bg-claret-950/40 rounded-xl border border-cellar-200/70 dark:border-claret-800/70 text-left group">';
+    // Bandeira emoji colorida
     html += flagHtml(c.flag,'text-2xl');
     html += '<div class="flex-1 min-w-0"><p class="font-semibold text-claret-900 dark:text-cellar-100 text-sm truncate">'+flagHtml(c.flag,'text-base')+' '+c.name+'</p>';
     html += '<p class="text-xs text-cellar-500 dark:text-cellar-400">'+c.wines.length+' regiões · '+c.grapes.length+' uvas</p></div>';
@@ -1320,7 +1330,7 @@ function renderEditor(el){
     state.studyPages.slice().reverse().forEach(function(sp){
       html += '<div class="card bg-white dark:bg-claret-950/40 rounded-xl p-4 border border-cellar-200/70 dark:border-claret-800/70">';
       html += '<button onclick="go(\'editor\',{id:\''+sp.id+'\'})" class="text-left w-full"><h4 class="font-serif font-bold text-claret-900 dark:text-cellar-100">'+esc(sp.title)+'</h4><p class="text-xs text-cellar-500 mt-1">'+sp.blocks.length+' blocos · '+sp.date+'</p></button>';
-      html += '<button onclick="deleteStudyPage(\''+sp.id+'\')" class="mt-2 text-xs text-claret-500 hover:underline"><i class="fas fa-trash mr-1"></i>Excluir</button></div>';
+      html += '<button onclick="deleteStudyPage(\''+sp.id+'\')" class="mt-2 text-xs text-claret-500 hover:underline"><i class="fas fa-trash mr-1"></i>Excluir</div>';
     });
     html += '</div>';
   }
