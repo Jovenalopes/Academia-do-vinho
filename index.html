@@ -72,7 +72,16 @@ h1,h2,h3,h4,h5,h6,.font-serif{ font-family:'Fraunces',serif; }
 <style id="wwa-course-learning-upgrade">
 .quiz-opt{cursor:pointer;transition:.2s}.quiz-opt:hover{border-color:rgba(198,154,63,.7);transform:translateY(-1px)}.quiz-opt.correct{background:rgba(111,133,81,.12);border-color:rgba(111,133,81,.65);color:#4f6535}.quiz-opt.wrong{background:rgba(89,25,48,.10);border-color:rgba(89,25,48,.55);color:#591930}.dark .quiz-opt.correct{color:#b9cf9a}.dark .quiz-opt.wrong{color:#e7a9ba}
 .lesson-video iframe{min-height:220px}
-</style></head>
+</style>
+<style id="course-lesson-professional-style">
+.course-lesson-card{transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease}
+.course-lesson-card:hover{transform:translateY(-1px);box-shadow:0 16px 35px -28px rgba(43,10,18,.45)}
+.quiz-opt{cursor:pointer;transition:.18s ease}
+.quiz-opt:hover{border-color:rgba(198,154,63,.75);background:rgba(198,154,63,.06)}
+.quiz-opt.correct{border-color:rgba(111,133,81,.75)!important;background:rgba(111,133,81,.12)!important}
+.quiz-opt.wrong{border-color:rgba(180,50,70,.7)!important;background:rgba(180,50,70,.08)!important}
+</style>
+</head>
 <body class="text-cellar-900 dark:text-cellar-100 transition-colors duration-300">
 <div id="app" class="min-h-screen flex flex-col">
 
@@ -1036,7 +1045,7 @@ function lessonVideoPanel(c,l,idx){
     html+='<div class="aspect-video rounded-xl overflow-hidden bg-black"><iframe class="w-full h-full" src="https://www.youtube.com/embed/'+id+'?rel=0" title="'+esc(l.title)+'" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>';
     if(!watched) html+='<button onclick="markLessonVideoWatched(\''+c.id+'\','+idx+')" class="mt-3 px-4 py-2 bg-vine-600 hover:bg-vine-700 text-white rounded-xl text-xs font-bold"><i class="fas fa-check mr-1"></i>Marcar vídeo como assistido (+5 XP)</button>';
   } else {
-    html+='<div class="rounded-xl border border-dashed border-cellar-300 dark:border-claret-700 p-4 text-center"><p class="text-sm text-cellar-500 mb-3">Esta aula ainda não possui um vídeo associado. Adicione o link do YouTube para transformar esta etapa em uma aula completa.</p><div class="flex flex-col sm:flex-row gap-2"><input id="lessonVideoUrl_'+c.id+'_'+idx+'" placeholder="https://www.youtube.com/watch?v=..." class="flex-1 px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm"><button onclick="saveLessonVideo(\''+c.id+'\','+idx+')" class="px-4 py-2 bg-claret-700 hover:bg-claret-800 text-white rounded-lg text-xs font-bold">Salvar vídeo</button></div></div>';
+    html+='<div class="rounded-xl border border-dashed border-cellar-300 dark:border-claret-700 p-4 text-center"><p class="text-sm text-cellar-500 mb-3">Esta aula ainda não possui um vídeo associado. Adicione aqui o vídeo explicativo específico desta aula para manter o fluxo aula → vídeo → quiz.</p><div class="flex flex-col sm:flex-row gap-2"><input id="lessonVideoUrl_'+c.id+'_'+idx+'" placeholder="https://www.youtube.com/watch?v=..." class="flex-1 px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm"><button onclick="saveLessonVideo(\''+c.id+'\','+idx+')" class="px-4 py-2 bg-claret-700 hover:bg-claret-800 text-white rounded-lg text-xs font-bold">Salvar vídeo</button></div></div>';
   }
   html+='</div>'; return html;
 }
@@ -1060,38 +1069,60 @@ function lessonQuizPanel(c,l,idx){
 function renderCourseDetail(el, id){
   var c = DB.courses.find(function(x){ return x.id===id; });
   if(!c) return go('courses');
-  if(openLessonsCourse !== id){ openLessons = {}; openLessonsCourse = id; lessonQuizSession=null; }
+
+  // No modo profissional, cada aula fica visível como uma unidade completa:
+  // explicação + vídeo + conclusão + teste de conhecimento + resultado.
   updateCourseProgress(c.id,c.lessons.length);
   var done = state.progress.lessonsDone[c.id]||[];
   var pct=state.progress.courses[c.id]||0;
+
   var html = '<div class="fade-in p-4 md:p-8 max-w-5xl mx-auto">';
   html += '<button onclick="go(\'courses\')" class="text-sm text-cellar-500 hover:text-claret-700 mb-4"><i class="fas fa-arrow-left mr-2"></i>Todos os cursos</button>';
   html += '<div class="relative overflow-hidden rounded-3xl mb-7 p-6 md:p-9 claret-gradient text-cellar-50 grain">';
-  html += '<div class="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-5"><div><span class="eyebrow text-gilt-300">Nível '+c.level+' · '+c.duration+'</span><h1 class="text-3xl md:text-4xl font-bold font-serif mt-1">'+c.image+' '+c.title+'</h1><p class="text-cellar-200 mt-2 max-w-2xl">'+esc(c.desc)+'</p></div><div class="min-w-[210px]"><div class="flex justify-between text-xs text-cellar-200 mb-2"><span>Progresso da formação</span><b>'+pct+'%</b></div><div class="h-3 rounded-full bg-cellar-50/15 overflow-hidden"><div class="h-3 rounded-full bg-gilt-400" style="width:'+pct+'%"></div></div><p class="text-[11px] text-cellar-300 mt-2">'+done.length+'/'+c.lessons.length+' aulas dominadas</p></div></div></div>';
-  html += '<div class="mb-4"><p class="eyebrow text-gilt-700 dark:text-gilt-400">TRILHA DE APRENDIZADO</p><h2 class="text-2xl font-bold font-serif text-claret-900 dark:text-cellar-100">Cada aula = vídeo + quiz + progresso</h2><p class="text-sm text-cellar-500 mt-1">Assista ao vídeo, marque como assistido, faça o quiz e acompanhe seu domínio de cada etapa.</p></div>';
-  html += '<div class="space-y-4">';
+  html += '<div class="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-5"><div><span class="eyebrow text-gilt-300">Nível '+c.level+' · '+c.duration+'</span><h1 class="text-3xl md:text-4xl font-bold font-serif mt-1">'+c.image+' '+c.title+'</h1><p class="text-cellar-200 mt-2 max-w-2xl">'+esc(c.desc)+'</p></div><div class="min-w-[210px]"><div class="flex justify-between text-xs text-cellar-200 mb-2"><span>Progresso do curso</span><b>'+pct+'%</b></div><div class="h-3 rounded-full bg-cellar-50/15 overflow-hidden"><div class="h-3 rounded-full bg-gilt-400" style="width:'+pct+'%"></div></div><p class="text-[11px] text-cellar-300 mt-2">'+done.length+'/'+c.lessons.length+' aulas dominadas</p></div></div></div>';
+
+  html += '<div class="mb-5"><p class="eyebrow text-gilt-700 dark:text-gilt-400">TRILHA DE APRENDIZADO</p><h2 class="text-2xl font-bold font-serif text-claret-900 dark:text-cellar-100">Estude uma aula por vez</h2><p class="text-sm text-cellar-500 mt-1">Leia a explicação, assista ao vídeo da aula e depois faça o teste de conhecimento. Seu desempenho fica salvo individualmente.</p></div>';
+
+  html += '<div class="space-y-5">';
   c.lessons.forEach(function(l,idx){
-    var isDone=lessonIsDone(c.id,idx), isOpen=!!openLessons[idx], watched=lessonVideoWatched(c.id,idx), best=lessonQuizBest(c.id,idx);
-    html += '<div class="bg-white dark:bg-claret-950/40 rounded-2xl border '+(isDone?'border-vine-500/40':'border-cellar-200/70 dark:border-claret-800/70')+' overflow-hidden shadow-sm">';
-    html += '<button onclick="toggleLesson('+idx+')" class="w-full flex items-center gap-3 p-4 md:p-5 text-left">';
-    html += '<div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0 '+(isDone?'bg-vine-500 text-white':watched?'bg-gilt-500/20 text-gilt-700':'bg-cellar-100 dark:bg-claret-900 text-cellar-500')+'"><i class="fas '+(isDone?'fa-check':watched?'fa-video':'fa-play')+' text-xs"></i></div>';
-    html += '<div class="flex-1 min-w-0"><div class="flex items-center gap-2 flex-wrap"><p class="font-serif font-semibold text-claret-900 dark:text-cellar-100">'+(idx+1)+'. '+esc(l.title)+'</p>'+(isDone?'<span class="text-[10px] px-2 py-0.5 rounded-full bg-vine-500/10 text-vine-600 font-bold">DOMINADA</span>':'')+'</div><p class="text-xs text-cellar-500 mt-0.5">'+esc(l.duration)+' · '+(watched?'vídeo assistido':'vídeo pendente')+' · quiz '+best+'%</p></div>';
-    html += '<i class="fas fa-chevron-'+(isOpen?'up':'down')+' text-cellar-400 text-xs"></i></button>';
-    if(isOpen){
-      html += '<div id="lesson'+idx+'" class="px-4 md:px-5 pb-5">';
-      html += '<div class="p-4 rounded-xl bg-cellar-50 dark:bg-claret-900/30"><p class="text-sm text-cellar-600 dark:text-cellar-300 leading-relaxed">'+esc(l.text)+'</p></div>';
-      html += lessonVideoPanel(c,l,idx);
-      html += lessonQuizPanel(c,l,idx);
-      if(isDone) html += '<div class="mt-4 flex items-center gap-2 text-sm font-semibold text-vine-600"><i class="fas fa-circle-check"></i>Aula concluída: vídeo + quiz aprovados.</div>';
-      html += '</div>';
-    }
+    var isDone=lessonIsDone(c.id,idx), watched=lessonVideoWatched(c.id,idx), best=lessonQuizBest(c.id,idx);
+    var videoId=lessonVideoId(c.id,idx);
+    var quizState=lessonQuizSession && lessonQuizSession.courseId===c.id && lessonQuizSession.idx===idx ? lessonQuizSession : null;
+
+    html += '<article class="course-lesson-card bg-white dark:bg-claret-950/50 rounded-2xl border '+(isDone?'border-vine-500/50':'border-claret-200 dark:border-claret-800')+' overflow-hidden shadow-sm">';
+    html += '<div class="px-4 md:px-6 pt-5 pb-4 flex items-start gap-3">';
+    html += '<div class="w-9 h-9 rounded-full flex items-center justify-center shrink-0 '+(isDone?'bg-vine-500 text-white':'bg-claret-950 dark:bg-claret-900 text-cellar-50')+'"><span class="text-xs font-bold">'+(idx+1)+'</span></div>';
+    html += '<div class="flex-1 min-w-0"><div class="flex items-center gap-2 flex-wrap"><h3 class="font-serif font-bold text-lg text-claret-900 dark:text-cellar-100">'+esc(l.title)+'</h3>'+(isDone?'<span class="text-[10px] px-2 py-0.5 rounded-full bg-vine-500/10 text-vine-600 font-bold">AULA DOMINADA</span>':'')+'</div><p class="text-xs text-cellar-500 mt-1">'+esc(l.duration)+' · '+(watched?'vídeo assistido':'vídeo pendente')+' · melhor quiz: '+best+'%</p></div>';
     html += '</div>';
+
+    // Explicação da aula — sempre aberta, como no modelo de referência.
+    html += '<div class="px-4 md:px-6"><div class="rounded-xl bg-cellar-50 dark:bg-claret-900/35 border border-cellar-200/70 dark:border-claret-800/70 p-4 md:p-5"><p class="eyebrow text-cellar-500 mb-2">📖 EXPLICAÇÃO DA AULA</p><p class="text-sm md:text-[15px] text-cellar-700 dark:text-cellar-200 leading-7">'+esc(l.text)+'</p></div></div>';
+
+    // Vídeo — sempre visível.
+    html += lessonVideoPanel(c,l,idx);
+
+    // Barra de ações exatamente no fluxo do modelo de referência.
+    html += '<div class="px-4 md:px-6 py-4 flex flex-wrap items-center gap-2 border-t border-cellar-200 dark:border-claret-800 mt-4">';
+    if(watched){
+      html += '<button class="px-4 py-2 rounded-xl bg-vine-500/10 text-vine-700 dark:text-vine-400 text-xs font-bold"><i class="fas fa-check-circle mr-1"></i>Vídeo concluído</button>';
+    } else {
+      html += '<button onclick="markLessonVideoWatched(\''+c.id+'\','+idx+')" class="px-4 py-2 rounded-xl bg-vine-600 hover:bg-vine-700 text-white text-xs font-bold"><i class="fas fa-check mr-1"></i>Marcar vídeo como concluído (+5 XP)</button>';
+    }
+    html += '<button onclick="startLessonQuiz(\''+c.id+'\','+idx+')" class="px-4 py-2 rounded-xl border border-claret-300 dark:border-claret-700 hover:bg-claret-50 dark:hover:bg-claret-900/50 text-claret-800 dark:text-cellar-100 text-xs font-bold"><i class="fas fa-brain mr-1"></i>Testar conhecimento</button>';
+    html += '</div>';
+
+    // Quiz individual da aula aparece somente quando iniciado ou quando já há resultado.
+    if(quizState || best>0) html += lessonQuizPanel(c,l,idx);
+
+    html += '</article>';
   });
   html += '</div>';
+
   html += '<div class="mt-7">'+contextVideoBlock('course', c.id, c.title)+'</div>';
   html += '</div>';
   el.innerHTML = html;
 }
+
 function toggleLesson(idx){
   openLessons[idx] = !openLessons[idx];
   var node = document.getElementById('lesson'+idx);
@@ -1934,6 +1965,23 @@ if (DB.demoVideos && DEFAULT_STATE.videos.length === 0) {
   DEFAULT_STATE.videos = DB.demoVideos.slice();
 }
 
+// Vídeos iniciais para demonstrar o fluxo profissional aula → vídeo → quiz.
+// Os demais podem ser associados pelo campo de YouTube de cada aula sem substituir links personalizados.
+var DEFAULT_LESSON_VIDEOS = {
+  'intro::0':'s4_IGTQF0fw',
+  'intro::1':'MBb-oMH2buk',
+  'intro::3':'TS-_303X-qA',
+  'intro::5':'fmlWd527q6k',
+  'tasting::1':'pJ_6QO-a5Us'
+};
+
+function seedDefaultLessonVideos(){
+  state.lessonVideos=state.lessonVideos||{};
+  Object.keys(DEFAULT_LESSON_VIDEOS).forEach(function(k){
+    if(!state.lessonVideos[k]) state.lessonVideos[k]=DEFAULT_LESSON_VIDEOS[k];
+  });
+}
+
 var state = JSON.parse(JSON.stringify(DEFAULT_STATE));
 state.page = 'home';
 state.params = {};
@@ -1988,6 +2036,7 @@ async function loadState(){
 
 var saveTimer = null;
 function normalizeLearningState(){
+  seedDefaultLessonVideos();
   if(!state.progress) state.progress=JSON.parse(JSON.stringify(DEFAULT_STATE.progress));
   state.progress.lessonVideosWatched=state.progress.lessonVideosWatched||{};
   state.progress.lessonQuizBest=state.progress.lessonQuizBest||{};
