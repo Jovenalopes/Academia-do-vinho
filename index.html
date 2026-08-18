@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Wine World Academy · Escola Mundial do Vinho</title>
+<title>Wine World Academy — Escola Mundial do Vinho</title>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=Twemoji+Country+Flags&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
@@ -69,15 +69,24 @@ h1,h2,h3,h4,h5,h6,.font-serif{ font-family:'Fraunces',serif; }
 .country-option{display:flex;align-items:center;gap:.45rem}
 
 </style>
+<style id="wwa-course-learning-upgrade">
+.quiz-opt{cursor:pointer;transition:.2s}.quiz-opt:hover{border-color:rgba(198,154,63,.7);transform:translateY(-1px)}.quiz-opt.correct{background:rgba(111,133,81,.12);border-color:rgba(111,133,81,.65);color:#4f6535}.quiz-opt.wrong{background:rgba(89,25,48,.10);border-color:rgba(89,25,48,.55);color:#591930}.dark .quiz-opt.correct{color:#b9cf9a}.dark .quiz-opt.wrong{color:#e7a9ba}
+.lesson-video iframe{min-height:220px}
+</style>
+<style id="course-lesson-professional-style">
+.course-lesson-card{transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease}
+.course-lesson-card:hover{transform:translateY(-1px);box-shadow:0 16px 35px -28px rgba(43,10,18,.45)}
+.quiz-opt{cursor:pointer;transition:.18s ease}
+.quiz-opt:hover{border-color:rgba(198,154,63,.75);background:rgba(198,154,63,.06)}
+.quiz-opt.correct{border-color:rgba(111,133,81,.75)!important;background:rgba(111,133,81,.12)!important}
+.quiz-opt.wrong{border-color:rgba(180,50,70,.7)!important;background:rgba(180,50,70,.08)!important}
+</style>
 
-<style>
-.region-quiz-opt.correct{border-color:#6f8551;background:rgba(111,133,81,.12);color:#40552b}
-.region-quiz-opt.wrong{border-color:#8f2543;background:rgba(143,37,67,.10);color:#8f2543}
-.map-region{transition:filter .2s ease,opacity .2s ease}
-.map-region:hover{filter:brightness(1.06);opacity:.95!important}
-@media (max-width:767px){
-  #mainContent{overflow-x:hidden}
-}
+<style id="course-reference-upgrade">
+.course-lesson-card{transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease}
+.course-lesson-card:hover{transform:translateY(-1px);box-shadow:0 16px 35px -25px rgba(43,10,18,.7)}
+.course-lesson-card .aspect-video{min-height:230px}
+@media(max-width:640px){.course-lesson-card .aspect-video{min-height:180px}}
 </style>
 </head>
 <body class="text-cellar-900 dark:text-cellar-100 transition-colors duration-300">
@@ -134,7 +143,7 @@ h1,h2,h3,h4,h5,h6,.font-serif{ font-family:'Fraunces',serif; }
 <aside class="hidden md:flex w-64 flex-col glass sticky top-[65px] h-[calc(100vh-65px)] border-r border-cellar-200/60 dark:border-claret-800/60 overflow-y-auto">
   <nav class="p-3 space-y-0.5">
     <button onclick="go('home')" class="nav-item w-full flex items-center gap-3 px-4 py-2.5 rounded-r-lg text-left" data-page="home"><i class="fas fa-house text-claret-500 dark:text-gilt-500 w-5 text-sm"></i><span class="font-semibold text-sm">Início</span></button>
-    <button onclick="go('map')" class="nav-item w-full flex items-center gap-3 px-4 py-2.5 rounded-r-lg text-left" data-page="map"><i class="fas fa-earth-americas text-claret-500 dark:text-gilt-500 w-5 text-sm"></i><span class="font-semibold text-sm">Países e Regiões</span></button>
+    <button onclick="go('map')" class="nav-item w-full flex items-center gap-3 px-4 py-2.5 rounded-r-lg text-left" data-page="map"><i class="fas fa-earth-americas text-claret-500 dark:text-gilt-500 w-5 text-sm"></i><span class="font-semibold text-sm">Mapa Mundial</span></button>
     <button onclick="go('grapes')" class="nav-item w-full flex items-center gap-3 px-4 py-2.5 rounded-r-lg text-left" data-page="grapes"><i class="fas fa-seedling text-claret-500 dark:text-gilt-500 w-5 text-sm"></i><span class="font-semibold text-sm">Uvas</span></button>
     <button onclick="go('wines')" class="nav-item w-full flex items-center gap-3 px-4 py-2.5 rounded-r-lg text-left" data-page="wines"><i class="fas fa-wine-bottle text-claret-500 dark:text-gilt-500 w-5 text-sm"></i><span class="font-semibold text-sm">Vinhos</span></button>
     <button onclick="go('courses')" class="nav-item w-full flex items-center gap-3 px-4 py-2.5 rounded-r-lg text-left" data-page="courses"><i class="fas fa-graduation-cap text-claret-500 dark:text-gilt-500 w-5 text-sm"></i><span class="font-semibold text-sm">Cursos</span></button>
@@ -327,19 +336,10 @@ pairings: [
 ]
 };
 
-// Biblioteca editorial de vídeos: cada tópico pode ter uma aula em vídeo contextualizada.
-// Os IDs abaixo foram selecionados de vídeos públicos encontrados no YouTube.
-DB.videoCatalog = [
-  {id:"pJ_6QO-a5Us",uid:"editorial-tasting",title:"How To Taste Wine",desc:"Método prático para observar, cheirar e provar um vinho.",topics:["tasting","degustacao","course:intro","course:tasting"],source:"Wine Folly"},
-  {id:"0oymQHQHR6U",uid:"editorial-terroir",title:"What is Terroir in Wine?",desc:"Entenda como origem, clima, solo e lugar influenciam o vinho.",topics:["country","region","terroir","map"],source:"Wine education"},
-  {id:"vXszD3aziTI",uid:"editorial-serra",title:"Vinhos do Brasil — Serra Gaúcha",desc:"Documentário sobre a vitivinicultura e a evolução dos vinhos da Serra Gaúcha.",topics:["region:serra-gaucha","brazil","serra-gaucha"],source:"CanalGov"}
-];
-
 // Vídeos de demonstração (inseridos depois da definição do DB)
 DB.demoVideos = [
-  {id:"pJ_6QO-a5Us",uid:"demo1",title:"How To Taste Wine",desc:"Passo a passo da degustação: visual, olfativo e gustativo, direto ao ponto.",ctxType:"grape",ctxId:"cabernet_sauvignon",tags:["degustação","básico"],source:"Wine Folly"},
-  {id:"0oymQHQHR6U",uid:"demo2",title:"What is Terroir in Wine?",desc:"O que faz cada vinho ser único, segundo sua origem geográfica.",ctxType:"country",ctxId:"france",tags:["terroir","avançado"],source:"Wine education"},
-  {id:"vXszD3aziTI",uid:"demo3",title:"Vinhos do Brasil — Serra Gaúcha",desc:"Documentário sobre a vitivinicultura da Serra Gaúcha.",ctxType:"region",ctxId:"serra-gaucha",tags:["Brasil","Serra Gaúcha"],source:"CanalGov"}
+  {id:"pJ_6QO-a5Us",uid:"demo1",title:"How To Taste Wine",desc:"Passo a passo da degustação: visual, olfativo e gustativo, direto ao ponto.",ctxType:"grape",ctxId:"cabernet_sauvignon",tags:["degustação","básico"]},
+  {id:"0oymQHQHR6U",uid:"demo2",title:"What is Terroir in Wine?",desc:"O que faz cada vinho ser único, segundo sua origem geográfica.",ctxType:"country",ctxId:"france",tags:["terroir","avançado"]}
 ];
 
 </script>
@@ -453,10 +453,10 @@ argentina: {
 brazil: {
   outline:"M180,100 Q240,80 300,110 Q340,160 340,230 Q330,300 290,360 Q250,410 190,440 Q130,460 90,420 Q60,370 70,300 Q80,230 120,170 Q150,120 180,100 Z",
   regions:[
-    {id:"vale-dos-vinhedos",name:"Vale dos Vinhedos",path:"160,250 230,240 240,310 170,320",grapes:["Merlot","Chardonnay"]},
-    {id:"serra-gaucha",name:"Serra Gaúcha",path:"120,280 190,270 200,340 130,350",grapes:["Cabernet Sauvignon","Merlot","Chardonnay"]},
-    {id:"campanha-gaucha",name:"Campanha Gaúcha",path:"200,320 270,310 280,380 210,390",grapes:["Tannat","Cabernet Sauvignon"]},
-    {id:"vale-do-sao-francisco",name:"Vale do São Francisco",path:"280,180 340,170 350,240 290,250",grapes:["Moscato","Syrah"]}
+    {name:"Vale dos Vinhedos",path:"160,250 230,240 240,310 170,320",grapes:["Merlot","Chardonnay"]},
+    {name:"Serra Gaúcha",path:"120,280 190,270 200,340 130,350",grapes:["Tannat"]},
+    {name:"Campanha",path:"200,320 270,310 280,380 210,390",grapes:["Merlot"]},
+    {name:"Vale do São Francisco",path:"280,180 340,170 350,240 290,250",grapes:["Moscato","Syrah"]}
   ]
 },
 australia: {
@@ -764,7 +764,7 @@ function renderCountry(el, params){
       var pts = r.path.split(' ').map(function(p){ return p.split(',').map(Number); });
       var cx = pts.reduce(function(a,b){return a+b[0];},0)/pts.length;
       var cy = pts.reduce(function(a,b){return a+b[1];},0)/pts.length;
-      html += '<polygon points="'+r.path+'" fill="'+color+'" opacity="0.82" stroke="#2b0a1244" stroke-width="1.5" class="map-region" '+(c.id==='brazil' && r.id ? 'onclick="go(\'region\',{id:\''+r.id+'\'})" style="cursor:pointer"' : '')+'><title>'+r.name+'</title></polygon>';
+      html += '<polygon points="'+r.path+'" fill="'+color+'" opacity="0.82" stroke="#2b0a1244" stroke-width="1.5" class="map-region"><title>'+r.name+'</title></polygon>';
       html += '<text x="'+cx+'" y="'+(cy-3)+'" class="region-label" text-anchor="middle">'+r.name+'</text>';
       if(r.grapes) html += '<text x="'+cx+'" y="'+(cy+9)+'" class="region-label" text-anchor="middle" font-size="5" opacity="0.9">🍇 '+r.grapes.join(' · ')+'</text>';
     });
@@ -784,16 +784,6 @@ function renderCountry(el, params){
     html += '</div>';
   }
   html += '</div></div>';
-
-  if(c.id==='brazil'){
-    html += '<div class="bg-white dark:bg-claret-950/50 rounded-2xl p-6 border border-cellar-200/70 dark:border-claret-800/70 mb-8">';
-    html += '<div class="flex items-center justify-between mb-4"><div><p class="eyebrow text-gilt-700 dark:text-gilt-400">Exploração por território</p><h3 class="text-xl font-bold text-claret-900 dark:text-cellar-100 font-serif">Regiões em destaque</h3></div><i class="fas fa-compass text-gilt-500"></i></div>';
-    html += '<div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">';
-    [['vale-dos-vinhedos','🍇','Vale dos Vinhedos','Merlot · Chardonnay'],['serra-gaucha','⛰️','Serra Gaúcha','Espumantes · Merlot · Chardonnay'],['campanha-gaucha','🌾','Campanha Gaúcha','Tannat · Cabernet Sauvignon'],['vale-do-sao-francisco','☀️','Vale do São Francisco','Moscato · Syrah']].forEach(function(r){
-      html += '<button onclick="go(\'region\',{id:\''+r[0]+'\'})" class="card text-left p-4 rounded-2xl border border-cellar-200/70 dark:border-claret-800/70 bg-cellar-50/60 dark:bg-claret-900/30 hover:-translate-y-0.5 transition-transform"><div class="text-2xl mb-2">'+r[1]+'</div><p class="font-serif font-bold text-claret-900 dark:text-cellar-100">'+r[2]+'</p><p class="text-xs text-cellar-500 dark:text-cellar-400 mt-1">'+r[3]+'</p><span class="inline-flex items-center gap-1 mt-3 text-xs font-semibold text-gilt-600 dark:text-gilt-400">Explorar <i class="fas fa-arrow-right"></i></span></button>';
-    });
-    html += '</div></div>';
-  }
 
   html += '<div class="bg-white dark:bg-claret-950/50 rounded-2xl p-6 border border-cellar-200/70 dark:border-claret-800/70 mb-8">';
   html += '<h3 class="text-xl font-bold text-claret-900 dark:text-cellar-100 font-serif mb-4">⭐ Vinhos Famosos</h3><div class="grid grid-cols-1 md:grid-cols-3 gap-3">';
@@ -947,7 +937,7 @@ function applyWineFilter(){
 function renderCourses(el){
   if(state.params.id){ return renderCourseDetail(el, state.params.id); }
   var html = '<div class="fade-in p-4 md:p-8 max-w-6xl mx-auto">';
-  html += sectionHeader('📚','Cursos','Aprenda por níveis, do básico ao serviço profissional.');
+  html += sectionHeader('📚','Cursos','Do iniciante ao sommelier profissional — uma trilha estruturada para dominar o universo do vinho.');
   html += '<div class="grid grid-cols-1 md:grid-cols-2 gap-5">';
   DB.courses.forEach(function(c){
     var pct = state.progress.courses[c.id]||0;
@@ -967,35 +957,235 @@ function renderCourses(el){
 
 var openLessons = {};
 var openLessonsCourse = null;
+var lessonQuizSession = null;
+
+function lessonKey(courseId, idx){ return courseId+'::'+idx; }
+function lessonVideoId(courseId, idx){
+  return state.lessonVideos && state.lessonVideos[lessonKey(courseId,idx)] ? state.lessonVideos[lessonKey(courseId,idx)] : '';
+}
+function lessonVideoWatched(courseId, idx){
+  var a = (state.progress.lessonVideosWatched && state.progress.lessonVideosWatched[courseId]) || [];
+  return a.indexOf(idx)>-1;
+}
+function lessonQuizBest(courseId,idx){ return (state.progress.lessonQuizBest && state.progress.lessonQuizBest[lessonKey(courseId,idx)]) || 0; }
+function lessonQuizPassed(courseId,idx){ return lessonQuizBest(courseId,idx) >= 70; }
+function lessonIsDone(courseId,idx){ return lessonVideoWatched(courseId,idx) && lessonQuizPassed(courseId,idx); }
+function updateCourseProgress(courseId,total){
+  var done=[];
+  for(var i=0;i<total;i++) if(lessonIsDone(courseId,i)) done.push(i);
+  state.progress.lessonsDone[courseId]=done;
+  state.progress.courses[courseId]=Math.round(done.length/total*100);
+}
+function markLessonVideoWatched(courseId,idx){
+  if(!state.progress.lessonVideosWatched[courseId]) state.progress.lessonVideosWatched[courseId]=[];
+  if(state.progress.lessonVideosWatched[courseId].indexOf(idx)===-1){
+    state.progress.lessonVideosWatched[courseId].push(idx);
+    state.progress.videosWatched.push('lesson:'+lessonKey(courseId,idx));
+    saveState(); addXP(5);
+    toast('Vídeo da aula marcado como assistido (+5 XP)','fa-circle-check');
+    render();
+  }
+}
+function saveLessonVideo(courseId,idx){
+  var inp=document.getElementById('lessonVideoUrl_'+courseId+'_'+idx);
+  if(!inp) return;
+  var id=extractYouTubeId(inp.value.trim());
+  if(!id){ toast('Cole um link válido do YouTube','fa-circle-exclamation'); return; }
+  if(!state.lessonVideos) state.lessonVideos={};
+  state.lessonVideos[lessonKey(courseId,idx)]=id;
+  saveState();
+  toast('Vídeo da aula salvo','fa-circle-play');
+  render();
+}
+function buildLessonQuiz(c,idx){
+  var l=c.lessons[idx], others=c.lessons.filter(function(x,i){return i!==idx;});
+  var wrongTitles=others.slice(0,3).map(function(x){return x.title;});
+  while(wrongTitles.length<3) wrongTitles.push('Revisão geral do curso');
+  var titleOpts=shuffle([l.title].concat(wrongTitles.slice(0,3)));
+  var statementWrong=others.slice(0,3).map(function(x){return x.text;});
+  while(statementWrong.length<3) statementWrong.push('Esta informação não faz parte do conteúdo desta aula.');
+  var statementOpts=shuffle([l.text].concat(statementWrong.slice(0,3)));
+  return [
+    {q:'Qual é o foco principal desta aula?',opts:titleOpts,correct:titleOpts.indexOf(l.title),exp:'O título da aula identifica diretamente o tema estudado nesta etapa.'},
+    {q:'Qual afirmação corresponde ao conteúdo apresentado nesta aula?',opts:statementOpts,correct:statementOpts.indexOf(l.text),exp:'Esta é a afirmação que corresponde ao conteúdo-base da aula e deve ser usada como revisão.'}
+  ];
+}
+function startLessonQuiz(courseId,idx){
+  var c=DB.courses.find(function(x){return x.id===courseId;}); if(!c)return;
+  lessonQuizSession={courseId:courseId,idx:idx,questions:buildLessonQuiz(c,idx),q:0,score:0,answered:false};
+  render();
+}
+function answerLessonQuiz(i){
+  var s=lessonQuizSession; if(!s||s.answered)return;
+  s.answered=true; var q=s.questions[s.q];
+  document.querySelectorAll('#lessonQuizOpts .quiz-opt').forEach(function(opt){
+    var n=parseInt(opt.dataset.i); if(n===q.correct) opt.classList.add('correct'); else if(n===i) opt.classList.add('wrong');
+  });
+  if(i===q.correct)s.score++;
+  var exp=document.getElementById('lessonQuizExp');
+  if(exp){exp.classList.remove('hidden');exp.innerHTML='<i class="fas '+(i===q.correct?'fa-circle-check text-vine-600':'fa-circle-xmark text-claret-600')+' mr-2"></i>'+esc(q.exp);}
+  var next=document.getElementById('lessonQuizNext'); if(next) next.classList.remove('hidden');
+}
+function nextLessonQuiz(){
+  var s=lessonQuizSession; if(!s)return;
+  s.q++; s.answered=false;
+  if(s.q>=s.questions.length){
+    var pct=Math.round(s.score/s.questions.length*100), key=lessonKey(s.courseId,s.idx);
+    state.progress.lessonQuizAttempts[key]=(state.progress.lessonQuizAttempts[key]||0)+1;
+    state.progress.lessonQuizBest[key]=Math.max(state.progress.lessonQuizBest[key]||0,pct);
+    state.progress.quizzesTaken++;
+    addXP(s.score*10);
+    if(pct>=70 && !lessonIsDone(s.courseId,s.idx)) addXP(20);
+    updateCourseProgress(s.courseId,DB.courses.find(function(c){return c.id===s.courseId;}).lessons.length);
+    saveState();
+    lessonQuizSession={courseId:s.courseId,idx:s.idx,finished:true,score:s.score,pct:pct};
+    render(); return;
+  }
+  render();
+}
+function lessonVideoPanel(c,l,idx){
+  var id=lessonVideoId(c.id,idx), watched=lessonVideoWatched(c.id,idx);
+  var key=lessonKey(c.id,idx);
+  var html='<div class="mt-4 rounded-2xl border border-claret-200 dark:border-claret-800 bg-cellar-50/60 dark:bg-claret-900/30 p-4 md:p-5">';
+  html+='<div class="flex items-center justify-between gap-2 mb-3 flex-wrap"><div><p class="eyebrow text-gilt-700 dark:text-gilt-400">🎥 VÍDEO DA AULA</p><p class="text-xs text-cellar-500 mt-1">Assista ao conteúdo e depois teste seu conhecimento.</p></div>';
+  html+=(watched?'<span class="text-xs font-bold text-vine-600 dark:text-vine-400"><i class="fas fa-circle-check mr-1"></i>Vídeo assistido</span>':'<span class="text-xs text-cellar-500"><i class="fas fa-play-circle mr-1"></i>Pronto para assistir</span>')+'</div>';
+  if(id){
+    var thumb='https://i.ytimg.com/vi/'+id+'/hqdefault.jpg';
+    html+='<div id="lessonPlayer_'+c.id+'_'+idx+'" class="relative overflow-hidden rounded-2xl border border-cellar-200 dark:border-claret-800 bg-black shadow-lg">';
+    html+='<div class="aspect-video w-full">';
+    html+='<button type="button" onclick="playLessonVideo(\''+c.id+'\','+idx+',\''+id+'\')" class="group relative h-full w-full text-left" aria-label="Assistir '+esc(l.title)+'">';
+    html+='<img src="'+thumb+'" alt="'+esc(l.title)+'" class="h-full w-full object-cover opacity-85 transition-transform duration-500 group-hover:scale-105" loading="lazy" onerror="this.style.display=\'none\'">';
+    html+='<div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent"></div>';
+    html+='<div class="absolute inset-0 flex items-center justify-center"><span class="flex h-16 w-16 items-center justify-center rounded-full bg-claret-600/95 text-white shadow-2xl transition-transform group-hover:scale-110"><i class="fas fa-play ml-1 text-xl"></i></span></div>';
+    html+='<p class="absolute bottom-3 left-4 right-4 text-sm font-semibold text-white">'+esc(l.videoTitle||l.title)+'</p>';
+    html+='</button></div></div>';
+    html+='<div class="mt-3 flex flex-wrap items-center gap-2">';
+    if(!watched) html+='<button onclick="markLessonVideoWatched(\''+c.id+'\','+idx+')" class="px-4 py-2 bg-vine-600 hover:bg-vine-700 text-white rounded-full text-xs font-bold">✅ Marcar como concluído <span class="opacity-80">(+5 XP)</span></button>';
+    else html+='<span class="px-4 py-2 rounded-full bg-vine-500/10 text-vine-700 dark:text-vine-400 text-xs font-bold">✅ Vídeo concluído</span>';
+    html+='<a href="https://www.youtube.com/watch?v='+id+'" target="_blank" rel="noopener noreferrer" class="px-4 py-2 rounded-full border border-cellar-300 dark:border-claret-700 text-xs font-semibold hover:bg-cellar-100 dark:hover:bg-claret-900/60"><i class="fab fa-youtube mr-1 text-red-500"></i>Abrir no YouTube</a>';
+    html+='<button onclick="toggleLessonVideoEditor(\''+c.id+'\','+idx+')" class="px-4 py-2 rounded-full border border-gilt-500/60 text-gilt-700 dark:text-gilt-400 text-xs font-semibold hover:bg-gilt-50 dark:hover:bg-gilt-950/20"><i class="fas fa-pen mr-1"></i>Trocar vídeo</button>';
+    html+='<button onclick="promptDeleteLessonVideo(\''+c.id+'\','+idx+')" class="px-4 py-2 rounded-full border border-claret-300 text-claret-600 dark:text-claret-400 text-xs font-semibold hover:bg-claret-50 dark:hover:bg-claret-900/40"><i class="fas fa-trash-can mr-1"></i>Excluir vídeo</button>';
+    html+='</div>';
+    html+='<div id="lessonVideoEditor_'+c.id+'_'+idx+'" class="hidden mt-3 rounded-xl border border-cellar-200 dark:border-claret-800 bg-white/60 dark:bg-claret-950/40 p-3"><div class="flex flex-col sm:flex-row gap-2"><input id="lessonVideoUrl_'+c.id+'_'+idx+'" placeholder="Cole o novo link do YouTube" class="flex-1 px-3 py-2.5 rounded-xl border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm"><button onclick="saveLessonVideo(\''+c.id+'\','+idx+')" class="px-4 py-2.5 bg-claret-700 hover:bg-claret-800 text-white rounded-xl text-xs font-bold"><i class="fas fa-floppy-disk mr-1"></i>Salvar novo vídeo</button></div><p class="text-[11px] text-cellar-500 mt-2">O novo vídeo substituirá o vídeo atual desta aula.</p></div>';
+  } else {
+    html+='<div class="rounded-2xl border border-dashed border-cellar-300 dark:border-claret-700 p-5 text-center"><p class="text-sm text-cellar-500 mb-3">Esta aula ainda não possui vídeo associado.</p><div class="flex flex-col sm:flex-row gap-2"><input id="lessonVideoUrl_'+c.id+'_'+idx+'" placeholder="Cole o link do YouTube" class="flex-1 px-3 py-2.5 rounded-xl border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm"><button onclick="saveLessonVideo(\''+c.id+'\','+idx+')" class="px-4 py-2.5 bg-claret-700 hover:bg-claret-800 text-white rounded-xl text-xs font-bold">Salvar vídeo</button></div></div>';
+  }
+  html+='</div>'; return html;
+}
+function toggleLessonVideoEditor(courseId,idx){
+  var el=document.getElementById('lessonVideoEditor_'+courseId+'_'+idx);
+  if(el) el.classList.toggle('hidden');
+}
+function promptDeleteLessonVideo(courseId,idx){
+  closeDeleteModal();
+  var m=document.createElement('div');
+  m.id='deleteModal';
+  m.className='fixed inset-0 z-[200] flex items-center justify-center bg-claret-950/60 backdrop-blur-sm p-4';
+  m.innerHTML=''
+    +'<div class="fade-in bg-white dark:bg-claret-950 rounded-2xl p-6 max-w-sm w-full border border-cellar-200 dark:border-claret-800 shadow-2xl">'
+    +'<h3 class="font-serif font-bold text-lg text-claret-900 dark:text-cellar-100 mb-2"><i class="fas fa-trash-can text-claret-600 dark:text-claret-400 mr-2"></i>Excluir vídeo da aula</h3>'
+    +'<p class="text-sm text-cellar-600 dark:text-cellar-300 mb-3">O vídeo será removido desta aula. Digite a senha de administrador para confirmar.</p>'
+    +'<input type="password" id="deletePwd" placeholder="Senha de administrador" autocomplete="off" class="w-full px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm mb-2">'
+    +'<p id="deleteErr" class="text-xs text-claret-600 dark:text-claret-400 hidden mb-2"><i class="fas fa-circle-exclamation mr-1"></i>Senha incorreta.</p>'
+    +'<div class="flex gap-2 mt-2"><button onclick="closeDeleteModal()" class="flex-1 px-4 py-2 border border-cellar-300 dark:border-claret-700 rounded-lg text-sm font-semibold">Cancelar</button>'
+    +'<button onclick="confirmDeleteLessonVideo(\''+courseId+'\','+idx+')" class="flex-1 px-4 py-2 bg-claret-700 hover:bg-claret-800 text-white rounded-lg text-sm font-semibold"><i class="fas fa-trash-can mr-1"></i>Excluir</button></div>'
+    +'</div>';
+  document.body.appendChild(m);
+  var inp=document.getElementById('deletePwd');
+  if(inp){ inp.focus(); inp.onkeydown=function(e){ if(e.key==='Enter') confirmDeleteLessonVideo(courseId,idx); }; }
+}
+function confirmDeleteLessonVideo(courseId,idx){
+  var pwdEl=document.getElementById('deletePwd'), pwd=pwdEl?pwdEl.value:'';
+  if(pwd!==ADMIN_PASSWORD){
+    var err=document.getElementById('deleteErr'); if(err) err.classList.remove('hidden');
+    if(pwdEl){pwdEl.value='';pwdEl.focus();} return;
+  }
+  var key=lessonKey(courseId,idx);
+  if(state.lessonVideos) delete state.lessonVideos[key];
+  if(state.progress && state.progress.lessonVideosWatched && state.progress.lessonVideosWatched[courseId]){
+    state.progress.lessonVideosWatched[courseId]=state.progress.lessonVideosWatched[courseId].filter(function(i){return i!==idx;});
+  }
+  saveState(); closeDeleteModal(); toast('Vídeo da aula excluído','fa-trash-can'); render();
+}
+function playLessonVideo(courseId,idx,id){
+  var box=document.getElementById('lessonPlayer_'+courseId+'_'+idx);
+  if(!box)return;
+  box.innerHTML='<div class="aspect-video w-full bg-black"><iframe class="w-full h-full" src="https://www.youtube-nocookie.com/embed/'+id+'?autoplay=1&playsinline=1&controls=1&rel=0&fs=1" title="Vídeo da aula" frameborder="0" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe></div>';
+}
+function lessonQuizPanel(c,l,idx){
+  var key=lessonKey(c.id,idx), best=lessonQuizBest(c.id,idx), watched=lessonVideoWatched(c.id,idx);
+  var s=lessonQuizSession && lessonQuizSession.courseId===c.id && lessonQuizSession.idx===idx ? lessonQuizSession : null;
+  var html='<div class="mt-4 rounded-2xl border border-gilt-300/70 dark:border-gilt-800/60 bg-gilt-50/50 dark:bg-gilt-950/10 p-4">';
+  html+='<div class="flex items-center justify-between gap-2 flex-wrap"><div><p class="eyebrow text-gilt-700 dark:text-gilt-400">🧠 QUIZ DA AULA</p><p class="text-sm text-cellar-600 dark:text-cellar-300 mt-1">2 perguntas para verificar se o vídeo foi realmente aprendido.</p></div><span class="text-xs font-bold '+(best>=70?'text-vine-600':'text-cellar-500')+'">Melhor: '+best+'%</span></div>';
+  if(s && s.finished){
+    html+='<div class="mt-4 text-center p-4 rounded-xl bg-white/70 dark:bg-claret-900/40"><div class="text-3xl mb-1">'+(s.pct>=70?'🏆':'📚')+'</div><p class="font-serif font-bold">Resultado: '+s.score+'/'+s.questions.length+' · '+s.pct+'%</p><p class="text-xs text-cellar-500 mt-1">'+(s.pct>=70?'Aula dominada! Seu progresso foi atualizado.':'Revise o vídeo e tente novamente para atingir 70%.')+'</p><button onclick="startLessonQuiz(\''+c.id+'\','+idx+')" class="mt-3 px-4 py-2 border border-gilt-500 rounded-xl text-xs font-bold">Refazer quiz</button></div>';
+  } else if(s){
+    var q=s.questions[s.q];
+    html+='<div class="mt-4"><div class="flex items-center justify-between text-xs text-cellar-500 mb-2"><span>Pergunta '+(s.q+1)+' de '+s.questions.length+'</span><span>'+s.score+' acerto(s)</span></div><div class="w-full h-2 rounded-full bg-cellar-200 dark:bg-claret-900 mb-4"><div class="h-2 rounded-full bg-gradient-to-r from-claret-600 to-gilt-500" style="width:'+((s.q)/s.questions.length*100)+'%"></div></div><h4 class="font-serif font-bold mb-3">'+esc(q.q)+'</h4><div id="lessonQuizOpts" class="space-y-2">';
+    q.opts.forEach(function(o,i){html+='<div onclick="answerLessonQuiz('+i+')" data-i="'+i+'" class="quiz-opt p-3 rounded-xl border border-cellar-300 dark:border-claret-700 text-sm font-medium">'+esc(o)+'</div>';});
+    html+='</div><div id="lessonQuizExp" class="hidden mt-3 p-3 rounded-xl bg-white/70 dark:bg-claret-900/40 text-xs text-cellar-600 dark:text-cellar-300"></div><button id="lessonQuizNext" onclick="nextLessonQuiz()" class="hidden mt-3 w-full px-4 py-2.5 bg-claret-700 hover:bg-claret-800 text-white rounded-xl font-bold text-sm">'+(s.q===s.questions.length-1?'Finalizar quiz':'Próxima pergunta')+'</button></div>';
+  } else {
+    html+='<div class="mt-4 flex items-center justify-between gap-3 flex-wrap"><div class="text-xs '+(watched?'text-vine-600':'text-cellar-500')+'">'+(watched?'✓ Vídeo assistido — quiz liberado.':'🔒 Assista e marque o vídeo como assistido para liberar o quiz.')+'</div><button '+(watched?'':'disabled')+' onclick="startLessonQuiz(\''+c.id+'\','+idx+')" class="px-4 py-2 '+(watched?'bg-claret-700 hover:bg-claret-800':'bg-cellar-300 cursor-not-allowed')+' text-white rounded-xl text-xs font-bold">Começar quiz</button></div>';
+  }
+  html+='</div>'; return html;
+}
 function renderCourseDetail(el, id){
   var c = DB.courses.find(function(x){ return x.id===id; });
   if(!c) return go('courses');
-  if(openLessonsCourse !== id){ openLessons = {}; openLessonsCourse = id; }
+
+  // No modo profissional, cada aula fica visível como uma unidade completa:
+  // explicação + vídeo + conclusão + teste de conhecimento + resultado.
+  updateCourseProgress(c.id,c.lessons.length);
   var done = state.progress.lessonsDone[c.id]||[];
-  var html = '<div class="fade-in p-4 md:p-8 max-w-4xl mx-auto">';
+  var pct=state.progress.courses[c.id]||0;
+
+  var html = '<div class="fade-in p-4 md:p-8 max-w-5xl mx-auto">';
   html += '<button onclick="go(\'courses\')" class="text-sm text-cellar-500 hover:text-claret-700 mb-4"><i class="fas fa-arrow-left mr-2"></i>Todos os cursos</button>';
-  html += '<div class="flex items-center gap-4 mb-6"><div class="w-16 h-16 bg-claret-50 dark:bg-claret-900/50 rounded-2xl flex items-center justify-center text-3xl">'+c.image+'</div>';
-  html += '<div><span class="eyebrow text-gilt-600 dark:text-gilt-400">Nível '+c.level+'</span><h1 class="text-3xl font-bold font-serif text-claret-900 dark:text-cellar-100">'+c.title+'</h1></div></div>';
-  html += '<p class="text-cellar-600 dark:text-cellar-300 mb-6">'+c.desc+'</p>';
-  html += '<div class="space-y-3">';
+  html += '<div class="relative overflow-hidden rounded-3xl mb-7 p-6 md:p-9 claret-gradient text-cellar-50 grain">';
+  html += '<div class="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-5"><div><span class="eyebrow text-gilt-300">Nível '+c.level+' · '+c.duration+'</span><h1 class="text-3xl md:text-4xl font-bold font-serif mt-1">'+c.image+' '+c.title+'</h1><p class="text-cellar-200 mt-2 max-w-2xl">'+esc(c.desc)+'</p></div><div class="min-w-[210px]"><div class="flex justify-between text-xs text-cellar-200 mb-2"><span>Progresso do curso</span><b>'+pct+'%</b></div><div class="h-3 rounded-full bg-cellar-50/15 overflow-hidden"><div class="h-3 rounded-full bg-gilt-400" style="width:'+pct+'%"></div></div><p class="text-[11px] text-cellar-300 mt-2">'+done.length+'/'+c.lessons.length+' aulas dominadas</p></div></div></div>';
+
+  html += '<div class="mb-5"><p class="eyebrow text-gilt-700 dark:text-gilt-400">TRILHA DE APRENDIZADO</p><h2 class="text-2xl font-bold font-serif text-claret-900 dark:text-cellar-100">Estude uma aula por vez</h2><p class="text-sm text-cellar-500 mt-1">Cada aula segue o mesmo fluxo: explicação → vídeo → conclusão → quiz. O resultado fica salvo individualmente.</p></div>';
+
+  html += '<div class="space-y-5">';
   c.lessons.forEach(function(l,idx){
-    var isDone = done.indexOf(idx)>-1;
-    var isOpen = !!openLessons[idx];
-    html += '<div class="bg-white dark:bg-claret-950/40 rounded-xl border border-cellar-200/70 dark:border-claret-800/70 overflow-hidden">';
-    html += '<button onclick="toggleLesson('+idx+')" class="w-full flex items-center gap-3 p-4 text-left">';
-    html += '<div class="w-8 h-8 rounded-full flex items-center justify-center shrink-0 '+(isDone?'bg-vine-500 text-white':'bg-cellar-100 dark:bg-claret-900 text-cellar-500')+'"><i class="fas '+(isDone?'fa-check':'fa-play')+' text-xs"></i></div>';
-    html += '<div class="flex-1"><p class="font-serif font-semibold text-claret-900 dark:text-cellar-100">'+(idx+1)+'. '+l.title+'</p><p class="text-xs text-cellar-500">'+l.duration+'</p></div>';
-    html += '<i class="fas fa-chevron-'+(isOpen?'up':'down')+' text-cellar-400 text-xs"></i></button>';
-    html += '<div id="lesson'+idx+'" class="'+(isOpen?'':'hidden')+' px-4 pb-4"><p class="text-sm text-cellar-600 dark:text-cellar-300 leading-relaxed mb-3">'+l.text+'</p>';
-    if(!isDone) html += '<button onclick="completeLesson(\''+c.id+'\','+idx+','+c.lessons.length+')" class="px-4 py-1.5 bg-vine-600 hover:bg-vine-700 text-white rounded-lg text-xs font-semibold">Marcar como concluída (+20 XP)</button>';
-    else html += '<span class="text-xs text-vine-600 dark:text-vine-400 font-semibold"><i class="fas fa-check-circle mr-1"></i>Aula concluída</span>';
-    html += '</div></div>';
+    var isDone=lessonIsDone(c.id,idx), watched=lessonVideoWatched(c.id,idx), best=lessonQuizBest(c.id,idx);
+    var videoId=lessonVideoId(c.id,idx);
+    var quizState=lessonQuizSession && lessonQuizSession.courseId===c.id && lessonQuizSession.idx===idx ? lessonQuizSession : null;
+
+    html += '<article class="course-lesson-card bg-white dark:bg-claret-950/50 rounded-2xl border '+(isDone?'border-vine-500/50':'border-claret-200 dark:border-claret-800')+' overflow-hidden shadow-sm">';
+    html += '<div class="px-4 md:px-6 pt-5 pb-4 flex items-start gap-3">';
+    html += '<div class="w-9 h-9 rounded-full flex items-center justify-center shrink-0 '+(isDone?'bg-vine-500 text-white':'bg-claret-950 dark:bg-claret-900 text-cellar-50')+'"><span class="text-xs font-bold">'+(idx+1)+'</span></div>';
+    html += '<div class="flex-1 min-w-0"><div class="flex items-center gap-2 flex-wrap"><h3 class="font-serif font-bold text-lg text-claret-900 dark:text-cellar-100">'+esc(l.title)+'</h3>'+(isDone?'<span class="text-[10px] px-2 py-0.5 rounded-full bg-vine-500/10 text-vine-600 font-bold">AULA DOMINADA</span>':'')+'</div><p class="text-xs text-cellar-500 mt-1">'+esc(l.duration)+' · '+(watched?'vídeo assistido':'vídeo pendente')+' · melhor quiz: '+best+'%</p></div>';
+    html += '</div>';
+
+    // Explicação da aula — sempre aberta, como no modelo de referência.
+    html += '<div class="px-4 md:px-6"><div class="rounded-xl bg-cellar-50 dark:bg-claret-900/35 border border-cellar-200/70 dark:border-claret-800/70 p-4 md:p-5"><p class="eyebrow text-cellar-500 mb-2">📖 EXPLICAÇÃO DA AULA</p><p class="text-sm md:text-[15px] text-cellar-700 dark:text-cellar-200 leading-7">'+esc(l.text)+'</p></div></div>';
+
+    // Vídeo — sempre visível.
+    html += lessonVideoPanel(c,l,idx);
+
+    // Barra de ações exatamente no fluxo do modelo de referência.
+    html += '<div class="px-4 md:px-6 py-4 flex flex-wrap items-center gap-2 border-t border-cellar-200 dark:border-claret-800 mt-4">';
+    if(watched){
+      html += '<button class="px-4 py-2 rounded-xl bg-vine-500/10 text-vine-700 dark:text-vine-400 text-xs font-bold"><i class="fas fa-check-circle mr-1"></i>Vídeo concluído</button>';
+    } else {
+      html += '<button onclick="markLessonVideoWatched(\''+c.id+'\','+idx+')" class="px-4 py-2 rounded-xl bg-vine-600 hover:bg-vine-700 text-white text-xs font-bold"><i class="fas fa-check mr-1"></i>Marcar vídeo como concluído (+5 XP)</button>';
+    }
+    html += '<button onclick="startLessonQuiz(\''+c.id+'\','+idx+')" class="px-4 py-2 rounded-xl border border-claret-300 dark:border-claret-700 hover:bg-claret-50 dark:hover:bg-claret-900/50 text-claret-800 dark:text-cellar-100 text-xs font-bold"><i class="fas fa-brain mr-1"></i>Testar conhecimento</button>';
+    html += '</div>';
+
+    // Quiz individual da aula aparece somente quando iniciado ou quando já há resultado.
+    if(quizState || best>0) html += lessonQuizPanel(c,l,idx);
+
+    html += '</article>';
   });
   html += '</div>';
-  html += contextVideoBlock('course', c.id, c.title);
+
+  html += '<div class="mt-7">'+contextVideoBlock('course', c.id, c.title)+'</div>';
   html += '</div>';
   el.innerHTML = html;
 }
+
 function toggleLesson(idx){
   openLessons[idx] = !openLessons[idx];
   var node = document.getElementById('lesson'+idx);
@@ -1003,16 +1193,7 @@ function toggleLesson(idx){
   var icon = node && node.previousElementSibling ? node.previousElementSibling.querySelector('.fa-chevron-up, .fa-chevron-down') : null;
   if(icon) icon.classList.toggle('fa-chevron-up'), icon.classList.toggle('fa-chevron-down');
 }
-function completeLesson(courseId,idx,total){
-  if(!state.progress.lessonsDone[courseId]) state.progress.lessonsDone[courseId]=[];
-  if(state.progress.lessonsDone[courseId].indexOf(idx)===-1){
-    state.progress.lessonsDone[courseId].push(idx);
-    state.progress.courses[courseId] = Math.round(state.progress.lessonsDone[courseId].length/total*100);
-    saveState();
-    addXP(20);
-    render();
-  }
-}
+function completeLesson(courseId,idx,total){ updateCourseProgress(courseId,total); saveState(); render(); }
 
 // ===================== VÍDEOS =====================
 function renderVideos(el){
@@ -1032,7 +1213,7 @@ function renderVideos(el){
     var c = v.country ? countryById(v.country) : null;
     var g = v.grape ? grapeById(v.grape) : null;
     html += '<div class="bg-white dark:bg-claret-950/40 rounded-2xl border border-cellar-200/70 dark:border-claret-800/70 overflow-hidden">';
-    html += '<div class="aspect-video bg-black"><iframe class="w-full h-full" src="https://www.youtube.com/embed/'+v.id+'?loop=1&playlist='+v.id+'&rel=0" title="'+esc(v.title)+'" frameborder="0" allowfullscreen></iframe></div>';
+    html += '<div class="relative aspect-video bg-black rounded-xl overflow-hidden"><button type="button" onclick="playLibraryVideo(\''+v.id+'\',this)" class="group relative w-full h-full"><img src="https://i.ytimg.com/vi/'+v.id+'/hqdefault.jpg" class="w-full h-full object-cover opacity-85 group-hover:scale-105 transition-transform duration-500" loading="lazy"><span class="absolute inset-0 flex items-center justify-center"><span class="w-14 h-14 rounded-full bg-claret-600 text-white flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform"><i class="fas fa-play ml-1"></i></span></span></button></div>';
     html += '<div class="p-4">';
     html += '<h3 class="font-serif font-bold text-claret-900 dark:text-cellar-100">'+esc(v.title)+'</h3>';
     html += '<p class="text-sm text-cellar-600 dark:text-cellar-300 mt-1 mb-2">'+esc(v.desc)+'</p>';
@@ -1643,7 +1824,7 @@ function finishTopicQuiz(key){
   var pct=Math.round((session.score/quiz.questions.length)*100);
   var msg=session.score===3?'Domínio excelente!':session.score===2?'Muito bom! Revise o ponto que errou.':'Continue praticando: uma nova tentativa pode melhorar seu resultado.';
   body.innerHTML='<div class="quiz-result text-center py-4"><div class="text-4xl mb-2">'+(session.score===3?'🏆':session.score===2?'🥂':'🍷')+'</div><h4 class="font-serif font-bold text-xl text-claret-900 dark:text-cellar-100">Resultado: '+session.score+'/'+quiz.questions.length+'</h4><p class="text-sm text-cellar-600 dark:text-cellar-300 mt-1">'+pct+'% de aproveitamento. '+msg+'</p><p class="text-xs text-gilt-700 dark:text-gilt-400 font-semibold mt-2">+ '+(session.score*5)+' XP nesta tentativa</p>';
-  body.innerHTML+='<button onclick="startTopicQuiz(\''+key.replace(/'/g,"\'")+'\')" class="mt-4 px-4 py-2 border border-gilt-500 text-gilt-700 dark:text-gilt-400 rounded-lg text-sm font-semibold hover:bg-gilt-50 dark:hover:bg-gilt-950/20"><i class="fas fa-rotate-right mr-1"></i>Tentar novamente</button></div>';
+  body.innerHTML+='<button onclick="startTopicQuiz(\''+key.replace(/'/g,"\\'")+'\')" class="mt-4 px-4 py-2 border border-gilt-500 text-gilt-700 dark:text-gilt-400 rounded-lg text-sm font-semibold hover:bg-gilt-50 dark:hover:bg-gilt-950/20"><i class="fas fa-rotate-right mr-1"></i>Tentar novamente</button></div>';
 }
 
 function renderStudyPageView(el,id){
@@ -1702,7 +1883,7 @@ function renderStudyPageView(el,id){
 }
 
 // ===================== EXCLUSÃO DE VÍDEOS (protegida por senha) =====================
-var ADMIN_PASSWORD = 'admin2026';
+var ADMIN_PASSWORD = 'admin2026ju';
 function promptDeleteVideo(uid){
   closeDeleteModal();
   var m = document.createElement('div');
@@ -1742,38 +1923,37 @@ function confirmDeleteVideo(uid){
 }
 
 // ===================== VÍDEOS CONTEXTUAIS (em cada aba) =====================
+function playLibraryVideo(id,btn){
+  var box=btn.parentElement;
+  if(!box)return;
+  box.innerHTML='<iframe class="w-full h-full" src="https://www.youtube-nocookie.com/embed/'+id+'?autoplay=1&playsinline=1&controls=1&rel=0&fs=1" title="Vídeo" frameborder="0" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>';
+}
 function contextVideoBlock(ctxType, ctxId, ctxLabel){
-  var userVids = (state.videos||[]).filter(function(v){ return v.ctxType===ctxType && v.ctxId===ctxId; });
-  var topicKeys = [ctxType, ctxType+':'+ctxId, ctxId, ctxLabel, (ctxLabel||'').toLowerCase()];
-  var editorial = (DB.videoCatalog||[]).filter(function(v){ return v.topics.some(function(t){ return topicKeys.indexOf(t)>-1; }); });
-  // Evita duplicar o mesmo vídeo quando ele também foi salvo pelo usuário.
-  var ids = {}; userVids.forEach(function(v){ ids[v.id]=true; });
-  editorial = editorial.filter(function(v){ return !ids[v.id]; });
-  var vids = editorial.concat(userVids);
+  var vids = state.videos.filter(function(v){ return v.ctxType===ctxType && v.ctxId===ctxId; });
   var domKey = ctxType+'_'+ctxId;
-  var search = encodeURIComponent(ctxLabel+' wine education');
-  var html = '<section class="video-learning-block bg-white dark:bg-claret-950/50 rounded-3xl p-6 md:p-7 border border-cellar-200/70 dark:border-claret-800/70 mt-7 shadow-sm">';
-  html += '<div class="flex items-start justify-between gap-4 mb-5 flex-wrap"><div><p class="eyebrow text-gilt-700 dark:text-gilt-400">Aprenda também</p><h3 class="font-serif font-bold text-2xl text-claret-900 dark:text-cellar-100">🎥 Aula em vídeo · '+esc(ctxLabel)+'</h3><p class="text-sm text-cellar-500 dark:text-cellar-400 mt-1">Vídeos relacionados ao conteúdo desta página para reforçar a memória visual e auditiva.</p></div>';
-  html += '<a target="_blank" rel="noopener" href="https://www.youtube.com/results?search_query='+search+'" class="px-3 py-2 border border-cellar-300 dark:border-claret-700 rounded-xl text-xs font-bold text-claret-700 dark:text-gilt-300 hover:bg-gilt-50 dark:hover:bg-claret-900/50"><i class="fab fa-youtube mr-1"></i>Mais vídeos</a></div>';
-  if(vids.length){
-    html += '<div class="grid lg:grid-cols-2 gap-5">';
-    vids.slice(0,4).forEach(function(v){
-      html += '<article class="rounded-2xl overflow-hidden border border-cellar-200 dark:border-claret-800 bg-cellar-50/50 dark:bg-claret-900/30">';
-      html += '<div class="aspect-video bg-black"><iframe loading="lazy" class="w-full h-full" src="https://www.youtube-nocookie.com/embed/'+v.id+'?rel=0" title="'+esc(v.title)+'" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>';
-      html += '<div class="p-4"><div class="flex items-start justify-between gap-3"><div><p class="font-serif font-bold text-base text-claret-900 dark:text-cellar-100">'+esc(v.title)+'</p><p class="text-xs text-cellar-500 dark:text-cellar-400 mt-1">'+esc(v.desc||'Vídeo complementar do tópico.')+'</p></div>';
-      if(v.source) html += '<span class="shrink-0 text-[10px] px-2 py-1 rounded-full bg-gilt-50 dark:bg-gilt-950/20 text-gilt-700 dark:text-gilt-300">'+esc(v.source)+'</span>';
-      html += '</div></div></article>';
+  var html = '<div class="bg-white dark:bg-claret-950/50 rounded-2xl p-6 border border-cellar-200/70 dark:border-claret-800/70 mt-6">';
+  html += '<div class="flex items-center justify-between mb-3 flex-wrap gap-2"><h3 class="font-serif font-bold text-lg text-claret-900 dark:text-cellar-100">🎥 Vídeos da comunidade</h3>';
+  html += '<button onclick="toggleCtxForm(\''+domKey+'\')" class="px-3 py-1.5 border border-claret-300 dark:border-claret-700 rounded-lg text-xs font-semibold hover:bg-claret-50 dark:hover:bg-claret-900/40"><i class="fas fa-plus mr-1"></i>Adicionar vídeo</button></div>';
+  if(vids.length===0){ html += '<p class="text-sm text-cellar-500 dark:text-cellar-400">Nenhum vídeo adicionado ainda para '+esc(ctxLabel)+'. Cole um link do YouTube e ajude o grupo a aprender!</p>'; }
+  else {
+    html += '<div class="grid sm:grid-cols-2 gap-4 mb-2">';
+    vids.forEach(function(v){
+      html += '<div class="rounded-xl overflow-hidden border border-cellar-200 dark:border-claret-800">';
+      html += '<div class="relative aspect-video bg-black rounded-xl overflow-hidden"><button type="button" onclick="playLibraryVideo(\''+v.id+'\',this)" class="group relative w-full h-full"><img src="https://i.ytimg.com/vi/'+v.id+'/hqdefault.jpg" class="w-full h-full object-cover opacity-85 group-hover:scale-105 transition-transform duration-500" loading="lazy"><span class="absolute inset-0 flex items-center justify-center"><span class="w-14 h-14 rounded-full bg-claret-600 text-white flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform"><i class="fas fa-play ml-1"></i></span></span></button></div>';
+      html += '<div class="p-3 flex items-start justify-between gap-2"><div class="min-w-0"><p class="font-serif font-semibold text-sm text-claret-900 dark:text-cellar-100">'+esc(v.title)+'</p>';
+      if(v.desc) html += '<p class="text-xs text-cellar-500 dark:text-cellar-400 mt-1">'+esc(v.desc)+'</p>';
+      html += '</div><button onclick="promptDeleteVideo(\''+(v.uid||'')+'\')" class="shrink-0 w-7 h-7 rounded-full bg-cellar-50 dark:bg-claret-900 flex items-center justify-center text-claret-500 hover:text-claret-700 dark:hover:text-claret-300" title="Excluir vídeo"><i class="fas fa-trash-can text-xs"></i></button>';
+      html += '</div></div>';
     });
     html += '</div>';
-  } else {
-    html += '<div class="rounded-2xl border border-dashed border-cellar-300 dark:border-claret-800 p-6 bg-cellar-50/50 dark:bg-claret-900/20"><p class="font-semibold text-sm text-claret-900 dark:text-cellar-100">Ainda não há uma aula editorial específica para este tópico.</p><p class="text-xs text-cellar-500 mt-1">Use a busca do YouTube para encontrar explicações sobre <strong>'+esc(ctxLabel)+'</strong> e compartilhe a melhor com a comunidade.</p></div>';
   }
-  html += '<div class="mt-5 pt-5 border-t border-cellar-200 dark:border-claret-800 flex items-center justify-between gap-3 flex-wrap"><div><p class="text-xs font-bold text-claret-900 dark:text-cellar-100">Encontrou um vídeo excelente?</p><p class="text-[11px] text-cellar-500">Adicione-o ao tópico para enriquecer o material de estudo.</p></div><button onclick="toggleCtxForm(\''+domKey+'\')" class="px-4 py-2 rounded-xl bg-claret-700 hover:bg-claret-800 text-white text-xs font-bold"><i class="fas fa-plus mr-1"></i>Adicionar vídeo</button></div>';
   html += '<div id="ctxForm_'+domKey+'" class="hidden mt-4 pt-4 border-t border-cellar-200 dark:border-claret-800 space-y-2">';
-  html += '<input id="ctxUrl_'+domKey+'" placeholder="Cole o link do YouTube aqui" class="w-full px-3 py-2.5 rounded-xl border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm">';
-  html += '<input id="ctxTitle_'+domKey+'" placeholder="Título do vídeo" class="w-full px-3 py-2.5 rounded-xl border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm">';
-  html += '<textarea id="ctxDesc_'+domKey+'" placeholder="Por que este vídeo ajuda a estudar o tópico?" rows="2" class="w-full px-3 py-2.5 rounded-xl border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm"></textarea>';
-  html += '<button onclick="addCtxVideo(\''+ctxType+'\',\''+ctxId+'\',\''+domKey+'\')" class="px-4 py-2 bg-vine-600 hover:bg-vine-700 text-white rounded-xl text-sm font-semibold"><i class="fas fa-floppy-disk mr-1"></i>Salvar vídeo (+10 XP)</button></div></section>';
+  html += '<input id="ctxUrl_'+domKey+'" placeholder="Cole o link do YouTube aqui" class="w-full px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm">';
+  html += '<input id="ctxTitle_'+domKey+'" placeholder="Título do vídeo" class="w-full px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm">';
+  html += '<textarea id="ctxDesc_'+domKey+'" placeholder="Descrição (opcional)" rows="2" class="w-full px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm"></textarea>';
+  html += '<div id="ctxPreview_'+domKey+'"></div>';
+  html += '<button onclick="addCtxVideo(\''+ctxType+'\',\''+ctxId+'\',\''+domKey+'\')" class="px-4 py-2 bg-vine-600 hover:bg-vine-700 text-white rounded-lg text-sm font-semibold"><i class="fas fa-floppy-disk mr-1"></i>Salvar vídeo (+10 XP)</button>';
+  html += '</div></div>';
   return html;
 }
 function toggleCtxForm(domKey){
@@ -1839,10 +2019,11 @@ var DEFAULT_STATE = {
   xp: 2450,
   notes: [],
   tastings: [],
-  favorites: { countries:[], grapes:[], wines:[], videos:[], regions:[] },
+  favorites: { countries:[], grapes:[], wines:[], videos:[] },
   videos: (typeof DB!=='undefined' && DB.demoVideos ? DB.demoVideos.slice() : []),
+  lessonVideos: {},
   studyPages: [],
-  progress: { courses:{intro:0,tasting:0,world:0,sommelier:0}, lessonsDone:{}, quizzesTaken:0, quizBest:0, videosWatched:[], grapesViewed:[], countriesViewed:[], topicQuizzes:{}, regionQuizzes:{} },
+  progress: { courses:{intro:0,tasting:0,world:0,sommelier:0}, lessonsDone:{}, lessonVideosWatched:{}, lessonQuizBest:{}, lessonQuizAttempts:{}, quizzesTaken:0, quizBest:0, videosWatched:[], grapesViewed:[], countriesViewed:[], topicQuizzes:{} },
   compareGrapes: [],
   dark: false
 };
@@ -1852,9 +2033,31 @@ if (DB.demoVideos && DEFAULT_STATE.videos.length === 0) {
   DEFAULT_STATE.videos = DB.demoVideos.slice();
 }
 
+// Vídeos iniciais para demonstrar o fluxo profissional aula → vídeo → quiz.
+// Os demais podem ser associados pelo campo de YouTube de cada aula sem substituir links personalizados.
+var DEFAULT_LESSON_VIDEOS = {
+  // Vídeos que já estavam associados ao projeto antes da unificação.
+  // A aula 3 usa o vídeo encontrado no curso Wine World Academy2.
+  'intro::0':'s4_IGTQF0fw',
+  'intro::1':'s4_IGTQF0fw',
+  'intro::2':'4nTYcU_X9D4',
+  'intro::3':'TS-_303X-qA',
+  'intro::4':'fmlWd527q6k',
+  'intro::5':'fmlWd527q6k',
+  'tasting::1':'pJ_6QO-a5Us'
+};
+
+function seedDefaultLessonVideos(){
+  state.lessonVideos=state.lessonVideos||{};
+  Object.keys(DEFAULT_LESSON_VIDEOS).forEach(function(k){
+    if(!state.lessonVideos[k]) state.lessonVideos[k]=DEFAULT_LESSON_VIDEOS[k];
+  });
+}
+
 var state = JSON.parse(JSON.stringify(DEFAULT_STATE));
 state.page = 'home';
 state.params = {};
+state.lessonVideos = {};
 
 var STORAGE_KEY = 'wwa_state_v1';
 var storageReady = false;
@@ -1903,10 +2106,17 @@ async function loadState(){
   }
 }
 
-if(!state.favorites) state.favorites={countries:[],grapes:[],wines:[],videos:[],regions:[]};
-if(!state.favorites.regions) state.favorites.regions=[];
 var saveTimer = null;
+function normalizeLearningState(){
+  seedDefaultLessonVideos();
+  if(!state.progress) state.progress=JSON.parse(JSON.stringify(DEFAULT_STATE.progress));
+  state.progress.lessonVideosWatched=state.progress.lessonVideosWatched||{};
+  state.progress.lessonQuizBest=state.progress.lessonQuizBest||{};
+  state.progress.lessonQuizAttempts=state.progress.lessonQuizAttempts||{};
+  state.lessonVideos=state.lessonVideos||{};
+}
 function saveState(){
+  normalizeLearningState();
   updateNav();
   if(!storageReady || !window.storage) return;
   clearTimeout(saveTimer);
@@ -1928,245 +2138,6 @@ function go(page, params){
   window.scrollTo(0,0);
 }
 
-
-// ===================== REGIÕES — EXPERIÊNCIA IMERSIVA =====================
-
-// ===================== REGIÕES — EXPERIÊNCIA IMERSIVA =====================
-const REGION_DB = {
-  "serra-gaucha": {
-    id:"serra-gaucha", countryId:"brazil", name:"Serra Gaúcha", flag:"🇧🇷",
-    eyebrow:"Brasil · Aula de região",
-    desc:"Principal região vinícola do Brasil, com destaque para espumantes.",
-    banner:"https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?auto=format&fit=crop&w=1800&q=85",
-    grapes:["Cabernet Sauvignon","Merlot","Chardonnay"],
-    styles:["Espumante","Tinto jovem","Branco fresco"],
-    location:"Serra Gaúcha, Rio Grande do Sul, Brasil",
-    climate:"Subtropical úmido, com altitude e variação térmica relevantes para a viticultura.",
-    soil:"Predominantemente basáltico, com áreas de solos argilosos e pedregosos.",
-    history:"A viticultura moderna da região está fortemente ligada à imigração italiana e ao desenvolvimento de Bento Gonçalves e municípios vizinhos.",
-    important:[
-      {name:"Cabernet Sauvignon",id:"cabernet_sauvignon",meta:"Tinto · França (Bordeaux)"},
-      {name:"Merlot",id:"merlot",meta:"Tinto · França (Bordeaux)"},
-      {name:"Chardonnay",id:"chardonnay",meta:"Branco · França (Borgonha)"}
-    ],
-    videos:[],
-    quiz:[
-      {q:"Qual estilo de vinho é especialmente característico desta região?",opts:["Tinto encorpado de guarda","Branco doce leve","Espumante","Forte destilado"],correct:2,exp:"Os espumantes são um dos grandes destaques da Serra Gaúcha."},
-      {q:"Qual combinação representa melhor algumas das uvas importantes apresentadas nesta aula?",opts:["Cabernet Sauvignon, Merlot e Chardonnay","Nebbiolo, Barbera e Furmint","Malbec, Torrontés e Bonarda","Riesling, Grüner Veltliner e Zweigelt"],correct:0,exp:"Cabernet Sauvignon, Merlot e Chardonnay são as três uvas destacadas nesta ficha de região."},
-      {q:"Qual característica de terroir aparece associada à Serra Gaúcha nesta aplicação?",opts:["Solo basáltico e clima subtropical úmido","Solo vulcânico insular e ventos extremos","Clima desértico sem influência de altitude","Clima polar e solo congelado"],correct:0,exp:"A ficha destaca clima subtropical úmido e solo predominantemente basáltico."}
-    ]
-  },
-  "vale-dos-vinhedos": {
-    id:"vale-dos-vinhedos", countryId:"brazil", name:"Vale dos Vinhedos", flag:"🇧🇷",
-    eyebrow:"Brasil · Aula de região", desc:"Território de referência da vitivinicultura brasileira.",
-    banner:"https://images.unsplash.com/photo-1473973266408-ed4e27abdd47?auto=format&fit=crop&w=1800&q=85",
-    grapes:["Merlot","Chardonnay"], styles:["Tinto","Espumante","Branco"], location:"Serra Gaúcha, Rio Grande do Sul, Brasil",
-    climate:"Clima subtropical úmido, com influência da altitude e relevo ondulado.",
-    soil:"Solos derivados de rochas basálticas, com boa diversidade de perfis.",
-    history:"Região associada à imigração italiana e ao desenvolvimento de uma identidade vitivinícola brasileira.",
-    important:[{name:"Merlot",id:"merlot",meta:"Tinto · França (Bordeaux)"},{name:"Chardonnay",id:"chardonnay",meta:"Branco · França (Borgonha)"}],
-    videos:[], quiz:[
-      {q:"Qual uva aparece como destaque nesta região?",opts:["Merlot","Riesling","Nebbiolo","Assyrtiko"],correct:0,exp:"Merlot é uma das uvas destacadas no Vale dos Vinhedos."},
-      {q:"A região está associada a qual grande área vitivinícola brasileira?",opts:["Serra Gaúcha","Vale do São Francisco","Campanha Gaúcha","Litoral Catarinense"],correct:0,exp:"O Vale dos Vinhedos está na Serra Gaúcha."},
-      {q:"Qual estilo também aparece entre os destaques?",opts:["Espumante","Jerez fortificado","Tokaji","Vinho de gelo"],correct:0,exp:"Espumantes aparecem entre os estilos apresentados."}
-    ]
-  },
-  "campanha-gaucha": {
-    id:"campanha-gaucha", countryId:"brazil", name:"Campanha Gaúcha", flag:"🇧🇷",
-    eyebrow:"Brasil · Aula de região", desc:"Região meridional brasileira associada a tintos de personalidade.",
-    banner:"https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?auto=format&fit=crop&w=1800&q=85",
-    grapes:["Tannat","Cabernet Sauvignon"], styles:["Tinto estruturado","Rosé","Branco"], location:"Rio Grande do Sul, Brasil",
-    climate:"Clima com maior amplitude térmica e condições mais secas que a Serra Gaúcha.",
-    soil:"Áreas com solos arenosos e bem drenados, variando conforme o terroir.",
-    history:"A Campanha consolidou-se como uma das áreas de expansão da vitivinicultura brasileira.",
-    important:[{name:"Tannat",id:"tannat",meta:"Tinto · origem europeia"},{name:"Cabernet Sauvignon",id:"cabernet_sauvignon",meta:"Tinto · França (Bordeaux)"}],
-    videos:[], quiz:[
-      {q:"Qual uva é destacada na Campanha Gaúcha?",opts:["Tannat","Chardonnay","Riesling","Sangiovese"],correct:0,exp:"Tannat aparece como uma das principais uvas da Campanha Gaúcha."},
-      {q:"Que estilo é especialmente coerente com as uvas apresentadas?",opts:["Tinto estruturado","Vinho fortificado doce","Espumante de sobremesa","Vinho laranja obrigatório"],correct:0,exp:"A ficha apresenta o tinto estruturado como estilo de destaque."},
-      {q:"Em qual estado brasileiro está a região?",opts:["Rio Grande do Sul","São Paulo","Bahia","Minas Gerais"],correct:0,exp:"A Campanha Gaúcha está no Rio Grande do Sul."}
-    ]
-  },
-  "vale-do-sao-francisco": {
-    id:"vale-do-sao-francisco", countryId:"brazil", name:"Vale do São Francisco", flag:"🇧🇷",
-    eyebrow:"Brasil · Aula de região", desc:"Uma das expressões mais singulares da vitivinicultura tropical.",
-    banner:"https://images.unsplash.com/photo-1536935338788-846bb9981813?auto=format&fit=crop&w=1800&q=85",
-    grapes:["Moscato","Syrah"], styles:["Tinto tropical","Branco aromático","Espumante"], location:"Vale do São Francisco, Nordeste do Brasil",
-    climate:"Tropical semiárido, com irrigação como componente essencial da viticultura.",
-    soil:"Solos arenosos e aluviais em diferentes áreas do vale.",
-    history:"A região tornou-se conhecida pela possibilidade de produção de mais de uma safra ao longo do ano.",
-    important:[{name:"Moscato",id:"moscato",meta:"Branca · aromática"},{name:"Syrah",id:"syrah",meta:"Tinta · Rhône"}],
-    videos:[], quiz:[
-      {q:"Qual característica climática diferencia o Vale do São Francisco?",opts:["Clima tropical semiárido","Clima polar","Clima oceânico frio","Clima alpino"],correct:0,exp:"O Vale do São Francisco é apresentado como uma região tropical semiárida."},
-      {q:"Qual uva aparece na ficha?",opts:["Syrah","Pinot Noir","Nebbiolo","Tempranillo"],correct:0,exp:"Syrah é uma das uvas destacadas."},
-      {q:"Qual fenômeno produtivo é associado à região?",opts:["Possibilidade de mais de uma safra no ano","Uma única safra a cada três anos","Produção apenas em altitude extrema","Dependência de neve para maturação"],correct:0,exp:"A aplicação destaca a possibilidade de mais de uma safra ao longo do ano."}
-    ]
-  }
-};
-
-function regionById(id){ return REGION_DB[id] || null; }
-
-function regionVideoList(r){
-  return (state.videos||[]).filter(function(v){
-    return v.ctxType==='region' && v.ctxId===r.id;
-  });
-}
-
-function toggleRegionFav(regionId){
-  state.favorites.regions=state.favorites.regions||[];
-  var i=state.favorites.regions.indexOf(regionId);
-  if(i>-1){ state.favorites.regions.splice(i,1); toast('Região removida dos favoritos','fa-star'); }
-  else { state.favorites.regions.push(regionId); toast('Região adicionada aos favoritos','fa-star'); }
-  saveState(); render();
-}
-
-function saveRegionNote(regionId){
-  var ta=document.getElementById('regionNoteText');
-  if(!ta || !ta.value.trim()){ toast('Escreva uma anotação antes de salvar','fa-circle-exclamation'); return; }
-  var r=regionById(regionId);
-  state.notes.unshift({title:'Anotação · '+r.name,text:ta.value.trim(),region:regionId,grape:'',country:'Brasil',fav:false,date:new Date().toLocaleDateString('pt-BR')});
-  ta.value='';
-  saveState(); addXP(5); toast('Anotação salva +5 XP','fa-note-sticky'); render();
-}
-
-function addRegionVideo(regionId){
-  var id=(document.getElementById('regionYtId')||{}).value;
-  var title=(document.getElementById('regionYtTitle')||{}).value.trim();
-  var desc=(document.getElementById('regionYtDesc')||{}).value.trim();
-  if(!id || !title){ toast('Informe o ID ou URL do YouTube e um título','fa-circle-exclamation'); return; }
-  var m=id.match(/(?:v=|youtu\.be\/|embed\/)([A-Za-z0-9_-]{6,})/);
-  if(m) id=m[1];
-  id=id.split('&')[0].split('?')[0].trim();
-  state.videos.unshift({id:id,uid:genUid(),title:title,desc:desc,ctxType:'region',ctxId:regionId,tags:['região','comunidade'],done:false});
-  saveState(); addXP(10); toast('Vídeo adicionado +10 XP','fa-circle-play'); render();
-}
-
-function startRegionQuiz(regionId){
-  var r=regionById(regionId);
-  if(!r) return;
-  state.regionQuizSession={regionId:regionId,questions:shuffle(r.quiz),index:0,score:0,answered:false};
-  render();
-  setTimeout(function(){ var q=document.getElementById('regionQuizBox'); if(q) q.scrollIntoView({behavior:'smooth',block:'start'}); },80);
-}
-
-function answerRegionQuiz(i){
-  var s=state.regionQuizSession;
-  if(!s || s.answered) return;
-  var q=s.questions[s.index]; s.answered=true;
-  if(i===q.correct) s.score++;
-  document.querySelectorAll('#regionQuizBox .region-quiz-opt').forEach(function(btn){
-    var idx=parseInt(btn.dataset.i,10);
-    if(idx===q.correct) btn.classList.add('correct');
-    else if(idx===i) btn.classList.add('wrong');
-  });
-  var exp=document.getElementById('regionQuizExp');
-  if(exp){
-    exp.classList.remove('hidden');
-    exp.innerHTML='<i class="fas '+(i===q.correct?'fa-circle-check text-vine-600':'fa-circle-xmark text-claret-600')+' mr-2"></i>'+esc(q.exp);
-  }
-  var next=document.getElementById('regionQuizNext'); if(next) next.classList.remove('hidden');
-}
-
-function nextRegionQuiz(){
-  var s=state.regionQuizSession;
-  if(!s) return;
-  s.index++; s.answered=false;
-  if(s.index>=s.questions.length){
-    var key=s.regionId;
-    state.progress.regionQuizzes=state.progress.regionQuizzes||{};
-    var prev=state.progress.regionQuizzes[key]||{taken:0,best:0};
-    prev.taken++; prev.best=Math.max(prev.best,s.score);
-    state.progress.regionQuizzes[key]=prev;
-    state.progress.quizzesTaken++;
-    state.progress.quizBest=Math.max(state.progress.quizBest,s.score);
-    var gained=20+s.score*10;
-    saveState(); addXP(gained);
-    toast('Quiz concluído · +'+gained+' XP','fa-trophy');
-  }
-  render();
-}
-
-function renderRegion(el,params){
-  var r=regionById(params && params.id);
-  if(!r){ go('map'); return; }
-  state.progress.regionQuizzes=state.progress.regionQuizzes||{};
-  var rq=state.progress.regionQuizzes[r.id]||{taken:0,best:0};
-  var country=countryById(r.countryId);
-  var vids=regionVideoList(r);
-  var notes=(state.notes||[]).filter(function(n){return n.region===r.id;});
-  var isFav=(state.favorites.regions||[]).indexOf(r.id)>-1;
-
-  var html='<div class="fade-in p-4 md:p-8 max-w-7xl mx-auto">';
-  html+='<div class="mb-5 flex items-center gap-2 text-sm text-cellar-500 dark:text-cellar-400">';
-  html+='<button onclick="go(\'country\',{id:\''+r.countryId+'\'})" class="hover:text-claret-600 dark:hover:text-gilt-400"><i class="fas fa-arrow-left mr-1"></i> '+(country?country.name:'Brasil')+'</button><i class="fas fa-chevron-right text-[10px]"></i><span class="font-semibold text-claret-800 dark:text-cellar-200">'+r.name+'</span></div>';
-
-  html+='<section class="relative overflow-hidden rounded-3xl border border-cellar-200/70 dark:border-claret-800/70 bg-claret-900 text-cellar-50 min-h-[280px] mb-8 shadow-lg">';
-  html+='<img src="'+r.banner+'" alt="" class="absolute inset-0 w-full h-full object-cover opacity-30" onerror="this.style.display=\'none\'">';
-  html+='<div class="absolute inset-0 bg-gradient-to-r from-claret-950 via-claret-900/90 to-claret-900/30"></div>';
-  html+='<div class="relative px-6 py-10 md:px-10 md:py-14 max-w-3xl">';
-  html+='<p class="eyebrow text-gilt-300 mb-2">'+r.flag+' '+r.eyebrow+'</p>';
-  html+='<div class="flex items-start justify-between gap-4"><div><h1 class="text-4xl md:text-5xl font-bold font-serif leading-[1.05]">'+r.name+'</h1><p class="mt-3 text-cellar-200 max-w-2xl text-base md:text-lg">'+r.desc+'</p></div>';
-  html+='<button onclick="toggleRegionFav(\''+r.id+'\')" class="shrink-0 w-11 h-11 rounded-full bg-cellar-50/15 backdrop-blur flex items-center justify-center hover:bg-cellar-50/25" title="Favoritar Brasil"><i class="'+(isFav?'fas':'far')+' fa-star text-gilt-300"></i></button></div>';
-  html+='<div class="flex flex-wrap gap-2 mt-6"><span class="px-3 py-1.5 rounded-full bg-cellar-50/10 border border-cellar-50/25 text-xs">📍 '+r.location+'</span><span class="px-3 py-1.5 rounded-full bg-cellar-50/10 border border-cellar-50/25 text-xs">🧠 '+rq.taken+' quiz(es)</span></div>';
-  html+='</div></section>';
-
-  html+='<section class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">';
-  [['🍇','Principais uvas',r.grapes.join(', ')],['🍷','Principais estilos',r.styles.join(', ')],['📍','Localização',r.location],['🌡️','Clima',r.climate],['🪨','Solo',r.soil],['📜','Contexto',r.history]].forEach(function(x){
-    html+='<article class="bg-white dark:bg-claret-950/40 rounded-2xl p-5 border border-cellar-200/70 dark:border-claret-800/70 shadow-sm"><div class="mb-2 flex items-center gap-2 text-claret-600 dark:text-gilt-400"><span class="text-xl">'+x[0]+'</span><span class="font-serif font-bold">'+x[1]+'</span></div><p class="text-sm text-cellar-600 dark:text-cellar-300 leading-relaxed">'+x[2]+'</p></article>';
-  });
-  html+='</section>';
-
-  html+='<section class="mb-10"><div class="flex items-end justify-between mb-4"><div><p class="eyebrow text-vine-600">Variedades em foco</p><h2 class="text-2xl md:text-3xl font-bold font-serif text-claret-900 dark:text-cellar-100">Uvas importantes</h2></div><span class="text-xs font-mono text-cellar-500">'+r.important.length+' fichas</span></div>';
-  html+='<div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">';
-  r.important.forEach(function(g){
-    var exists=grapeById(g.id);
-    html+='<button '+(exists?'onclick="go(\'grape\',{id:\''+g.id+'\'})"':'')+' class="group text-left rounded-2xl border border-cellar-200/70 dark:border-claret-800/70 bg-white dark:bg-claret-950/40 p-5 hover:-translate-y-1 transition-transform">';
-    html+='<div class="flex items-start justify-between gap-3"><div><p class="font-serif text-lg font-bold text-claret-900 dark:text-cellar-100">'+g.name+'</p><p class="text-xs text-cellar-500 dark:text-cellar-400 mt-1">'+g.meta+'</p></div><span class="w-9 h-9 rounded-xl bg-vine-500/10 text-vine-600 flex items-center justify-center">🍇</span></div>';
-    html+='<span class="inline-flex items-center gap-1 mt-4 text-xs font-semibold text-claret-600 dark:text-gilt-400">Ver ficha <i class="fas fa-arrow-right text-[10px]"></i></span></button>';
-  });
-  html+='</div></section>';
-
-  html+=contextVideoBlock('region',r.id,r.name);
-  html+='<section class="mb-10"><div class="flex items-center justify-between gap-4 mb-4"><div><p class="eyebrow text-gilt-700 dark:text-gilt-400">Comunidade</p><h2 class="text-2xl md:text-3xl font-bold font-serif text-claret-900 dark:text-cellar-100">🎥 Aprenda assistindo</h2></div></div>';
-  html+='<div class="grid lg:grid-cols-[1.3fr_.7fr] gap-5">';
-  html+='<div class="space-y-3">';
-  if(vids.length===0) html+='<div class="rounded-3xl border border-dashed border-cellar-300 dark:border-claret-800 p-8 text-center bg-white/50 dark:bg-claret-950/20"><div class="text-4xl mb-2">🎬</div><p class="font-semibold text-claret-800 dark:text-cellar-200">Nenhum vídeo comunitário ainda</p><p class="text-sm text-cellar-500 mt-1">Adicione o primeiro conteúdo contextual desta região.</p></div>';
-  vids.forEach(function(v){
-    html+='<article class="bg-white dark:bg-claret-950/40 rounded-2xl border border-cellar-200/70 dark:border-claret-800/70 overflow-hidden"><div class="aspect-video bg-black"><iframe class="w-full h-full" src="https://www.youtube.com/embed/'+esc(v.id)+'" title="'+esc(v.title)+'" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div><div class="p-4"><div class="flex items-start justify-between gap-3"><div><h3 class="font-serif font-bold text-claret-900 dark:text-cellar-100">'+esc(v.title)+'</h3><p class="text-sm text-cellar-500 dark:text-cellar-400 mt-1">'+esc(v.desc||'Vídeo enviado pela comunidade.')+'</p></div><button onclick="toggleVidDone(\''+v.id+'\')" class="shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold '+((state.progress.videosWatched||[]).indexOf(v.id)>-1?'bg-vine-500/10 text-vine-600':'bg-cellar-100 dark:bg-claret-900 text-cellar-600 dark:text-cellar-300')+'">'+((state.progress.videosWatched||[]).indexOf(v.id)>-1?'✓ Assistido':'Marcar assistido')+'</button></div></div></article>';
-  });
-  html+='</div>';
-  html+='<form onsubmit="event.preventDefault();addRegionVideo(\''+r.id+'\')" class="bg-white dark:bg-claret-950/40 rounded-3xl border border-cellar-200/70 dark:border-claret-800/70 p-5 h-fit">';
-  html+='<h3 class="font-serif font-bold text-lg text-claret-900 dark:text-cellar-100 mb-1">Adicionar vídeo</h3><p class="text-xs text-cellar-500 dark:text-cellar-400 mb-4">Use o ID ou URL de um vídeo do YouTube.</p>';
-  html+='<input id="regionYtId" required placeholder="ID ou URL do YouTube" class="w-full px-3 py-2.5 rounded-xl border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm mb-2">';
-  html+='<input id="regionYtTitle" required placeholder="Título do vídeo" class="w-full px-3 py-2.5 rounded-xl border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm mb-2">';
-  html+='<textarea id="regionYtDesc" rows="3" placeholder="Descrição curta" class="w-full px-3 py-2.5 rounded-xl border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm mb-3"></textarea>';
-  html+='<button class="w-full px-4 py-2.5 rounded-xl bg-claret-700 hover:bg-claret-800 text-white text-sm font-bold"><i class="fas fa-plus mr-1"></i> Publicar vídeo</button></form></div></section>';
-
-  html+='<section class="mb-10"><div class="flex items-center justify-between mb-4"><div><p class="eyebrow text-claret-600 dark:text-gilt-400">Memória de estudo</p><h2 class="text-2xl md:text-3xl font-bold font-serif text-claret-900 dark:text-cellar-100">📝 Anote o que aprendeu</h2></div><button onclick="go(\'notebook\')" class="text-sm font-semibold text-gilt-600 dark:text-gilt-400">Abrir caderno</button></div>';
-  html+='<div class="bg-white dark:bg-claret-950/40 rounded-3xl border border-cellar-200/70 dark:border-claret-800/70 p-5"><textarea id="regionNoteText" rows="4" placeholder="Escreva suas observações sobre esta região..." class="w-full rounded-2xl border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 px-4 py-3 text-sm outline-none focus:border-gilt-500"></textarea><div class="mt-3 flex items-center justify-between gap-3 flex-wrap"><p class="text-xs text-cellar-500">'+notes.length+' anotação(ões) nesta região</p><button onclick="saveRegionNote(\''+r.id+'\')" class="px-5 py-2.5 rounded-xl bg-claret-700 hover:bg-claret-800 text-white text-sm font-bold">💾 Salvar anotação +5 XP</button></div>';
-  if(notes.length){ html+='<div class="mt-5 space-y-2">'; notes.slice(0,4).forEach(function(n){html+='<div class="p-4 rounded-2xl bg-cellar-50 dark:bg-claret-900/40 border border-cellar-200/60 dark:border-claret-800/60"><div class="flex justify-between gap-3"><p class="font-semibold text-sm">'+esc(n.title)+'</p><span class="text-[11px] font-mono text-cellar-500">'+esc(n.date||'')+'</span></div><p class="text-sm text-cellar-600 dark:text-cellar-300 mt-1 whitespace-pre-wrap">'+esc(n.text)+'</p></div>';}); html+='</div>'; }
-  html+='</div></section>';
-
-  var s=state.regionQuizSession;
-  var active=s && s.regionId===r.id;
-  html+='<section id="regionQuizBox" class="mb-10"><div class="flex items-end justify-between gap-4 mb-4"><div><p class="eyebrow text-gilt-700 dark:text-gilt-400">Fixação · 3 perguntas</p><h2 class="text-2xl md:text-3xl font-bold font-serif text-claret-900 dark:text-cellar-100">🧠 Teste seus conhecimentos</h2></div><div class="text-right"><span class="text-xs text-cellar-500">Melhor resultado</span><p class="font-mono font-bold text-gilt-600">'+rq.best+'/3</p></div></div>';
-  if(!active){
-    html+='<div class="rounded-3xl bg-gilt-50 dark:bg-gilt-950/10 border border-gilt-300/50 dark:border-gilt-800/40 p-7 flex flex-col md:flex-row items-center justify-between gap-5"><div><h3 class="font-serif text-xl font-bold text-claret-900 dark:text-cellar-100">Pronto para fixar '+r.name+'?</h3><p class="text-sm text-cellar-600 dark:text-cellar-300 mt-1">3 perguntas, feedback imediato e XP ao concluir.</p></div><button onclick="startRegionQuiz(\''+r.id+'\')" class="px-6 py-3 rounded-xl bg-claret-700 hover:bg-claret-800 text-white font-bold">Começar quiz</button></div>';
-  }else if(s.index>=s.questions.length){
-    var pct=Math.round(s.score/s.questions.length*100);
-    html+='<div class="rounded-3xl bg-white dark:bg-claret-950/40 border border-cellar-200/70 dark:border-claret-800/70 p-8 text-center"><div class="text-5xl mb-3">🏆</div><p class="eyebrow text-gilt-700">Resultado</p><h3 class="text-3xl font-bold font-serif text-claret-900 dark:text-cellar-100">'+s.score+'/3 · '+pct+'%</h3><p class="text-sm text-cellar-500 mt-2">Você pode refazer o quiz para melhorar seu recorde.</p><button onclick="startRegionQuiz(\''+r.id+'\')" class="mt-5 px-5 py-2.5 rounded-xl bg-claret-700 text-white text-sm font-bold">Refazer quiz</button></div>';
-  }else{
-    var q=s.questions[s.index];
-    html+='<div class="rounded-3xl bg-white dark:bg-claret-950/40 border border-cellar-200/70 dark:border-claret-800/70 p-6"><div class="flex items-center justify-between mb-4"><span class="text-xs font-mono text-cellar-500">Pergunta '+(s.index+1)+' de 3</span><span class="text-xs font-semibold text-gilt-600">+'+(10)+' XP por acerto</span></div><h3 class="font-serif text-xl font-bold text-claret-900 dark:text-cellar-100">'+esc(q.q)+'</h3><div class="grid sm:grid-cols-2 gap-2 mt-5">';
-    q.opts.forEach(function(opt,i){html+='<button data-i="'+i+'" onclick="answerRegionQuiz('+i+')" class="region-quiz-opt text-left px-4 py-3 rounded-xl border border-cellar-200 dark:border-claret-800 bg-cellar-50/60 dark:bg-claret-900/30 text-sm hover:border-gilt-500 transition-colors"><span class="inline-flex w-7 h-7 rounded-full border items-center justify-center mr-2 font-mono text-xs">'+String.fromCharCode(65+i)+'</span>'+esc(opt)+'</button>';});
-    html+='</div><div id="regionQuizExp" class="hidden mt-4 p-4 rounded-xl bg-cellar-50 dark:bg-claret-900/40 text-sm text-cellar-600 dark:text-cellar-300"></div><button id="regionQuizNext" onclick="nextRegionQuiz()" class="hidden mt-4 w-full px-4 py-2.5 rounded-xl bg-claret-700 hover:bg-claret-800 text-white font-bold">Próxima pergunta</button></div>';
-  }
-  html+='</section>';
-
-  html+='<div class="flex flex-wrap gap-3 pb-8"><button onclick="go(\'country\',{id:\''+r.countryId+'\'})" class="px-5 py-2.5 rounded-xl border border-cellar-300 dark:border-claret-700 text-sm font-semibold">← Voltar para '+(country?country.name:'Brasil')+'</button><button onclick="go(\'wines\')" class="px-5 py-2.5 rounded-xl bg-claret-700 text-white text-sm font-semibold">Explorar vinhos</button></div>';
-  html+='</div>';
-  el.innerHTML=html;
-}
-
 function render(){
   var m = document.getElementById('mainContent');
   if(!m) return;
@@ -2174,7 +2145,6 @@ function render(){
     case 'home': renderHome(m); break;
     case 'map': renderMap(m); break;
     case 'country': renderCountry(m,state.params); break;
-    case 'region': renderRegion(m,state.params); break;
     case 'grapes': renderGrapes(m); break;
     case 'grape': renderGrape(m,state.params); break;
     case 'wines': renderWines(m); break;
