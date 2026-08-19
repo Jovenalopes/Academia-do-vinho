@@ -520,6 +520,7 @@ uruguay: {
 </script>
 <script>
 // ===================== HELPERS DE UI =====================
+function escAttr(s){ return esc(s).replace(/\\/g,'\\\\').replace(/'/g,'&#39;').replace(/\n/g,' '); }
 function esc(s){ return (s===undefined||s===null) ? '' : String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
 
 // ===== CORREÇÃO PRINCIPAL: BANDEIRAS COLORIDAS USANDO EMOJI NATIVO =====
@@ -596,6 +597,26 @@ function extractYouTubeId(url){
   if(m) return m[1];
   return null;
 }
+function normalizeInstagramUrl(url){
+  if(!url) return null;
+  url=url.trim();
+  if(!/^https?:\/\/(?:www\.)?instagram\.com\//i.test(url)) return null;
+  var clean=url.split('#')[0].split('?')[0].replace(/\/+$/,'');
+  var m=clean.match(/instagram\.com\/(p|reel|reels|tv)\/([A-Za-z0-9_-]+)/i);
+  if(m) { var k=m[1].toLowerCase()==='reels'?'reel':m[1].toLowerCase(); return {url:clean+'/',code:m[2],kind:k,embedUrl:'https://www.instagram.com/'+k+'/'+m[2]+'/embed/'}; }
+  var profile=clean.match(/instagram\.com\/([A-Za-z0-9._-]+)$/i);
+  if(profile) return {url:clean+'/',code:null,kind:'profile',embedUrl:null};
+  return null;
+}
+function isInstagramUrl(url){ return !!normalizeInstagramUrl(url); }
+function instagramEmbedHtml(v, compact){
+  var data=normalizeInstagramUrl(v.instagram_url||v.url||'');
+  if(!data || !data.code) return '<div class="aspect-video flex items-center justify-center bg-gradient-to-br from-purple-950 via-pink-900 to-orange-800 text-white p-5 text-center"><div><i class="fab fa-instagram text-4xl mb-2"></i><p class="font-semibold">Link de perfil do Instagram</p><p class="text-xs text-white/70 mt-1">Para reprodução dentro do Academy, use um Reel ou publicação pública.</p></div></div>';
+  return '<div class="relative '+(compact?'aspect-video':'aspect-[4/5] md:aspect-video')+' bg-black overflow-hidden">'
+    +'<iframe class="absolute inset-0 w-full h-full" src="'+escAttr(data.embedUrl)+'?hidecaption=1" title="Conteúdo do Instagram" loading="lazy" frameborder="0" scrolling="no" allowtransparency="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin"></iframe>'
+    +'</div>';
+}
+function videoKind(v){ return v && (v.type==='instagram' || v.platform==='instagram' || v.instagram_url) ? 'instagram' : 'youtube'; }
 function genUid(){ return 'v'+Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
 
 function sectionHeader(icon,title,sub){
@@ -1205,46 +1226,94 @@ function completeLesson(courseId,idx,total){ updateCourseProgress(courseId,total
 // ===================== VÍDEOS =====================
 function renderVideos(el){
   var html = '<div class="fade-in p-4 md:p-8 max-w-6xl mx-auto">';
-  html += sectionHeader('🎥','Vídeos','Cole um link do YouTube para adicionar novas aulas em vídeo à sua biblioteca.');
+  html += sectionHeader('🎥','Vídeos','Sua biblioteca multimídia: YouTube e Instagram, organizados para estudar, revisar e descobrir novos conteúdos.');
   html += '<div class="bg-white dark:bg-claret-950/40 rounded-2xl p-5 border border-cellar-200/70 dark:border-claret-800/70 mb-8">';
+  html += '<div class="flex flex-wrap gap-2 mb-4">';
+  html += '<button id="libTabYT" onclick="switchLibraryMediaTab(\'youtube\')" class="px-4 py-2 rounded-full text-xs font-bold bg-claret-700 text-white"><i class="fab fa-youtube mr-1"></i>YouTube</button>';
+  html += '<button id="libTabIG" onclick="switchLibraryMediaTab(\'instagram\')" class="px-4 py-2 rounded-full text-xs font-bold border border-cellar-300 dark:border-claret-700"><i class="fab fa-instagram mr-1"></i>Instagram</button>';
+  html += '</div>';
+  html += '<div id="libraryYTForm">';
   html += '<p class="eyebrow text-cellar-500 mb-2">Adicionar vídeo do YouTube</p>';
   html += '<div class="flex flex-col md:flex-row gap-2 mb-3">';
-  html += '<input id="ytUrl" type="text" placeholder="Cole o link do YouTube aqui (ex: https://www.youtube.com/watch?v=...)" class="flex-1 px-3 py-2.5 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm">';
-  html += '<button onclick="previewVideo()" class="px-5 py-2.5 bg-claret-700 hover:bg-claret-800 text-white rounded-lg text-sm font-semibold shrink-0">Pré-visualizar</button></div>';
+  html += '<input id="ytUrl" type="text" placeholder="Cole o link do YouTube aqui" class="flex-1 px-3 py-2.5 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm">';
+  html += '<button onclick="previewVideo()" class="px-5 py-2.5 bg-claret-700 hover:bg-claret-800 text-white rounded-lg text-sm font-semibold shrink-0"><i class="fas fa-eye mr-1"></i>Pré-visualizar</button></div>';
   html += '<div id="ytPreview"></div></div>';
+  html += '<div id="libraryIGForm" class="hidden">';
+  html += '<p class="eyebrow text-cellar-500 mb-2">Adicionar conteúdo do Instagram</p>';
+  html += '<div class="rounded-xl bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-orange-500/10 border border-pink-500/20 p-3 mb-3 text-xs text-cellar-600 dark:text-cellar-300"><i class="fab fa-instagram text-pink-500 mr-1"></i> Cole um link público de Reel ou publicação do Instagram. O conteúdo será reproduzido dentro do Academy.</div>';
+  html += '<div class="flex flex-col md:flex-row gap-2 mb-3">';
+  html += '<input id="igUrl" type="text" placeholder="https://www.instagram.com/reel/... ou /p/..." class="flex-1 px-3 py-2.5 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm">';
+  html += '<button onclick="previewInstagram()" class="px-5 py-2.5 bg-gradient-to-r from-pink-600 to-purple-600 hover:opacity-90 text-white rounded-lg text-sm font-semibold shrink-0"><i class="fab fa-instagram mr-1"></i>Pré-visualizar</button></div>';
+  html += '<div id="igPreview"></div></div></div>';
 
+  html += '<div class="flex items-center justify-between mb-4 flex-wrap gap-2"><div><p class="eyebrow text-cellar-500">Biblioteca</p><p class="text-sm text-cellar-500 dark:text-cellar-400">'+state.videos.length+' conteúdos salvos</p></div><div class="flex gap-2 text-xs"><span class="px-2.5 py-1 rounded-full bg-claret-50 dark:bg-claret-900/50">'+state.videos.filter(function(v){return videoKind(v)==='youtube';}).length+' YouTube</span><span class="px-2.5 py-1 rounded-full bg-pink-500/10 text-pink-500">'+state.videos.filter(function(v){return videoKind(v)==='instagram';}).length+' Instagram</span></div></div>';
   html += '<div class="grid grid-cols-1 md:grid-cols-2 gap-5">';
   state.videos.forEach(function(v){
     var done = state.progress.videosWatched.indexOf(v.id)>-1;
     var isFav = state.favorites.videos.indexOf(v.id)>-1;
     var c = v.country ? countryById(v.country) : null;
     var g = v.grape ? grapeById(v.grape) : null;
+    var kind=videoKind(v);
     html += '<div class="bg-white dark:bg-claret-950/40 rounded-2xl border border-cellar-200/70 dark:border-claret-800/70 overflow-hidden">';
-    html += '<div class="relative aspect-video bg-black rounded-xl overflow-hidden"><button type="button" onclick="playLibraryVideo(\''+v.id+'\',this)" class="group relative w-full h-full"><img src="https://i.ytimg.com/vi/'+v.id+'/hqdefault.jpg" class="w-full h-full object-cover opacity-85 group-hover:scale-105 transition-transform duration-500" loading="lazy"><span class="absolute inset-0 flex items-center justify-center"><span class="w-14 h-14 rounded-full bg-claret-600 text-white flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform"><i class="fas fa-play ml-1"></i></span></span></button></div>';
+    if(kind==='instagram'){
+      html += instagramEmbedHtml(v,false);
+    } else {
+      html += '<div class="relative aspect-video bg-black rounded-xl overflow-hidden"><button type="button" onclick="playLibraryVideo(\''+escAttr(v.id)+'\',this)" class="group relative w-full h-full"><img src="https://i.ytimg.com/vi/'+escAttr(v.id)+'/hqdefault.jpg" class="w-full h-full object-cover opacity-85 group-hover:scale-105 transition-transform duration-500" loading="lazy"><span class="absolute inset-0 flex items-center justify-center"><span class="w-14 h-14 rounded-full bg-claret-600 text-white flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform"><i class="fas fa-play ml-1"></i></span></span></button></div>';
+    }
     html += '<div class="p-4">';
-    html += '<h3 class="font-serif font-bold text-claret-900 dark:text-cellar-100">'+esc(v.title)+'</h3>';
-    html += '<p class="text-sm text-cellar-600 dark:text-cellar-300 mt-1 mb-2">'+esc(v.desc)+'</p>';
+    html += '<div class="flex items-start justify-between gap-2"><h3 class="font-serif font-bold text-claret-900 dark:text-cellar-100">'+esc(v.title)+'</h3><span class="shrink-0 text-[10px] px-2 py-1 rounded-full '+(kind==='instagram'?'bg-pink-500/10 text-pink-500':'bg-claret-50 dark:bg-claret-900/50 text-claret-500')+'"><i class="fab '+(kind==='instagram'?'fa-instagram':'fa-youtube')+' mr-1"></i>'+kind+'</span></div>';
+    html += '<p class="text-sm text-cellar-600 dark:text-cellar-300 mt-1 mb-2">'+esc(v.desc||'')+'</p>';
     html += '<div class="flex flex-wrap gap-1.5 mb-3">';
     if(c) html += '<span class="text-xs px-2 py-1 bg-claret-50 dark:bg-claret-900/40 rounded-full">'+flagHtml(c.flag,'text-xs')+' '+c.name+'</span>';
     if(g) html += '<span class="text-xs px-2 py-1 bg-gilt-50 dark:bg-gilt-950/20 rounded-full">🍇 '+g.name+'</span>';
     (v.tags||[]).forEach(function(t){ html += '<span class="text-xs px-2 py-1 border border-cellar-200 dark:border-claret-800 rounded-full">#'+esc(t)+'</span>'; });
-    if(v.ctxType){
-      var ctxLabel = v.ctxId;
-      if(v.ctxType==='country'){ var cc=countryById(v.ctxId); ctxLabel = cc?cc.name:v.ctxId; }
-      else if(v.ctxType==='grape'){ var gg=grapeById(v.ctxId); ctxLabel = gg?gg.name:v.ctxId; }
-      else if(v.ctxType==='course'){ var co=DB.courses.find(function(x){return x.id===v.ctxId;}); ctxLabel = co?co.title:v.ctxId; }
-      else { var ctxNames={map:'Mapa Mundial',grapes:'Uvas',wines:'Vinhos',notebook:'Meu Caderno',tasting:'Degustação',pairing:'Harmonização'}; ctxLabel = ctxNames[v.ctxId]||v.ctxId; }
-      html += '<span class="text-xs px-2 py-1 bg-vine-500/10 text-vine-600 dark:text-vine-400 rounded-full"><i class="fas fa-location-dot mr-1"></i>'+esc(ctxLabel)+'</span>';
-    }
-    html += '</div>';
-    html += '<div class="flex items-center gap-2">';
-    html += '<button onclick="toggleVidDone(\''+v.id+'\')" class="px-3 py-1.5 rounded-lg text-xs font-semibold '+(done?'bg-vine-600 text-white':'border border-cellar-300 dark:border-claret-700')+'"><i class="fas fa-check mr-1"></i>'+(done?'Concluído':'Marcar concluído')+'</button>';
-    html += '<button onclick="toggleFav(\'videos\',\''+v.id+'\')" class="w-8 h-8 rounded-full bg-cellar-50 dark:bg-claret-900 flex items-center justify-center"><i class="'+(isFav?'fas':'far')+' fa-star text-gilt-500 text-xs"></i></button>';
-    html += '<button onclick="promptDeleteVideo(\''+(v.uid||'')+'\')" class="w-8 h-8 rounded-full bg-cellar-50 dark:bg-claret-900 flex items-center justify-center text-claret-500 hover:text-claret-700 dark:hover:text-claret-300" title="Excluir vídeo"><i class="fas fa-trash-can text-xs"></i></button>';
+    html += '</div><div class="flex items-center gap-2 flex-wrap">';
+    html += '<button onclick="toggleVidDone(\''+escAttr(v.id)+'\')" class="px-3 py-1.5 rounded-lg text-xs font-semibold '+(done?'bg-vine-600 text-white':'border border-cellar-300 dark:border-claret-700')+'"><i class="fas fa-check mr-1"></i>'+(done?'Concluído':'Marcar concluído')+'</button>';
+    html += '<button onclick="toggleFav(\'videos\',\''+escAttr(v.id)+'\')" class="w-8 h-8 rounded-full bg-cellar-50 dark:bg-claret-900 flex items-center justify-center" title="Favoritar"><i class="'+(isFav?'fas':'far')+' fa-star text-gilt-500 text-xs"></i></button>';
+    if(kind==='instagram' && (v.instagram_url||v.url)) html += '<a href="'+escAttr(v.instagram_url||v.url)+'" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-lg text-xs font-semibold border border-pink-500/30 text-pink-500"><i class="fab fa-instagram mr-1"></i>Abrir no Instagram</a>';
+    html += '<button onclick="promptDeleteVideo(\''+escAttr(v.uid||'')+'\')" class="px-3 py-1.5 rounded-lg text-xs font-semibold border border-claret-300 dark:border-claret-700 text-claret-500 hover:bg-claret-50 dark:hover:bg-claret-900/50" title="Excluir conteúdo"><i class="fas fa-trash-can mr-1"></i>Excluir</button>';
     html += '</div></div></div>';
   });
   html += '</div></div>';
   el.innerHTML = html;
+}
+function switchLibraryMediaTab(tab){
+  var yt=document.getElementById('libraryYTForm'), ig=document.getElementById('libraryIGForm'), by=document.getElementById('libTabYT'), bi=document.getElementById('libTabIG');
+  if(!yt||!ig)return;
+  var y=tab==='youtube'; yt.classList.toggle('hidden',!y); ig.classList.toggle('hidden',y);
+  by.className='px-4 py-2 rounded-full text-xs font-bold '+(y?'bg-claret-700 text-white':'border border-cellar-300 dark:border-claret-700');
+  bi.className='px-4 py-2 rounded-full text-xs font-bold '+(!y?'bg-gradient-to-r from-pink-600 to-purple-600 text-white':'border border-cellar-300 dark:border-claret-700');
+}
+function previewInstagram(){
+  var url=document.getElementById('igUrl').value.trim(), data=normalizeInstagramUrl(url), box=document.getElementById('igPreview');
+  if(!data){ box.innerHTML='<p class="text-sm text-claret-600 dark:text-claret-400 mt-2"><i class="fas fa-circle-exclamation mr-1"></i>Link inválido. Use um link público do Instagram.</p>'; return; }
+  var label=data.code?'Publicação/Reel do Instagram':'Perfil do Instagram';
+  var html='<div class="mt-3 grid md:grid-cols-2 gap-4 items-start">';
+  if(data.code){
+    html+='<div class="rounded-xl overflow-hidden border border-pink-500/20 bg-black">'+instagramEmbedHtml({instagram_url:data.url},false)+'</div>';
+  } else {
+    html+='<div class="rounded-xl overflow-hidden bg-gradient-to-br from-purple-950 via-pink-900 to-orange-800 min-h-[220px] flex items-center justify-center text-white p-6 text-center"><div><i class="fab fa-instagram text-5xl mb-3"></i><p class="font-bold">'+label+'</p><p class="text-xs text-white/70 mt-1">Para assistir dentro do Academy, cole um Reel ou publicação pública.</p></div></div>';
+  }
+  html+='<div class="space-y-2">';
+  html+='<input id="igTitle" placeholder="Título do conteúdo" class="w-full px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm">';
+  html+='<textarea id="igDesc" placeholder="Descrição" rows="2" class="w-full px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm"></textarea>';
+  html+='<div class="grid grid-cols-2 gap-2"><select id="igCountry" class="px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm"><option value="">País (opcional)</option>'+DB.countries.map(function(c){return '<option value="'+escAttr(c.id)+'">'+c.flag+' '+esc(c.name)+'</option>';}).join('')+'</select><select id="igGrape" class="px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm"><option value="">Uva (opcional)</option>'+DB.grapes.map(function(g){return '<option value="'+escAttr(g.id)+'">'+esc(g.name)+'</option>';}).join('')+'</select></div>';
+  html+='<input id="igTags" placeholder="Tags separadas por vírgula" class="w-full px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm">';
+  html+='<button onclick="addInstagramVideo()" class="w-full px-4 py-2 bg-gradient-to-r from-pink-600 to-purple-600 hover:opacity-90 text-white rounded-lg text-sm font-semibold"><i class="fas fa-plus mr-1"></i>Salvar Instagram na biblioteca</button>';
+  html+='<p class="mt-3 text-[11px] text-cellar-500 dark:text-cellar-400"><i class="fas fa-circle-info mr-1"></i>Reels e publicações públicas são exibidos dentro do Academy pelo embed oficial do Instagram. Conteúdos privados ou perfis não possuem player incorporado.</p></div></div>';
+  box.innerHTML=html;
+}
+function addInstagramVideo(){
+  var data=normalizeInstagramUrl(document.getElementById('igUrl').value.trim()), prev=document.getElementById('igPreview');
+  if(!data){if(prev)prev.innerHTML='<p class="text-xs text-claret-600 dark:text-claret-400">Link inválido do Instagram.</p>';return;}
+  if(!data.code){if(prev)prev.innerHTML='<p class="text-xs text-claret-600 dark:text-claret-400">Para reproduzir dentro do Academy, use um link público de Reel ou publicação do Instagram.</p>';return;}
+  var title=(document.getElementById('igTitle').value||'Conteúdo do Instagram').trim()||'Conteúdo do Instagram';
+  var desc=(document.getElementById('igDesc').value||'').trim();
+  var country=document.getElementById('igCountry').value, grape=document.getElementById('igGrape').value;
+  var tags=(document.getElementById('igTags').value||'').split(',').map(function(t){return t.trim();}).filter(Boolean);
+  var uid=genUid();
+  state.videos.unshift({id:'ig_'+uid,uid:uid,type:'instagram',platform:'instagram',instagram_url:data.url,url:data.url,instagram_code:data.code,title:title,desc:desc,country:country,grape:grape,tags:tags,done:false});
+  saveState(); addXP(10); toast('Conteúdo do Instagram adicionado à biblioteca','fa-instagram'); render();
 }
 function previewVideo(){
   var url = document.getElementById('ytUrl').value;
@@ -1252,16 +1321,14 @@ function previewVideo(){
   var box = document.getElementById('ytPreview');
   if(!id){ box.innerHTML = '<p class="text-sm text-claret-600 dark:text-claret-400 mt-2"><i class="fas fa-circle-exclamation mr-1"></i>Link inválido. Cole um link completo do YouTube.</p>'; return; }
   var html = '<div class="mt-3 grid md:grid-cols-2 gap-4 items-start">';
-  html += '<div class="aspect-video bg-black rounded-lg overflow-hidden"><iframe class="w-full h-full" src="https://www.youtube.com/embed/'+id+'?loop=1&playlist='+id+'&rel=0" frameborder="0" allowfullscreen></iframe></div>';
+  html += '<div class="aspect-video bg-black rounded-lg overflow-hidden"><iframe class="w-full h-full" src="https://www.youtube-nocookie.com/embed/'+id+'?loop=1&playlist='+id+'&rel=0" frameborder="0" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe></div>';
   html += '<div class="space-y-2">';
   html += '<input id="ytTitle" placeholder="Título do vídeo" class="w-full px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm">';
   html += '<textarea id="ytDesc" placeholder="Descrição" rows="2" class="w-full px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm"></textarea>';
-  html += '<div class="grid grid-cols-2 gap-2">';
-  html += '<select id="ytCountry" class="px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm"><option value="">País (opcional)</option>'+DB.countries.map(function(c){ return '<option value="'+c.id+'">'+c.flag+' '+c.name+'</option>'; }).join('')+'</select>';
+  html += '<div class="grid grid-cols-2 gap-2"><select id="ytCountry" class="px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm"><option value="">País (opcional)</option>'+DB.countries.map(function(c){ return '<option value="'+c.id+'">'+c.flag+' '+c.name+'</option>'; }).join('')+'</select>';
   html += '<select id="ytGrape" class="px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm"><option value="">Uva (opcional)</option>'+DB.grapes.map(function(g){ return '<option value="'+g.id+'">'+g.name+'</option>'; }).join('')+'</select></div>';
   html += '<input id="ytTags" placeholder="Tags separadas por vírgula" class="w-full px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm">';
-  html += '<button onclick="addVideo(\''+id+'\')" class="w-full px-4 py-2 bg-vine-600 hover:bg-vine-700 text-white rounded-lg text-sm font-semibold"><i class="fas fa-plus mr-1"></i>Salvar vídeo na biblioteca</button>';
-  html += '</div></div>';
+  html += '<button onclick="addVideo(\''+id+'\')" class="w-full px-4 py-2 bg-vine-600 hover:bg-vine-700 text-white rounded-lg text-sm font-semibold"><i class="fas fa-plus mr-1"></i>Salvar vídeo na biblioteca</button></div></div>';
   box.innerHTML = html;
 }
 function addVideo(id){
@@ -1270,7 +1337,7 @@ function addVideo(id){
   var country = document.getElementById('ytCountry').value;
   var grape = document.getElementById('ytGrape').value;
   var tags = document.getElementById('ytTags').value.split(',').map(function(t){return t.trim();}).filter(Boolean);
-  state.videos.unshift({id:id,uid:genUid(),title:title,desc:desc,country:country,grape:grape,tags:tags,done:false});
+  state.videos.unshift({id:id,uid:genUid(),type:'youtube',platform:'youtube',title:title,desc:desc,country:country,grape:grape,tags:tags,done:false});
   saveState(); addXP(10);
   go('videos');
 }
