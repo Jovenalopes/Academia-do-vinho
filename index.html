@@ -1039,16 +1039,98 @@ function lessonVideoPanel(c,l,idx){
     html+='<div class="absolute inset-0 flex items-center justify-center"><span class="flex h-16 w-16 items-center justify-center rounded-full bg-claret-600/95 text-white shadow-2xl transition-transform group-hover:scale-110"><i class="fas fa-play ml-1 text-xl"></i></span></div>';
     html+='<p class="absolute bottom-3 left-4 right-4 text-sm font-semibold text-white">'+esc(l.videoTitle||l.title)+'</p>';
     html+='</button></div></div>';
+
+    // Ações exatamente abaixo do vídeo, como no Wine World Academy3.
     html+='<div class="mt-3 flex flex-wrap items-center gap-2">';
-    if(!watched) html+='<button onclick="markLessonVideoWatched(\''+c.id+'\','+idx+')" class="px-4 py-2 bg-vine-600 hover:bg-vine-700 text-white rounded-full text-xs font-bold">✅ Marcar como concluído <span class="opacity-80">(+5 XP)</span></button>';
-    else html+='<span class="px-4 py-2 rounded-full bg-vine-500/10 text-vine-700 dark:text-vine-400 text-xs font-bold">✅ Vídeo concluído</span>';
-    html+='<a href="https://www.youtube.com/watch?v='+id+'" target="_blank" rel="noopener noreferrer" class="px-4 py-2 rounded-full border border-cellar-300 dark:border-claret-700 text-xs font-semibold hover:bg-cellar-100 dark:hover:bg-claret-900/60"><i class="fab fa-youtube mr-1 text-red-500"></i>Abrir no YouTube</a>';
+    if(!watched){
+      html+='<button onclick="markLessonVideoWatched(\''+c.id+'\','+idx+')" class="px-4 py-2 bg-vine-600 hover:bg-vine-700 text-white rounded-full text-xs font-bold"><i class="fas fa-check mr-1"></i>Marcar como concluído <span class="opacity-80">(+5 XP)</span></button>';
+    }else{
+      html+='<span class="px-4 py-2 rounded-full bg-vine-500/10 text-vine-700 dark:text-vine-400 text-xs font-bold"><i class="fas fa-circle-check mr-1"></i>Vídeo concluído</span>';
+    }
+    html+='<button onclick="openChangeLessonVideo(\''+c.id+'\','+idx+')" class="px-4 py-2 rounded-full border border-cellar-300 dark:border-claret-700 text-xs font-semibold hover:bg-cellar-100 dark:hover:bg-claret-900/60"><i class="fas fa-plus mr-1"></i>Trocar vídeo</button>';
+    html+='<button onclick="promptDeleteLessonVideo(\''+c.id+'\','+idx+')" class="px-4 py-2 rounded-full border border-claret-400/60 dark:border-claret-700 text-claret-600 dark:text-claret-300 text-xs font-semibold hover:bg-claret-50 dark:hover:bg-claret-900/60"><i class="fas fa-trash-can mr-1"></i>Excluir vídeo</button>';
+    html+='<button onclick="testLessonKnowledge(\''+c.id+'\','+idx+')" class="px-4 py-2 rounded-full border border-cellar-300 dark:border-claret-700 text-xs font-semibold hover:bg-cellar-100 dark:hover:bg-claret-900/60"><i class="fas fa-brain mr-1"></i>Testar conhecimento</button>';
     html+='</div>';
   } else {
-    html+='<div class="rounded-2xl border border-dashed border-cellar-300 dark:border-claret-700 p-5 text-center"><p class="text-sm text-cellar-500 mb-3">Esta aula ainda não possui vídeo associado.</p><div class="flex flex-col sm:flex-row gap-2"><input id="lessonVideoUrl_'+c.id+'_'+idx+'" placeholder="Cole o link do YouTube" class="flex-1 px-3 py-2.5 rounded-xl border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm"><button onclick="saveLessonVideo(\''+c.id+'\','+idx+')" class="px-4 py-2.5 bg-claret-700 hover:bg-claret-800 text-white rounded-xl text-xs font-bold">Salvar vídeo</button></div></div>';
+    html+='<div class="rounded-2xl border border-dashed border-cellar-300 dark:border-claret-700 p-5 text-center"><p class="text-sm text-cellar-500 mb-3">Esta aula ainda não possui vídeo associado.</p><div class="flex flex-col sm:flex-row gap-2"><input id="lessonVideoUrl_'+c.id+'_'+idx+'" placeholder="Cole o link do YouTube" class="flex-1 px-3 py-2.5 rounded-xl border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm"><button onclick="saveLessonVideo(\''+c.id+'\','+idx+')" class="px-4 py-2.5 bg-claret-700 hover:bg-claret-800 text-white rounded-xl text-xs font-bold"><i class="fas fa-plus mr-1"></i>Adicionar vídeo</button></div></div>';
   }
   html+='</div>'; return html;
 }
+
+// Troca o vídeo de uma aula sem alterar o restante do conteúdo do curso.
+function openChangeLessonVideo(courseId,idx){
+  var current=lessonVideoId(courseId,idx)||'';
+  var m=document.createElement('div');
+  m.id='changeLessonVideoModal';
+  m.className='fixed inset-0 z-[210] flex items-center justify-center bg-claret-950/70 backdrop-blur-sm p-4';
+  m.innerHTML=''
+    +'<div class="fade-in bg-white dark:bg-claret-950 rounded-2xl p-6 max-w-lg w-full border border-cellar-200 dark:border-claret-800 shadow-2xl">'
+    +'<div class="flex items-start justify-between gap-3 mb-4"><div><p class="eyebrow text-gilt-500">🎥 EDITAR VÍDEO DA AULA</p><h3 class="font-serif font-bold text-xl text-claret-900 dark:text-cellar-100 mt-1">Trocar vídeo</h3><p class="text-xs text-cellar-500 mt-1">Cole o novo link do YouTube. O conteúdo da aula e o quiz serão preservados.</p></div><button onclick="closeChangeLessonVideoModal()" class="w-9 h-9 rounded-full border border-cellar-200 dark:border-claret-800 text-cellar-500"><i class="fas fa-xmark"></i></button></div>'
+    +'<label class="block text-xs font-bold text-cellar-600 dark:text-cellar-300 mb-1.5">Link ou ID do YouTube</label>'
+    +'<input id="changeLessonVideoUrl" value="https://www.youtube.com/watch?v='+esc(current)+'" class="w-full px-3 py-2.5 rounded-xl border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm outline-none focus:border-gilt-500">'
+    +'<div class="flex justify-end gap-2 mt-5"><button onclick="closeChangeLessonVideoModal()" class="px-4 py-2 rounded-xl border border-cellar-300 dark:border-claret-700 text-sm font-semibold">Cancelar</button><button onclick="confirmChangeLessonVideo(\''+courseId+'\','+idx+')" class="px-5 py-2 rounded-xl bg-claret-700 hover:bg-claret-800 text-white text-sm font-bold"><i class="fas fa-floppy-disk mr-1"></i>Salvar novo vídeo</button></div>'
+    +'</div>';
+  document.body.appendChild(m);
+  var inp=document.getElementById('changeLessonVideoUrl'); if(inp){inp.focus();inp.select();}
+}
+function closeChangeLessonVideoModal(){var m=document.getElementById('changeLessonVideoModal');if(m)m.remove();}
+function confirmChangeLessonVideo(courseId,idx){
+  var inp=document.getElementById('changeLessonVideoUrl');
+  var id=extractYouTubeId(inp?inp.value.trim():'');
+  if(!id){toast('Cole um link válido do YouTube','fa-circle-exclamation');return;}
+  if(!state.lessonVideos)state.lessonVideos={};
+  if(!state.removedLessonVideos)state.removedLessonVideos={};
+  delete state.removedLessonVideos[lessonKey(courseId,idx)];
+  state.lessonVideos[lessonKey(courseId,idx)]=id;
+  // Um vídeo novo precisa ser assistido novamente, mas mantém o histórico do quiz.
+  if(state.progress.lessonVideosWatched&&state.progress.lessonVideosWatched[courseId]){
+    state.progress.lessonVideosWatched[courseId]=state.progress.lessonVideosWatched[courseId].filter(function(n){return n!==idx;});
+  }
+  state.progress.videosWatched=(state.progress.videosWatched||[]).filter(function(x){return x!=='lesson:'+lessonKey(courseId,idx);});
+  updateCourseProgress(courseId,(DB.courses.find(function(c){return c.id===courseId;})||{lessons:[]}).lessons.length);
+  saveState();closeChangeLessonVideoModal();toast('Vídeo da aula trocado com sucesso','fa-circle-play');render();
+}
+function promptDeleteLessonVideo(courseId,idx){
+  closeLessonVideoDeleteModal();
+  var c=DB.courses.find(function(x){return x.id===courseId;});
+  var title=c&&c.lessons[idx]?c.lessons[idx].title:'esta aula';
+  var m=document.createElement('div');
+  m.id='lessonVideoDeleteModal';
+  m.className='fixed inset-0 z-[210] flex items-center justify-center bg-claret-950/70 backdrop-blur-sm p-4';
+  m.innerHTML=''
+    +'<div class="fade-in bg-white dark:bg-claret-950 rounded-2xl p-6 max-w-md w-full border border-cellar-200 dark:border-claret-800 shadow-2xl">'
+    +'<div class="flex items-start gap-3 mb-4"><div class="w-10 h-10 rounded-full bg-claret-500/10 text-claret-500 flex items-center justify-center"><i class="fas fa-trash-can"></i></div><div><h3 class="font-serif font-bold text-lg text-claret-900 dark:text-cellar-100">Excluir vídeo</h3><p class="text-xs text-cellar-500 mt-1">Remover o vídeo de “'+esc(title)+'”. O conteúdo e o quiz da aula permanecerão.</p></div></div>'
+    +'<input type="password" id="lessonVideoDeletePwd" placeholder="Senha de administrador" autocomplete="off" class="w-full px-3 py-2.5 rounded-xl border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm" onkeydown="if(event.key===\'Enter\')confirmDeleteLessonVideo(\''+courseId+'\','+idx+')">'
+    +'<p id="lessonVideoDeleteErr" class="hidden text-xs text-claret-500 mt-2"><i class="fas fa-circle-exclamation mr-1"></i>Senha incorreta.</p>'
+    +'<div class="flex gap-2 mt-4"><button onclick="closeLessonVideoDeleteModal()" class="flex-1 px-4 py-2 rounded-xl border border-cellar-300 dark:border-claret-700 text-sm font-semibold">Cancelar</button><button onclick="confirmDeleteLessonVideo(\''+courseId+'\','+idx+')" class="flex-1 px-4 py-2 rounded-xl bg-claret-700 hover:bg-claret-800 text-white text-sm font-bold"><i class="fas fa-trash-can mr-1"></i>Excluir vídeo</button></div>'
+    +'</div>';
+  document.body.appendChild(m);
+  var inp=document.getElementById('lessonVideoDeletePwd');if(inp)inp.focus();
+}
+function closeLessonVideoDeleteModal(){var m=document.getElementById('lessonVideoDeleteModal');if(m)m.remove();}
+function confirmDeleteLessonVideo(courseId,idx){
+  var pwd=document.getElementById('lessonVideoDeletePwd');
+  if(!pwd||pwd.value!==ADMIN_PASSWORD){var err=document.getElementById('lessonVideoDeleteErr');if(err)err.classList.remove('hidden');if(pwd){pwd.value='';pwd.focus();}return;}
+  var key=lessonKey(courseId,idx);
+  if(!state.lessonVideos)state.lessonVideos={};
+  if(!state.removedLessonVideos)state.removedLessonVideos={};
+  state.removedLessonVideos[key]=true;
+  delete state.lessonVideos[key];
+  if(state.progress.lessonVideosWatched&&state.progress.lessonVideosWatched[courseId]){
+    state.progress.lessonVideosWatched[courseId]=state.progress.lessonVideosWatched[courseId].filter(function(n){return n!==idx;});
+  }
+  state.progress.videosWatched=(state.progress.videosWatched||[]).filter(function(x){return x!=='lesson:'+key;});
+  updateCourseProgress(courseId,(DB.courses.find(function(c){return c.id===courseId;})||{lessons:[]}).lessons.length);
+  saveState();closeLessonVideoDeleteModal();toast('Vídeo da aula excluído','fa-trash-can');render();
+}
+function testLessonKnowledge(courseId,idx){
+  if(!lessonVideoWatched(courseId,idx)){
+    toast('Assista ao vídeo e marque como concluído para liberar o quiz','fa-lock');
+    return;
+  }
+  startLessonQuiz(courseId,idx);
+}
+
 function playLessonVideo(courseId,idx,id){
   var box=document.getElementById('lessonPlayer_'+courseId+'_'+idx);
   if(!box)return;
@@ -1097,15 +1179,7 @@ function renderCourseDetail(el, id){
     // Vídeo — sempre visível.
     html += lessonVideoPanel(c,l,idx);
 
-    // Barra de ações exatamente no fluxo do modelo de referência.
-    html += '<div class="px-4 md:px-6 py-4 flex flex-wrap items-center gap-2 border-t border-cellar-200 dark:border-claret-800 mt-4">';
-    if(watched){
-      html += '<button class="px-4 py-2 rounded-xl bg-vine-500/10 text-vine-700 dark:text-vine-400 text-xs font-bold"><i class="fas fa-check-circle mr-1"></i>Vídeo concluído</button>';
-    } else {
-      html += '<button onclick="markLessonVideoWatched(\''+c.id+'\','+idx+')" class="px-4 py-2 rounded-xl bg-vine-600 hover:bg-vine-700 text-white text-xs font-bold"><i class="fas fa-check mr-1"></i>Marcar vídeo como concluído (+5 XP)</button>';
-    }
-    html += '<button onclick="startLessonQuiz(\''+c.id+'\','+idx+')" class="px-4 py-2 rounded-xl border border-claret-300 dark:border-claret-700 hover:bg-claret-50 dark:hover:bg-claret-900/50 text-claret-800 dark:text-cellar-100 text-xs font-bold"><i class="fas fa-brain mr-1"></i>Testar conhecimento</button>';
-    html += '</div>';
+    // As ações da aula ficam diretamente abaixo do vídeo, como no layout de referência.
 
     // Quiz individual da aula aparece somente quando iniciado ou quando já há resultado.
     if(quizState || best>0) html += lessonQuizPanel(c,l,idx);
@@ -1955,6 +2029,7 @@ var DEFAULT_STATE = {
   favorites: { countries:[], grapes:[], wines:[], videos:[] },
   videos: (typeof DB!=='undefined' && DB.demoVideos ? DB.demoVideos.slice() : []),
   lessonVideos: {},
+  removedLessonVideos: {},
   studyPages: [],
   progress: { courses:{intro:0,tasting:0,world:0,sommelier:0}, lessonsDone:{}, lessonVideosWatched:{}, lessonQuizBest:{}, lessonQuizAttempts:{}, quizzesTaken:0, quizBest:0, videosWatched:[], grapesViewed:[], countriesViewed:[], topicQuizzes:{} },
   compareGrapes: [],
@@ -1982,8 +2057,9 @@ var DEFAULT_LESSON_VIDEOS = {
 
 function seedDefaultLessonVideos(){
   state.lessonVideos=state.lessonVideos||{};
+  state.removedLessonVideos=state.removedLessonVideos||{};
   Object.keys(DEFAULT_LESSON_VIDEOS).forEach(function(k){
-    if(!state.lessonVideos[k]) state.lessonVideos[k]=DEFAULT_LESSON_VIDEOS[k];
+    if(!state.lessonVideos[k] && !state.removedLessonVideos[k]) state.lessonVideos[k]=DEFAULT_LESSON_VIDEOS[k];
   });
 }
 
@@ -2047,6 +2123,7 @@ function normalizeLearningState(){
   state.progress.lessonQuizBest=state.progress.lessonQuizBest||{};
   state.progress.lessonQuizAttempts=state.progress.lessonQuizAttempts||{};
   state.lessonVideos=state.lessonVideos||{};
+  state.removedLessonVideos=state.removedLessonVideos||{};
 }
 function saveState(){
   normalizeLearningState();
