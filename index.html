@@ -90,7 +90,7 @@ h1,h2,h3,h4,h5,h6,.font-serif{ font-family:'Fraunces',serif; }
 </style><style>.quiz-correct-blink{animation:quizCorrectBlink .9s ease-in-out 0s 3;box-shadow:0 0 0 2px rgba(34,197,94,.35)}@keyframes quizCorrectBlink{0%,100%{background-color:rgba(34,197,94,.12);transform:scale(1)}50%{background-color:rgba(34,197,94,.32);transform:scale(1.015)}}.quiz-wrong-flash{animation:quizWrongFlash .55s ease-in-out 0s 2}@keyframes quizWrongFlash{0%,100%{background-color:rgba(220,38,38,.08)}50%{background-color:rgba(220,38,38,.25)}}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-#wwaAuthGate{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:18px;background:radial-gradient(circle at top,#5a1930 0,#16070c 48%,#070304 100%);color:#fff}#wwaAuthGate.hidden{display:none}.wwa-auth-card{width:min(100%,470px);padding:28px;border:1px solid rgba(255,255,255,.12);border-radius:28px;background:rgba(30,10,17,.88);box-shadow:0 30px 90px rgba(0,0,0,.45);backdrop-filter:blur(16px)}.wwa-auth-input{width:100%;box-sizing:border-box;padding:13px 14px;border-radius:13px;border:1px solid rgba(255,255,255,.14);background:#160b0f;color:#fff;margin-top:7px}.wwa-auth-btn{width:100%;padding:13px;border:0;border-radius:13px;background:#b98a38;color:#19090e;font-weight:800;cursor:pointer}.wwa-userbar{position:fixed;top:14px;right:16px;z-index:90;display:flex;gap:8px;align-items:center;padding:7px 10px;border-radius:14px;background:rgba(25,8,14,.88);border:1px solid rgba(198,154,63,.25);color:#fff;backdrop-filter:blur(12px);font-size:12px}.wwa-userbar button{border:0;border-radius:9px;padding:7px 9px;background:#6d233b;color:#fff;font-weight:700;cursor:pointer}.wwa-userbar .admin{background:#b98a38;color:#19090e}.wwa-admin{position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;padding:18px}.wwa-admin.hidden{display:none}.wwa-admin-card{width:min(100%,1100px);max-height:88vh;overflow:auto;background:#160b0f;color:#eee;border:1px solid #593042;border-radius:24px;padding:22px}.wwa-table{width:100%;border-collapse:collapse;font-size:13px}.wwa-table th,.wwa-table td{padding:10px;border-bottom:1px solid #3d2430;text-align:left}.wwa-msg{font-size:12px;margin:10px 0;color:#f0c978}.wwa-tabs{display:flex;gap:8px;margin-bottom:18px}.wwa-tabs button{flex:1;padding:10px;border:1px solid #593042;border-radius:10px;background:#261018;color:#fff;cursor:pointer}@media(max-width:700px){.wwa-userbar{top:auto;bottom:64px;right:8px}.wwa-userbar span{display:none}}
+#wwaAuthGate{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:18px;background:radial-gradient(circle at top,#5a1930 0,#16070c 48%,#070304 100%);color:#fff}#wwaAuthGate.hidden{display:none}.wwa-auth-card{width:min(100%,470px);padding:28px;border:1px solid rgba(255,255,255,.12);border-radius:28px;background:rgba(30,10,17,.88);box-shadow:0 30px 90px rgba(0,0,0,.45);backdrop-filter:blur(16px)}.wwa-auth-input{width:100%;box-sizing:border-box;padding:13px 14px;border-radius:13px;border:1px solid rgba(255,255,255,.14);background:#160b0f;color:#fff;margin-top:7px}.wwa-auth-btn{width:100%;padding:13px;border:0;border-radius:13px;background:#b98a38;color:#19090e;font-weight:800;cursor:pointer}.wwa-userbar{position:fixed;top:14px;right:16px;z-index:90;display:flex;gap:8px;align-items:center;padding:7px 10px;border-radius:14px;background:rgba(25,8,14,.88);border:1px solid rgba(198,154,63,.25);color:#fff;backdrop-filter:blur(12px);font-size:12px}.wwa-userbar button{border:0;border-radius:9px;padding:7px 9px;background:#6d233b;color:#fff;font-weight:700;cursor:pointer}.wwa-userbar .admin{background:#b98a38;color:#19090e}.wwa-admin{position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;padding:18px}.wwa-admin.hidden{display:none}.wwa-admin-card{width:min(100%,1200px);max-height:88vh;overflow:auto;background:#160b0f;color:#eee;border:1px solid #593042;border-radius:24px;padding:22px 26px 28px;box-shadow:0 25px 60px rgba(0,0,0,0.7)}.wwa-table{width:100%;border-collapse:collapse;font-size:13px}.wwa-table th,.wwa-table td{padding:10px;border-bottom:1px solid #3d2430;text-align:left}.wwa-msg{font-size:12px;margin:10px 0;color:#f0c978}.wwa-tabs{display:flex;gap:8px;margin-bottom:18px}.wwa-tabs button{flex:1;padding:10px;border:1px solid #593042;border-radius:10px;background:#261018;color:#fff;cursor:pointer}@media(max-width:700px){.wwa-userbar{top:auto;bottom:64px;right:8px}.wwa-userbar span{display:none}}
 </style>
 </head>
 <body class="text-cellar-900 dark:text-cellar-100 transition-colors duration-300">
@@ -2307,15 +2307,138 @@ function wwaAuthTab(m){wwaMode=m;document.getElementById('wwaName').parentElemen
 async function wwaSubmitAuth(e){e.preventDefault();if(!wwaSB)return wwaMsg('Supabase não configurado.',true);let email=wwaEmail.value.trim(),pass=wwaPass.value,name=wwaName.value.trim();try{if(wwaMode==='register'){let r=await wwaSB.auth.signUp({email,password:pass,options:{data:{full_name:name}}});if(r.error)throw r.error;wwaMsg('Conta criada! Verifique seu e-mail para confirmar, se solicitado.')}else{let r=await wwaSB.auth.signInWithPassword({email,password:pass});if(r.error)throw r.error}}catch(x){wwaMsg(x.message||'Não foi possível continuar.',true)}}
 async function wwaGoogle(){try{let r=await wwaSB.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+location.pathname}});if(r.error)throw r.error}catch(x){wwaMsg(x.message,true)}}
 async function wwaForgot(){let email=prompt('Digite seu e-mail para receber o link de recuperação:');if(!email)return;let r=await wwaSB.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});wwaMsg(r.error?r.error.message:'Se o e-mail existir, o link de recuperação foi enviado.',!!r.error)}
-async function wwaEnsureProfile(){let r=await wwaSB.from('profiles').select('*').eq('id',wwaUser.id).maybeSingle();wwaProfile=r.data;if(!wwaProfile){let name=wwaUser.user_metadata?.full_name||wwaUser.email.split('@')[0];let u=await wwaSB.from('profiles').upsert({id:wwaUser.id,email:wwaUser.email,full_name:name,xp:0,role:'student'},{onConflict:'id'}).select('*').single();wwaProfile=u.data}return wwaProfile}
+async function wwaEnsureProfile(){let r=await wwaSB.from('profiles').select('*').eq('id',wwaUser.id).maybeSingle();wwaProfile=r.data;if(!wwaProfile){let name=wwaUser.user_metadata?.full_name||wwaUser.email.split('@')[0];let u=await wwaSB.from('profiles').upsert({id:wwaUser.id,email:wwaUser.email,full_name:name,xp:0,admin:'student'},{onConflict:'id'}).select('*').single();wwaProfile=u.data}return wwaProfile}
 async function wwaLoadCloud(){try{let r=await wwaSB.from('user_states').select('state').eq('user_id',wwaUser.id).maybeSingle();if(r.data?.state){let cloud=r.data.state;Object.keys(DEFAULT_STATE).forEach(k=>{if(k!=='videos' && cloud[k]!==undefined)state[k]=cloud[k]});seedDefaultLessonVideos?.();}wwaCloudReady=true}catch(e){console.warn('Estado na nuvem indisponível',e)}}
 function wwaQueueSync(){if(!wwaCloudReady||!wwaUser)return;clearTimeout(wwaSyncTimer);wwaSyncTimer=setTimeout(wwaSyncNow,700)}
 async function wwaSyncNow(){if(!wwaCloudReady||!wwaUser)return;try{await wwaSB.from('user_states').upsert({user_id:wwaUser.id,state:JSON.parse(JSON.stringify(state)),updated_at:new Date().toISOString()},{onConflict:'user_id'});await wwaSB.from('profiles').update({xp:state.xp||0,updated_at:new Date().toISOString()}).eq('id',wwaUser.id)}catch(e){console.warn('Falha ao sincronizar',e)}}
 async function wwaSession(session){if(!session){wwaUser=null;wwaCloudReady=false;document.getElementById('wwaAuthGate').classList.remove('hidden');document.getElementById('wwaUserbar').classList.add('hidden');return}wwaUser=session.user;await wwaEnsureProfile();await wwaLoadCloud();await wwaLoadSharedVideos();wwaStartSharedRealtime();document.getElementById('wwaAuthGate').classList.add('hidden');document.getElementById('wwaUserbar').classList.remove('hidden');document.getElementById('wwaUserName').textContent=wwaProfile?.full_name||wwaUser.email;document.getElementById('wwaUserXP').textContent='⭐ '+(state.xp||0)+' XP';if(wwaProfile?.admin==='admin')document.getElementById('wwaAdminOpen').classList.remove('hidden');render?.()}
 async function wwaLogout(){await wwaSB.auth.signOut()}
 function wwaOpenProfile(){alert('Perfil\n\nNome: '+(wwaProfile?.full_name||'')+'\nE-mail: '+(wwaUser?.email||'')+'\nXP: '+(state.xp||0)+'\n\nSeu progresso é sincronizado automaticamente com sua conta.')}
-async function wwaOpenAdmin(){if(wwaProfile?.admin!=='admin')return;document.getElementById('wwaAdmin').classList.remove('hidden');let e=document.getElementById('wwaAdminContent');e.innerHTML='Carregando dados...';try{let [p,st]=await Promise.all([wwaSB.from('profiles').select('*').order('xp',{ascending:false}),wwaSB.from('user_states').select('user_id,state')]);let students=(p.data||[]).filter(x=>x.role!=='admin');let states=Object.fromEntries((st.data||[]).map(x=>[x.user_id,x.state||{}]));let totalXP=students.reduce((a,x)=>a+(x.xp||0),0);e.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:16px 0"><div>👥 <b>'+students.length+'</b><br>Alunos</div><div>⭐ <b>'+totalXP.toLocaleString('pt-BR')+'</b><br>XP total</div></div><table class="wwa-table"><thead><tr><th>Aluno</th><th>E-mail</th><th>XP</th><th>Cursos</th><th>Vídeos</th><th>Quizzes</th></tr></thead><tbody>'+students.map(u=>{let q=states[u.id]||{},pr=q.progress||{};return '<tr><td>'+wwaEsc(u.full_name||'Sem nome')+'</td><td>'+wwaEsc(u.email||'')+'</td><td>⭐ '+(u.xp||0)+'</td><td>'+Object.keys(pr.lessonsDone||{}).length+'</td><td>'+(pr.videosWatched||[]).length+'</td><td>'+(pr.quizzesTaken||0)+'</td></tr>'}).join('')+'</tbody></table>'}catch(x){e.innerHTML='Erro ao carregar dashboard: '+wwaEsc(x.message)}}
-function wwaCloseAdmin(){document.getElementById('wwaAdmin').classList.add('hidden')}function wwaEsc(v){return String(v||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+
+// ===== NOVA FUNÇÃO wwaOpenAdmin COM VISUAL MELHORADO =====
+async function wwaOpenAdmin() {
+  if (wwaProfile?.admin !== 'admin') return;
+  const modal = document.getElementById('wwaAdmin');
+  modal.classList.remove('hidden');
+  const content = document.getElementById('wwaAdminContent');
+  content.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:center;padding:30px 0;color:#c9a67e;">
+      <i class="fas fa-spinner fa-pulse fa-2x"></i>
+      <span style="margin-left:12px;font-size:14px;">Carregando dados...</span>
+    </div>
+  `;
+
+  try {
+    const [profilesRes, statesRes] = await Promise.all([
+      wwaSB.from('profiles').select('*').order('xp', { ascending: false }),
+      wwaSB.from('user_states').select('user_id, state')
+    ]);
+
+    const students = (profilesRes.data || []).filter(x => x.admin !== 'admin');
+    const statesMap = Object.fromEntries((statesRes.data || []).map(x => [x.user_id, x.state || {}]));
+
+    const totalXP = students.reduce((sum, s) => sum + (s.xp || 0), 0);
+    const avgXP = students.length ? Math.round(totalXP / students.length) : 0;
+    const totalVideos = students.reduce((sum, s) => {
+      const st = statesMap[s.id] || {};
+      return sum + (st.progress?.videosWatched?.length || 0);
+    }, 0);
+    const totalQuizzes = students.reduce((sum, s) => {
+      const st = statesMap[s.id] || {};
+      return sum + (st.progress?.quizzesTaken || 0);
+    }, 0);
+
+    let tableRows = students.map(u => {
+      const st = statesMap[u.id] || {};
+      const pr = st.progress || {};
+      const coursesDone = Object.keys(pr.lessonsDone || {}).length;
+      const videosWatched = (pr.videosWatched || []).length;
+      const quizzesTaken = pr.quizzesTaken || 0;
+      return `
+        <tr style="border-bottom:1px solid #3d2430;transition:background 0.2s;">
+          <td style="padding:12px 10px;font-weight:500;color:#f0ece6;">
+            <i class="fas fa-user-circle" style="color:#c69a3f;margin-right:8px;"></i>
+            ${wwaEsc(u.full_name || 'Sem nome')}
+          </td>
+          <td style="padding:12px 10px;color:#c9a67e;font-size:13px;">${wwaEsc(u.email || '')}</td>
+          <td style="padding:12px 10px;text-align:center;">
+            <span style="background:#6f8551;color:#fff;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;">
+              ⭐ ${u.xp || 0}
+            </span>
+          </td>
+          <td style="padding:12px 10px;text-align:center;font-size:13px;">${coursesDone}</td>
+          <td style="padding:12px 10px;text-align:center;font-size:13px;">${videosWatched}</td>
+          <td style="padding:12px 10px;text-align:center;font-size:13px;">${quizzesTaken}</td>
+        </tr>
+      `;
+    }).join('');
+
+    content.innerHTML = `
+      <!-- Cards de métricas -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:16px;margin:20px 0 30px;">
+        <div style="background:rgba(89,25,48,0.3);border:1px solid #593042;border-radius:16px;padding:18px 16px;text-align:center;">
+          <div style="font-size:28px;margin-bottom:4px;">👥</div>
+          <div style="font-size:24px;font-weight:700;color:#f0ece6;">${students.length}</div>
+          <div style="font-size:12px;color:#c9a67e;">Alunos</div>
+        </div>
+        <div style="background:rgba(198,154,63,0.12);border:1px solid #835f22;border-radius:16px;padding:18px 16px;text-align:center;">
+          <div style="font-size:28px;margin-bottom:4px;">⭐</div>
+          <div style="font-size:24px;font-weight:700;color:#f0ece6;">${totalXP.toLocaleString('pt-BR')}</div>
+          <div style="font-size:12px;color:#c9a67e;">XP total</div>
+        </div>
+        <div style="background:rgba(111,133,81,0.15);border:1px solid #6f8551;border-radius:16px;padding:18px 16px;text-align:center;">
+          <div style="font-size:28px;margin-bottom:4px;">📊</div>
+          <div style="font-size:24px;font-weight:700;color:#f0ece6;">${avgXP}</div>
+          <div style="font-size:12px;color:#c9a67e;">Média XP</div>
+        </div>
+        <div style="background:rgba(220,184,97,0.08);border:1px solid #a67c2c;border-radius:16px;padding:18px 16px;text-align:center;">
+          <div style="font-size:28px;margin-bottom:4px;">🎥</div>
+          <div style="font-size:24px;font-weight:700;color:#f0ece6;">${totalVideos}</div>
+          <div style="font-size:12px;color:#c9a67e;">Vídeos assistidos</div>
+        </div>
+        <div style="background:rgba(175,54,84,0.12);border:1px solid #8f2543;border-radius:16px;padding:18px 16px;text-align:center;">
+          <div style="font-size:28px;margin-bottom:4px;">🧠</div>
+          <div style="font-size:24px;font-weight:700;color:#f0ece6;">${totalQuizzes}</div>
+          <div style="font-size:12px;color:#c9a67e;">Quizzes realizados</div>
+        </div>
+      </div>
+
+      <!-- Tabela de alunos -->
+      <div style="overflow-x:auto;border-radius:16px;border:1px solid #3d2430;">
+        <table style="width:100%;border-collapse:collapse;font-size:14px;background:rgba(15,6,9,0.5);">
+          <thead>
+            <tr style="background:#2b0a12;border-bottom:2px solid #593042;">
+              <th style="padding:14px 12px;text-align:left;font-weight:600;color:#ecd699;letter-spacing:0.03em;">Aluno</th>
+              <th style="padding:14px 12px;text-align:left;font-weight:600;color:#ecd699;letter-spacing:0.03em;">E-mail</th>
+              <th style="padding:14px 12px;text-align:center;font-weight:600;color:#ecd699;letter-spacing:0.03em;">XP</th>
+              <th style="padding:14px 12px;text-align:center;font-weight:600;color:#ecd699;letter-spacing:0.03em;">Cursos</th>
+              <th style="padding:14px 12px;text-align:center;font-weight:600;color:#ecd699;letter-spacing:0.03em;">Vídeos</th>
+              <th style="padding:14px 12px;text-align:center;font-weight:600;color:#ecd699;letter-spacing:0.03em;">Quizzes</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${tableRows || `<tr><td colspan="6" style="padding:30px;text-align:center;color:#c9a67e;">Nenhum aluno encontrado.</td></tr>`}
+          </tbody>
+        </table>
+      </div>
+
+      <div style="margin-top:16px;font-size:12px;color:#7a5a6a;text-align:right;">
+        <i class="fas fa-sync-alt" style="margin-right:6px;"></i> Atualizado automaticamente
+      </div>
+    `;
+  } catch (err) {
+    content.innerHTML = `
+      <div style="padding:30px;text-align:center;color:#e7a9ba;">
+        <i class="fas fa-circle-exclamation fa-2x" style="display:block;margin-bottom:12px;"></i>
+        Erro ao carregar dados: ${wwaEsc(err.message)}
+      </div>
+    `;
+  }
+}
+// ===== FIM DA NOVA FUNÇÃO =====
+
+function wwaCloseAdmin(){document.getElementById('wwaAdmin').classList.add('hidden')}
+function wwaEsc(v){return String(v||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
 
 /* ================= VÍDEOS COMPARTILHADOS EM TEMPO REAL =================
    Somente os vídeos e suas descrições são globais. Progresso, XP, notas,
