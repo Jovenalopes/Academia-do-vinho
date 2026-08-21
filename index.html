@@ -1327,8 +1327,9 @@ function addInstagramVideo(){
   var country=document.getElementById('igCountry').value, grape=document.getElementById('igGrape').value;
   var tags=(document.getElementById('igTags').value||'').split(',').map(function(t){return t.trim();}).filter(Boolean);
   var uid=genUid();
-  state.videos.unshift({id:'ig_'+uid,uid:uid,type:'instagram',platform:'instagram',instagram_url:data.url,url:data.url,instagram_code:data.code,title:title,desc:desc,country:country,grape:grape,tags:tags,done:false});
-  saveState(); addXP(10); toast('Conteúdo do Instagram adicionado à biblioteca','fa-instagram'); render();
+  var video={id:'ig_'+uid,uid:uid,type:'instagram',platform:'instagram',instagram_url:data.url,url:data.url,instagram_code:data.code,title:title,desc:desc,country:country,grape:grape,tags:tags,done:false};
+  state.videos.unshift(video);
+  saveState(); addXP(10); wwaPublishSharedVideo(video); toast('Conteúdo do Instagram adicionado à biblioteca e compartilhado com todos','fa-instagram'); render();
 }
 function previewVideo(){
   var url = document.getElementById('ytUrl').value;
@@ -1352,8 +1353,9 @@ function addVideo(id){
   var country = document.getElementById('ytCountry').value;
   var grape = document.getElementById('ytGrape').value;
   var tags = document.getElementById('ytTags').value.split(',').map(function(t){return t.trim();}).filter(Boolean);
-  state.videos.unshift({id:id,uid:genUid(),type:'youtube',platform:'youtube',title:title,desc:desc,country:country,grape:grape,tags:tags,done:false});
-  saveState(); addXP(10);
+  var video={id:id,uid:genUid(),type:'youtube',platform:'youtube',title:title,desc:desc,country:country,grape:grape,tags:tags,done:false};
+  state.videos.unshift(video);
+  saveState(); addXP(10); wwaPublishSharedVideo(video);
   go('videos');
 }
 function toggleVidDone(id){
@@ -2006,6 +2008,7 @@ function confirmDeleteVideo(uid){
   }
   state.videos = state.videos.filter(function(v){ return v.uid !== uid; });
   saveState();
+  wwaDeleteSharedVideo(uid);
   closeDeleteModal();
   toast('Vídeo excluído com sucesso','fa-trash-can');
   render();
@@ -2059,8 +2062,9 @@ function addCtxVideo(ctxType,ctxId,domKey){
   var descEl = document.getElementById('ctxDesc_'+domKey);
   var title = (titleEl && titleEl.value.trim()) || 'Vídeo sem título';
   var desc = descEl ? descEl.value.trim() : '';
-  state.videos.unshift({id:id,uid:genUid(),title:title,desc:desc,ctxType:ctxType,ctxId:ctxId,tags:[]});
-  saveState(); addXP(10);
+  var video={id:id,uid:genUid(),type:'youtube',platform:'youtube',title:title,desc:desc,ctxType:ctxType,ctxId:ctxId,tags:[]};
+  state.videos.unshift(video);
+  saveState(); addXP(10); wwaPublishSharedVideo(video);
   render();
 }
 
@@ -2304,14 +2308,75 @@ async function wwaSubmitAuth(e){e.preventDefault();if(!wwaSB)return wwaMsg('Supa
 async function wwaGoogle(){try{let r=await wwaSB.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+location.pathname}});if(r.error)throw r.error}catch(x){wwaMsg(x.message,true)}}
 async function wwaForgot(){let email=prompt('Digite seu e-mail para receber o link de recuperação:');if(!email)return;let r=await wwaSB.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});wwaMsg(r.error?r.error.message:'Se o e-mail existir, o link de recuperação foi enviado.',!!r.error)}
 async function wwaEnsureProfile(){let r=await wwaSB.from('profiles').select('*').eq('id',wwaUser.id).maybeSingle();wwaProfile=r.data;if(!wwaProfile){let name=wwaUser.user_metadata?.full_name||wwaUser.email.split('@')[0];let u=await wwaSB.from('profiles').upsert({id:wwaUser.id,email:wwaUser.email,full_name:name,xp:0,role:'student'},{onConflict:'id'}).select('*').single();wwaProfile=u.data}return wwaProfile}
-async function wwaLoadCloud(){try{let r=await wwaSB.from('user_states').select('state').eq('user_id',wwaUser.id).maybeSingle();if(r.data?.state){let cloud=r.data.state;Object.keys(DEFAULT_STATE).forEach(k=>{if(cloud[k]!==undefined)state[k]=cloud[k]});seedDefaultLessonVideos?.();}wwaCloudReady=true}catch(e){console.warn('Estado na nuvem indisponível',e)}}
+async function wwaLoadCloud(){try{let r=await wwaSB.from('user_states').select('state').eq('user_id',wwaUser.id).maybeSingle();if(r.data?.state){let cloud=r.data.state;Object.keys(DEFAULT_STATE).forEach(k=>{if(k!=='videos' && cloud[k]!==undefined)state[k]=cloud[k]});seedDefaultLessonVideos?.();}wwaCloudReady=true}catch(e){console.warn('Estado na nuvem indisponível',e)}}
 function wwaQueueSync(){if(!wwaCloudReady||!wwaUser)return;clearTimeout(wwaSyncTimer);wwaSyncTimer=setTimeout(wwaSyncNow,700)}
 async function wwaSyncNow(){if(!wwaCloudReady||!wwaUser)return;try{await wwaSB.from('user_states').upsert({user_id:wwaUser.id,state:JSON.parse(JSON.stringify(state)),updated_at:new Date().toISOString()},{onConflict:'user_id'});await wwaSB.from('profiles').update({xp:state.xp||0,updated_at:new Date().toISOString()}).eq('id',wwaUser.id)}catch(e){console.warn('Falha ao sincronizar',e)}}
-async function wwaSession(session){if(!session){wwaUser=null;wwaCloudReady=false;document.getElementById('wwaAuthGate').classList.remove('hidden');document.getElementById('wwaUserbar').classList.add('hidden');return}wwaUser=session.user;await wwaEnsureProfile();await wwaLoadCloud();document.getElementById('wwaAuthGate').classList.add('hidden');document.getElementById('wwaUserbar').classList.remove('hidden');document.getElementById('wwaUserName').textContent=wwaProfile?.full_name||wwaUser.email;document.getElementById('wwaUserXP').textContent='⭐ '+(state.xp||0)+' XP';if(wwaProfile?.role==='admin')document.getElementById('wwaAdminOpen').classList.remove('hidden');render?.()}
+async function wwaSession(session){if(!session){wwaUser=null;wwaCloudReady=false;document.getElementById('wwaAuthGate').classList.remove('hidden');document.getElementById('wwaUserbar').classList.add('hidden');return}wwaUser=session.user;await wwaEnsureProfile();await wwaLoadCloud();await wwaLoadSharedVideos();wwaStartSharedRealtime();document.getElementById('wwaAuthGate').classList.add('hidden');document.getElementById('wwaUserbar').classList.remove('hidden');document.getElementById('wwaUserName').textContent=wwaProfile?.full_name||wwaUser.email;document.getElementById('wwaUserXP').textContent='⭐ '+(state.xp||0)+' XP';if(wwaProfile?.role==='admin')document.getElementById('wwaAdminOpen').classList.remove('hidden');render?.()}
 async function wwaLogout(){await wwaSB.auth.signOut()}
 function wwaOpenProfile(){alert('Perfil\n\nNome: '+(wwaProfile?.full_name||'')+'\nE-mail: '+(wwaUser?.email||'')+'\nXP: '+(state.xp||0)+'\n\nSeu progresso é sincronizado automaticamente com sua conta.')}
 async function wwaOpenAdmin(){if(wwaProfile?.role!=='admin')return;document.getElementById('wwaAdmin').classList.remove('hidden');let e=document.getElementById('wwaAdminContent');e.innerHTML='Carregando dados...';try{let [p,st]=await Promise.all([wwaSB.from('profiles').select('*').order('xp',{ascending:false}),wwaSB.from('user_states').select('user_id,state')]);let students=(p.data||[]).filter(x=>x.role!=='admin');let states=Object.fromEntries((st.data||[]).map(x=>[x.user_id,x.state||{}]));let totalXP=students.reduce((a,x)=>a+(x.xp||0),0);e.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:16px 0"><div>👥 <b>'+students.length+'</b><br>Alunos</div><div>⭐ <b>'+totalXP.toLocaleString('pt-BR')+'</b><br>XP total</div></div><table class="wwa-table"><thead><tr><th>Aluno</th><th>E-mail</th><th>XP</th><th>Cursos</th><th>Vídeos</th><th>Quizzes</th></tr></thead><tbody>'+students.map(u=>{let q=states[u.id]||{},pr=q.progress||{};return '<tr><td>'+wwaEsc(u.full_name||'Sem nome')+'</td><td>'+wwaEsc(u.email||'')+'</td><td>⭐ '+(u.xp||0)+'</td><td>'+Object.keys(pr.lessonsDone||{}).length+'</td><td>'+(pr.videosWatched||[]).length+'</td><td>'+(pr.quizzesTaken||0)+'</td></tr>'}).join('')+'</tbody></table>'}catch(x){e.innerHTML='Erro ao carregar dashboard: '+wwaEsc(x.message)}}
 function wwaCloseAdmin(){document.getElementById('wwaAdmin').classList.add('hidden')}function wwaEsc(v){return String(v||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+
+/* ================= VÍDEOS COMPARTILHADOS EM TEMPO REAL =================
+   Somente os vídeos e suas descrições são globais. Progresso, XP, notas,
+   favoritos, degustações e resultados continuam individuais por usuário. */
+let wwaSharedChannel=null, wwaSharedReady=false;
+
+function wwaSharedNormalize(row){
+  if(!row) return null;
+  let d=row.data||row.content_data||row.content||{};
+  if(typeof d==='string'){try{d=JSON.parse(d)}catch(_){d={}}}
+  let v=Object.assign({},d);
+  v.uid=v.uid||row.uid||String(row.id||'');
+  v.title=v.title||row.title||'Vídeo sem título';
+  v.desc=v.desc||row.description||'';
+  return v;
+}
+function wwaMergeSharedVideo(v, newest){
+  if(!v||!v.uid)return;
+  let i=state.videos.findIndex(x=>String(x.uid||'')===String(v.uid));
+  if(i>=0) state.videos[i]=Object.assign({},state.videos[i],v);
+  else newest ? state.videos.unshift(v) : state.videos.push(v);
+}
+async function wwaLoadSharedVideos(){
+  if(!wwaSB)return;
+  try{
+    let r=await wwaSB.from('shared_content').select('*').eq('content_type','video').order('created_at',{ascending:false});
+    if(r.error) throw r.error;
+    (r.data||[]).forEach(row=>wwaMergeSharedVideo(wwaSharedNormalize(row),false));
+    wwaSharedReady=true;
+    if(state.page==='videos'||state.page==='country'||state.page==='grape'||state.page==='wines'||state.page==='courses') render();
+  }catch(e){console.warn('Vídeos compartilhados indisponíveis:',e.message||e)}
+}
+async function wwaPublishSharedVideo(video){
+  if(!wwaSB||!wwaUser||!video)return;
+  // shared_content: conteúdo global. Apenas este registro é compartilhado entre usuários.
+  let row={content_type:'video',title:video.title||'Vídeo sem título',description:video.desc||'',data:video,user_id:wwaUser.id,uid:video.uid,updated_at:new Date().toISOString()};
+  try{
+    let q=wwaSB.from('shared_content').upsert(row,{onConflict:'uid'}); let r=await q;
+    if(r.error) throw r.error;
+  }catch(e){console.warn('Não foi possível publicar o vídeo para todos:',e.message||e);toast('Vídeo salvo localmente; confira a tabela shared_content no Supabase.','fa-triangle-exclamation')}
+}
+async function wwaDeleteSharedVideo(uid){
+  if(!wwaSB||!uid)return;
+  try{let r=await wwaSB.from('shared_content').delete().eq('uid',uid);if(r.error)throw r.error}
+  catch(e){console.warn('Falha ao excluir vídeo compartilhado:',e.message||e)}
+}
+function wwaStartSharedRealtime(){
+  if(!wwaSB||wwaSharedChannel)return;
+  wwaSharedChannel=wwaSB.channel('wwa-shared-videos')
+    .on('postgres_changes',{event:'*',schema:'public',table:'shared_content',filter:'content_type=eq.video'},payload=>{
+      if(payload.eventType==='DELETE'){
+        let uid=payload.old&&payload.old.uid;
+        if(uid){state.videos=state.videos.filter(v=>String(v.uid||'')!==String(uid))}
+      }else{
+        let v=wwaSharedNormalize(payload.new); wwaMergeSharedVideo(v,true);
+      }
+      if(state.page==='videos'||state.page==='country'||state.page==='grape'||state.page==='wines'||state.page==='courses') render();
+      saveState();
+    }).subscribe();
+}
+
 (function(){let oldSave=window.saveState;window.saveState=function(){let r=oldSave?oldSave.apply(this,arguments):undefined;wwaQueueSync();return r};let oldAddXP=window.addXP;window.addXP=function(){let r=oldAddXP?oldAddXP.apply(this,arguments):undefined;setTimeout(()=>{document.getElementById('wwaUserXP')&&(document.getElementById('wwaUserXP').textContent='⭐ '+(state.xp||0)+' XP');wwaQueueSync()},0);return r};document.addEventListener('DOMContentLoaded',async()=>{wwaAuthTab('login');if(!wwaSB){wwaMsg('Supabase indisponível.',true);return}let r=await wwaSB.auth.getSession();await wwaSession(r.data.session);wwaSB.auth.onAuthStateChange((ev,s)=>setTimeout(()=>wwaSession(s),0))})})();
 </script>
 </body>
