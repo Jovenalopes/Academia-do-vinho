@@ -2211,6 +2211,13 @@ function normalizeLearningState(){
   state.lessonVideos=state.lessonVideos||{};
   state.removedLessonVideos=state.removedLessonVideos||{};
 }
+function getStorageKey() {
+  if (wwaUser && wwaUser.id) {
+    return 'wwa_state_' + wwaUser.id;
+  }
+  return STORAGE_KEY; // fallback
+}
+
 function saveState(){
   normalizeLearningState();
   updateNav();
@@ -2220,7 +2227,8 @@ function saveState(){
     try{
       var toSave = {};
       Object.keys(DEFAULT_STATE).forEach(function(k){ toSave[k]=state[k]; });
-      await window.storage.set(STORAGE_KEY, JSON.stringify(toSave), false);
+      const key = getStorageKey();
+      await window.storage.set(key, JSON.stringify(toSave), false);
     }catch(e){ console.warn('Falha ao salvar estado', e); }
   }, 400);
 }
@@ -2308,10 +2316,144 @@ async function wwaSubmitAuth(e){e.preventDefault();if(!wwaSB)return wwaMsg('Supa
 async function wwaGoogle(){try{let r=await wwaSB.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+location.pathname}});if(r.error)throw r.error}catch(x){wwaMsg(x.message,true)}}
 async function wwaForgot(){let email=prompt('Digite seu e-mail para receber o link de recuperação:');if(!email)return;let r=await wwaSB.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});wwaMsg(r.error?r.error.message:'Se o e-mail existir, o link de recuperação foi enviado.',!!r.error)}
 async function wwaEnsureProfile(){let r=await wwaSB.from('profiles').select('*').eq('id',wwaUser.id).maybeSingle();wwaProfile=r.data;if(!wwaProfile){let name=wwaUser.user_metadata?.full_name||wwaUser.email.split('@')[0];let u=await wwaSB.from('profiles').upsert({id:wwaUser.id,email:wwaUser.email,full_name:name,xp:0,admin:'student'},{onConflict:'id'}).select('*').single();wwaProfile=u.data}return wwaProfile}
-async function wwaLoadCloud(){try{let r=await wwaSB.from('user_states').select('state').eq('user_id',wwaUser.id).maybeSingle();if(r.data?.state){let cloud=r.data.state;Object.keys(DEFAULT_STATE).forEach(k=>{if(k!=='videos' && cloud[k]!==undefined)state[k]=cloud[k]});seedDefaultLessonVideos?.();}wwaCloudReady=true}catch(e){console.warn('Estado na nuvem indisponível',e)}}
+async function wwaLoadCloud() {
+  if (!wwaUser) return;
+  try {
+    // 1. Resetar o estado para o padrão (limpo)
+    Object.keys(DEFAULT_STATE).forEach(key => {
+      if (key === 'videos') {
+        // Manter vídeos de demonstração, se existirem
+        state.videos = (DB.demoVideos ? DB.demoVideos.slice() : []);
+      } else if (key === 'progress') {
+        // Clonar profundamente o progress padrão
+        state.progress = JSON.parse(JSON.stringify(DEFAULT_STATE.progress));
+      } else if (key === 'favorites') {
+        state.favorites = { countries: [], grapes: [], wines: [], videos: [] };
+      } else {
+        state[key] = Array.isArray(DEFAULT_STATE[key]) ? [] : (typeof DEFAULT_STATE[key] === 'object' && DEFAULT_STATE[key] !== null ? {} : DEFAULT_STATE[key]);
+      }
+    });
+    // Garantir que campos específicos fiquem vazios
+    state.notes = [];
+    state.tastings = [];
+    state.studyPages = [];
+    state.lessonVideos = {};
+    state.removedLessonVideos = {};
+    state.compareGrapes = [];
+    state.xp = 0; // Será sobrescrito pelo perfil
+
+    // 2. Carregar estado da nuvem (se existir)
+    const { data, error } = await wwaSB
+      .from('user_states')
+      .select('state')
+      .eq('user_id', wwaUser.id)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    if (data && data.state) {
+      const cloudState = data.state;
+      // Mesclar (sobrescrever) com o estado da nuvem
+      Object.keys(cloudState).forEach(key => {
+        if (key === 'progress' && cloudState[key]) {
+          Object.keys(cloudState[key]).forEach(pk => {
+            state.progress[pk] = cloudState[key][pk];
+          });
+          // Garantir que campos obrigatórios existam
+          if (!state.progress.lessonVideosWatched) state.progress.lessonVideosWatched = {};
+          if (!state.progress.lessonQuizBest) state.progress.lessonQuizBest = {};
+          if (!state.progress.lessonQuizAttempts) state.progress.lessonQuizAttempts = {};
+          if (!state.progress.topicQuizzes) state.progress.topicQuizzes = {};
+        } else if (key === 'favorites') {
+          state.favorites = cloudState[key] || { countries: [], grapes: [], wines: [], videos: [] };
+        } else if (key === 'videos') {
+          // Substituir pelos vídeos da nuvem (mas manter demos)
+          const demos = DB.demoVideos ? DB.demoVideos.slice() : [];
+          const cloudVideos = cloudState[key] || [];
+          // Combinar: demos + vídeos da nuvem (evitar duplicatas por uid)
+          const allVideos = [...demos];
+          cloudVideos.forEach(cv => {
+            if (!allVideos.some(v => v.uid === cv.uid)) {
+              allVideos.push(cv);
+            }
+          });
+          state.videos = allVideos;
+        } else {
+          state[key] = cloudState[key] !== undefined ? cloudState[key] : state[key];
+        }
+      });
+    }
+
+    // Atualizar XP do perfil (vem da tabela profiles)
+    if (wwaProfile && wwaProfile.xp !== undefined) {
+      state.xp = wwaProfile.xp;
+    }
+
+    // Garantir que os vídeos de demonstração estejam sempre presentes
+    if (DB.demoVideos) {
+      DB.demoVideos.forEach(demo => {
+        if (!state.videos.some(v => v.uid === demo.uid)) {
+          state.videos.unshift(demo);
+        }
+      });
+    }
+
+    // Sincronizar lessonVideos com DEFAULT_LESSON_VIDEOS (se não removidos)
+    seedDefaultLessonVideos?.();
+
+    wwaCloudReady = true;
+    render();
+    updateNav();
+  } catch (e) {
+    console.warn('Erro ao carregar estado da nuvem:', e);
+    wwaCloudReady = true; // para não travar
+  }
+}
 function wwaQueueSync(){if(!wwaCloudReady||!wwaUser)return;clearTimeout(wwaSyncTimer);wwaSyncTimer=setTimeout(wwaSyncNow,700)}
 async function wwaSyncNow(){if(!wwaCloudReady||!wwaUser)return;try{await wwaSB.from('user_states').upsert({user_id:wwaUser.id,state:JSON.parse(JSON.stringify(state)),updated_at:new Date().toISOString()},{onConflict:'user_id'});await wwaSB.from('profiles').update({xp:state.xp||0,updated_at:new Date().toISOString()}).eq('id',wwaUser.id)}catch(e){console.warn('Falha ao sincronizar',e)}}
-async function wwaSession(session){if(!session){wwaUser=null;wwaCloudReady=false;document.getElementById('wwaAuthGate').classList.remove('hidden');document.getElementById('wwaUserbar').classList.add('hidden');return}wwaUser=session.user;await wwaEnsureProfile();await wwaLoadCloud();await wwaLoadSharedVideos();wwaStartSharedRealtime();document.getElementById('wwaAuthGate').classList.add('hidden');document.getElementById('wwaUserbar').classList.remove('hidden');document.getElementById('wwaUserName').textContent=wwaProfile?.full_name||wwaUser.email;document.getElementById('wwaUserXP').textContent='⭐ '+(state.xp||0)+' XP';if(wwaProfile?.admin==='admin')document.getElementById('wwaAdminOpen').classList.remove('hidden');render?.()}
+async function wwaSession(session) {
+  if (!session) {
+    wwaUser = null;
+    wwaCloudReady = false;
+    document.getElementById('wwaAuthGate').classList.remove('hidden');
+    document.getElementById('wwaUserbar').classList.add('hidden');
+    // Limpar estado ao deslogar
+    Object.keys(DEFAULT_STATE).forEach(k => {
+      if (k === 'videos') state.videos = (DB.demoVideos ? DB.demoVideos.slice() : []);
+      else if (k === 'progress') state.progress = JSON.parse(JSON.stringify(DEFAULT_STATE.progress));
+      else if (k === 'favorites') state.favorites = { countries: [], grapes: [], wines: [], videos: [] };
+      else state[k] = Array.isArray(DEFAULT_STATE[k]) ? [] : (typeof DEFAULT_STATE[k] === 'object' && DEFAULT_STATE[k] !== null ? {} : DEFAULT_STATE[k]);
+    });
+    state.notes = [];
+    state.tastings = [];
+    state.studyPages = [];
+    state.lessonVideos = {};
+    state.removedLessonVideos = {};
+    state.compareGrapes = [];
+    state.xp = 0;
+    render();
+    return;
+  }
+  wwaUser = session.user;
+  // Garantir perfil
+  await wwaEnsureProfile();
+  // Carregar estado da nuvem (reseta e sobrescreve)
+  await wwaLoadCloud();
+  // Carregar vídeos compartilhados
+  await wwaLoadSharedVideos();
+  wwaStartSharedRealtime();
+  // Atualizar UI
+  document.getElementById('wwaAuthGate').classList.add('hidden');
+  document.getElementById('wwaUserbar').classList.remove('hidden');
+  document.getElementById('wwaUserName').textContent = wwaProfile?.full_name || wwaUser.email;
+  document.getElementById('wwaUserXP').textContent = '⭐ ' + (state.xp || 0) + ' XP';
+  if (wwaProfile?.admin === 'admin') {
+    document.getElementById('wwaAdminOpen').classList.remove('hidden');
+  } else {
+    document.getElementById('wwaAdminOpen').classList.add('hidden');
+  }
+  render?.();
+}
 async function wwaLogout(){await wwaSB.auth.signOut()}
 function wwaOpenProfile(){alert('Perfil\n\nNome: '+(wwaProfile?.full_name||'')+'\nE-mail: '+(wwaUser?.email||'')+'\nXP: '+(state.xp||0)+'\n\nSeu progresso é sincronizado automaticamente com sua conta.')}
 
