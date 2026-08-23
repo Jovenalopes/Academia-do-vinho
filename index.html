@@ -988,9 +988,75 @@ var openLessons = {};
 var openLessonsCourse = null;
 var lessonQuizSession = null;
 
+// ===== CACHE GLOBAL DE VÍDEOS DE AULA (compartilhado via Supabase) =====
+var globalLessonVideos = {}; // "courseId::idx" -> {youtubeId, uid, deleted}
+function wwaIsAdmin(){ return !!(wwaProfile && wwaProfile.admin === 'admin'); }
+
+async function wwaLoadGlobalLessonVideos(){
+  if(!wwaSB) return;
+  try{
+    var r = await wwaSB.from('shared_content').select('*').eq('content_type','lesson_video');
+    if(r.error) throw r.error;
+    globalLessonVideos = {};
+    (r.data||[]).forEach(function(row){
+      var d = row.data||{};
+      if(typeof d==='string'){ try{ d=JSON.parse(d);}catch(_){ d={}; } }
+      if(d.courseId!==undefined && d.lessonIndex!==undefined){
+        globalLessonVideos[lessonKey(d.courseId, d.lessonIndex)] = {
+          youtubeId: d.youtubeId||'', uid: row.uid||d.uid, deleted: !!d.deleted
+        };
+      }
+    });
+  }catch(e){ console.warn('Falha ao carregar vídeos das aulas (globais):', e.message||e); }
+}
+
+async function wwaUpsertLessonVideo(courseId, idx, youtubeId){
+  var key = lessonKey(courseId, idx);
+  var uid = 'lesson_'+courseId+'_'+idx;
+  globalLessonVideos[key] = { youtubeId: youtubeId, uid: uid, deleted:false };
+  if(state.progress.lessonVideosWatched && state.progress.lessonVideosWatched[courseId]){
+    state.progress.lessonVideosWatched[courseId] = state.progress.lessonVideosWatched[courseId].filter(function(n){ return n!==idx; });
+  }
+  updateCourseProgress(courseId,(DB.courses.find(function(c){return c.id===courseId;})||{lessons:[]}).lessons.length);
+  saveState();
+  if(!wwaSB || !wwaUser) return;
+  try{
+    var row = { uid:uid, content_type:'lesson_video',
+      title:'Vídeo da aula '+courseId+'#'+idx, description:'',
+      data:{courseId:courseId,lessonIndex:idx,youtubeId:youtubeId,deleted:false},
+      user_id:wwaUser.id, updated_at:new Date().toISOString() };
+    var r = await wwaSB.from('shared_content').upsert(row,{onConflict:'uid'});
+    if(r.error) throw r.error;
+  }catch(e){ console.warn('Falha ao publicar vídeo da aula:', e.message||e); toast('Vídeo salvo localmente — verifique a tabela shared_content no Supabase.','fa-triangle-exclamation'); }
+}
+
+async function wwaDeleteLessonVideo(courseId, idx){
+  var key = lessonKey(courseId, idx);
+  var uid = 'lesson_'+courseId+'_'+idx;
+  globalLessonVideos[key] = { youtubeId:'', uid:uid, deleted:true };
+  if(state.progress.lessonVideosWatched && state.progress.lessonVideosWatched[courseId]){
+    state.progress.lessonVideosWatched[courseId] = state.progress.lessonVideosWatched[courseId].filter(function(n){ return n!==idx; });
+  }
+  updateCourseProgress(courseId,(DB.courses.find(function(c){return c.id===courseId;})||{lessons:[]}).lessons.length);
+  saveState();
+  if(!wwaSB || !wwaUser) return;
+  try{
+    var row = { uid:uid, content_type:'lesson_video',
+      title:'Vídeo da aula '+courseId+'#'+idx, description:'',
+      data:{courseId:courseId,lessonIndex:idx,youtubeId:'',deleted:true},
+      user_id:wwaUser.id, updated_at:new Date().toISOString() };
+    var r = await wwaSB.from('shared_content').upsert(row,{onConflict:'uid'});
+    if(r.error) throw r.error;
+  }catch(e){ console.warn('Falha ao excluir vídeo da aula:', e.message||e); }
+}
+
 function lessonKey(courseId, idx){ return courseId+'::'+idx; }
 function lessonVideoId(courseId, idx){
-  return state.lessonVideos && state.lessonVideos[lessonKey(courseId,idx)] ? state.lessonVideos[lessonKey(courseId,idx)] : '';
+  var key = lessonKey(courseId, idx);
+  var g = globalLessonVideos[key];
+  if(g) return g.deleted ? '' : (g.youtubeId||'');
+  // Fallback: dados antigos por usuário (antes da migração para vídeos globais)
+  return (state.lessonVideos && state.lessonVideos[key]) ? state.lessonVideos[key] : '';
 }
 function lessonVideoWatched(courseId, idx){
   var a = (state.progress.lessonVideosWatched && state.progress.lessonVideosWatched[courseId]) || [];
@@ -1015,15 +1081,14 @@ function markLessonVideoWatched(courseId,idx){
     render();
   }
 }
-function saveLessonVideo(courseId,idx){
+async function saveLessonVideo(courseId,idx){
+  if(!wwaIsAdmin()){ toast('Apenas o administrador pode adicionar vídeos das aulas','fa-lock'); return; }
   var inp=document.getElementById('lessonVideoUrl_'+courseId+'_'+idx);
   if(!inp) return;
   var id=extractYouTubeId(inp.value.trim());
   if(!id){ toast('Cole um link válido do YouTube','fa-circle-exclamation'); return; }
-  if(!state.lessonVideos) state.lessonVideos={};
-  state.lessonVideos[lessonKey(courseId,idx)]=id;
-  saveState();
-  toast('Vídeo da aula salvo','fa-circle-play');
+  await wwaUpsertLessonVideo(courseId, idx, id);
+  toast('Vídeo da aula publicado para todos os alunos','fa-globe');
   render();
 }
 function buildLessonQuiz(c,idx){
@@ -1076,19 +1141,25 @@ function lessonVideoPanel(c,l,idx){
     html+='<p class="absolute bottom-3 left-4 right-4 text-sm font-semibold text-white">'+esc(l.videoTitle||l.title)+'</p>';
     html+='</button></div></div>';
 
-    // Ações exatamente abaixo do vídeo, como no Wine World Academy3.
+    // Ações exatamente abaixo do vídeo — Trocar/Excluir aparecem só para o administrador.
     html+='<div class="mt-3 flex flex-wrap items-center gap-2">';
     if(!watched){
       html+='<button onclick="markLessonVideoWatched(\''+c.id+'\','+idx+')" class="px-4 py-2 bg-vine-600 hover:bg-vine-700 text-white rounded-full text-xs font-bold"><i class="fas fa-check mr-1"></i>Marcar como concluído <span class="opacity-80">(+5 XP)</span></button>';
     }else{
       html+='<span class="px-4 py-2 rounded-full bg-vine-500/10 text-vine-700 dark:text-vine-400 text-xs font-bold"><i class="fas fa-circle-check mr-1"></i>Vídeo concluído</span>';
     }
-    html+='<button onclick="openChangeLessonVideo(\''+c.id+'\','+idx+')" class="px-4 py-2 rounded-full border border-cellar-300 dark:border-claret-700 text-xs font-semibold hover:bg-cellar-100 dark:hover:bg-claret-900/60"><i class="fas fa-plus mr-1"></i>Trocar vídeo</button>';
-    html+='<button onclick="promptDeleteLessonVideo(\''+c.id+'\','+idx+')" class="px-4 py-2 rounded-full border border-claret-400/60 dark:border-claret-700 text-claret-600 dark:text-claret-300 text-xs font-semibold hover:bg-claret-50 dark:hover:bg-claret-900/60"><i class="fas fa-trash-can mr-1"></i>Excluir vídeo</button>';
+    if(wwaIsAdmin()){
+      html+='<button onclick="openChangeLessonVideo(\''+c.id+'\','+idx+')" class="px-4 py-2 rounded-full border border-cellar-300 dark:border-claret-700 text-xs font-semibold hover:bg-cellar-100 dark:hover:bg-claret-900/60"><i class="fas fa-plus mr-1"></i>Trocar vídeo</button>';
+      html+='<button onclick="promptDeleteLessonVideo(\''+c.id+'\','+idx+')" class="px-4 py-2 rounded-full border border-claret-400/60 dark:border-claret-700 text-claret-600 dark:text-claret-300 text-xs font-semibold hover:bg-claret-50 dark:hover:bg-claret-900/60"><i class="fas fa-trash-can mr-1"></i>Excluir vídeo</button>';
+    }
     html+='<button onclick="testLessonKnowledge(\''+c.id+'\','+idx+')" class="px-4 py-2 rounded-full border border-cellar-300 dark:border-claret-700 text-xs font-semibold hover:bg-cellar-100 dark:hover:bg-claret-900/60"><i class="fas fa-brain mr-1"></i>Testar conhecimento</button>';
     html+='</div>';
   } else {
-    html+='<div class="rounded-2xl border border-dashed border-cellar-300 dark:border-claret-700 p-5 text-center"><p class="text-sm text-cellar-500 mb-3">Esta aula ainda não possui vídeo associado.</p><div class="flex flex-col sm:flex-row gap-2"><input id="lessonVideoUrl_'+c.id+'_'+idx+'" placeholder="Cole o link do YouTube" class="flex-1 px-3 py-2.5 rounded-xl border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm"><button onclick="saveLessonVideo(\''+c.id+'\','+idx+')" class="px-4 py-2.5 bg-claret-700 hover:bg-claret-800 text-white rounded-xl text-xs font-bold"><i class="fas fa-plus mr-1"></i>Adicionar vídeo</button></div></div>';
+    if(wwaIsAdmin()){
+      html+='<div class="rounded-2xl border border-dashed border-cellar-300 dark:border-claret-700 p-5 text-center"><p class="text-sm text-cellar-500 mb-3">Esta aula ainda não possui vídeo associado.</p><div class="flex flex-col sm:flex-row gap-2"><input id="lessonVideoUrl_'+c.id+'_'+idx+'" placeholder="Cole o link do YouTube" class="flex-1 px-3 py-2.5 rounded-xl border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm"><button onclick="saveLessonVideo(\''+c.id+'\','+idx+')" class="px-4 py-2.5 bg-claret-700 hover:bg-claret-800 text-white rounded-xl text-xs font-bold"><i class="fas fa-plus mr-1"></i>Adicionar vídeo</button></div></div>';
+    } else {
+      html+='<div class="rounded-2xl border border-dashed border-cellar-300 dark:border-claret-700 p-5 text-center"><p class="text-sm text-cellar-500"><i class="fas fa-hourglass-half mr-1"></i>O vídeo desta aula ainda será disponibilizado.</p></div>';
+    }
   }
   html+='</div>'; return html;
 }
@@ -1110,21 +1181,15 @@ function openChangeLessonVideo(courseId,idx){
   var inp=document.getElementById('changeLessonVideoUrl'); if(inp){inp.focus();inp.select();}
 }
 function closeChangeLessonVideoModal(){var m=document.getElementById('changeLessonVideoModal');if(m)m.remove();}
-function confirmChangeLessonVideo(courseId,idx){
+async function confirmChangeLessonVideo(courseId,idx){
+  if(!wwaIsAdmin()){ toast('Apenas o administrador pode trocar vídeos das aulas','fa-lock'); return; }
   var inp=document.getElementById('changeLessonVideoUrl');
   var id=extractYouTubeId(inp?inp.value.trim():'');
   if(!id){toast('Cole um link válido do YouTube','fa-circle-exclamation');return;}
-  if(!state.lessonVideos)state.lessonVideos={};
-  if(!state.removedLessonVideos)state.removedLessonVideos={};
-  delete state.removedLessonVideos[lessonKey(courseId,idx)];
-  state.lessonVideos[lessonKey(courseId,idx)]=id;
-  // Um vídeo novo precisa ser assistido novamente, mas mantém o histórico do quiz.
-  if(state.progress.lessonVideosWatched&&state.progress.lessonVideosWatched[courseId]){
-    state.progress.lessonVideosWatched[courseId]=state.progress.lessonVideosWatched[courseId].filter(function(n){return n!==idx;});
-  }
-  state.progress.videosWatched=(state.progress.videosWatched||[]).filter(function(x){return x!=='lesson:'+lessonKey(courseId,idx);});
-  updateCourseProgress(courseId,(DB.courses.find(function(c){return c.id===courseId;})||{lessons:[]}).lessons.length);
-  saveState();closeChangeLessonVideoModal();toast('Vídeo da aula trocado com sucesso','fa-circle-play');render();
+  await wwaUpsertLessonVideo(courseId, idx, id);
+  closeChangeLessonVideoModal();
+  toast('Vídeo da aula trocado para todos os alunos','fa-circle-play');
+  render();
 }
 function promptDeleteLessonVideo(courseId,idx){
   closeLessonVideoDeleteModal();
@@ -1145,19 +1210,13 @@ function promptDeleteLessonVideo(courseId,idx){
 }
 function closeLessonVideoDeleteModal(){var m=document.getElementById('lessonVideoDeleteModal');if(m)m.remove();}
 function confirmDeleteLessonVideo(courseId,idx){
+  if(!wwaIsAdmin()){ toast('Apenas o administrador pode excluir vídeos das aulas','fa-lock'); return; }
   var pwd=document.getElementById('lessonVideoDeletePwd');
   if(!pwd||pwd.value!==ADMIN_PASSWORD){var err=document.getElementById('lessonVideoDeleteErr');if(err)err.classList.remove('hidden');if(pwd){pwd.value='';pwd.focus();}return;}
-  var key=lessonKey(courseId,idx);
-  if(!state.lessonVideos)state.lessonVideos={};
-  if(!state.removedLessonVideos)state.removedLessonVideos={};
-  state.removedLessonVideos[key]=true;
-  delete state.lessonVideos[key];
-  if(state.progress.lessonVideosWatched&&state.progress.lessonVideosWatched[courseId]){
-    state.progress.lessonVideosWatched[courseId]=state.progress.lessonVideosWatched[courseId].filter(function(n){return n!==idx;});
-  }
-  state.progress.videosWatched=(state.progress.videosWatched||[]).filter(function(x){return x!=='lesson:'+key;});
-  updateCourseProgress(courseId,(DB.courses.find(function(c){return c.id===courseId;})||{lessons:[]}).lessons.length);
-  saveState();closeLessonVideoDeleteModal();toast('Vídeo da aula excluído','fa-trash-can');render();
+  wwaDeleteLessonVideo(courseId, idx);
+  closeLessonVideoDeleteModal();
+  toast('Vídeo da aula excluído para todos os alunos','fa-trash-can');
+  render();
 }
 function testLessonKnowledge(courseId,idx){
   if(!lessonVideoWatched(courseId,idx)){
@@ -2461,6 +2520,8 @@ async function wwaSession(session) {
   // Carregar vídeos compartilhados
   await wwaLoadSharedVideos();
   wwaStartSharedRealtime();
+  await wwaLoadGlobalLessonVideos();
+  wwaStartLessonVideoRealtime();
   // Atualizar UI
   document.getElementById('wwaAuthGate').classList.add('hidden');
   document.getElementById('wwaUserbar').classList.remove('hidden');
@@ -2706,6 +2767,22 @@ function wwaStartSharedRealtime(){
       }
       if(state.page==='videos'||state.page==='country'||state.page==='grape'||state.page==='wines'||state.page==='courses') render();
       saveState();
+    }).subscribe();
+}
+
+let wwaLessonVideoChannel=null;
+function wwaStartLessonVideoRealtime(){
+  if(!wwaSB||wwaLessonVideoChannel)return;
+  wwaLessonVideoChannel=wwaSB.channel('wwa-shared-lesson-videos')
+    .on('postgres_changes',{event:'*',schema:'public',table:'shared_content',filter:'content_type=eq.lesson_video'},payload=>{
+      var row = payload.eventType==='DELETE' ? payload.old : payload.new;
+      var d = row && row.data || {};
+      if(typeof d==='string'){ try{ d=JSON.parse(d); }catch(_){ d={}; } }
+      if(d.courseId===undefined || d.lessonIndex===undefined) return;
+      var key = lessonKey(d.courseId, d.lessonIndex);
+      if(payload.eventType==='DELETE'){ delete globalLessonVideos[key]; }
+      else{ globalLessonVideos[key] = { youtubeId:d.youtubeId||'', uid:row.uid, deleted:!!d.deleted }; }
+      if(state.page==='courses') render();
     }).subscribe();
 }
 
