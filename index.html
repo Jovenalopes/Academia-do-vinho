@@ -68,6 +68,23 @@ h1,h2,h3,h4,h5,h6,.font-serif{ font-family:'Fraunces',serif; }
 .quiz-result{animation:fadeIn .35s ease}
 .country-option{display:flex;align-items:center;gap:.45rem}
 
+/* --- Menu "Mais" (mobile drawer) --- */
+.wwa-more-overlay{position:fixed;inset:0;z-index:80;background:rgba(28,6,13,.55);backdrop-filter:blur(2px);display:flex;align-items:flex-end;justify-content:center}
+.wwa-more-overlay.hidden{display:none}
+.wwa-more-sheet{width:100%;max-width:560px;background:#faf7f2;border-radius:24px 24px 0 0;padding:14px 18px 22px;box-shadow:0 -20px 50px rgba(0,0,0,.35);animation:wwaMoreUp .25s cubic-bezier(.2,.8,.2,1)}
+.dark .wwa-more-sheet{background:#160b0f}
+@keyframes wwaMoreUp{from{transform:translateY(24px);opacity:0}to{transform:translateY(0);opacity:1}}
+.wwa-more-handle{width:40px;height:4px;border-radius:4px;background:#c9a67e88;margin:4px auto 14px}
+.wwa-more-title{font-family:'Fraunces',serif;font-weight:700;font-size:1.05rem;color:#2b0a12;margin-bottom:12px}
+.dark .wwa-more-title{color:#f2ece2}
+.wwa-more-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.wwa-more-item{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 4px;border-radius:14px;background:#fff;border:1px solid #e4d5c2;color:#4f3a28;font-size:11px;font-weight:600;cursor:pointer}
+.dark .wwa-more-item{background:rgba(89,25,48,.25);border-color:#701a35;color:#e4d5c2}
+.wwa-more-item i{font-size:17px;color:#af3654}
+.dark .wwa-more-item i{color:#ecd699}
+.wwa-more-close{margin-top:18px;width:100%;padding:11px;border-radius:12px;border:1px solid #e4d5c2;background:transparent;color:#4f3a28;font-weight:700;font-size:.85rem;cursor:pointer}
+.dark .wwa-more-close{border-color:#701a35;color:#e4d5c2}
+
 </style>
 <style id="wwa-course-learning-upgrade">
 .quiz-opt{cursor:pointer;transition:.2s}.quiz-opt:hover{border-color:rgba(198,154,63,.7);transform:translateY(-1px)}.quiz-opt.correct{background:rgba(111,133,81,.12);border-color:rgba(111,133,81,.65);color:#4f6535}.quiz-opt.wrong{background:rgba(89,25,48,.10);border-color:rgba(89,25,48,.55);color:#591930}.dark .quiz-opt.correct{color:#b9cf9a}.dark .quiz-opt.wrong{color:#e7a9ba}
@@ -170,16 +187,36 @@ h1,h2,h3,h4,h5,h6,.font-serif{ font-family:'Fraunces',serif; }
 <main id="mainContent" class="flex-1 mobile-pb overflow-y-auto"></main>
 </div>
 
+<!-- ===== BARRA DE NAVEGAÇÃO MOBILE (substituída) ===== -->
 <nav class="md:hidden fixed bottom-0 left-0 right-0 glass border-t border-cellar-200/60 dark:border-claret-800/60 z-50">
   <div class="flex justify-around py-1.5">
     <button onclick="go('home')" class="flex flex-col items-center gap-1 p-2 text-cellar-400 dark:text-cellar-600" data-mobile="home"><i class="fas fa-house text-base"></i><span class="text-[10px] font-semibold">Início</span></button>
     <button onclick="go('map')" class="flex flex-col items-center gap-1 p-2 text-cellar-400 dark:text-cellar-600" data-mobile="map"><i class="fas fa-earth-americas text-base"></i><span class="text-[10px] font-semibold">Explorar</span></button>
     <button onclick="go('courses')" class="flex flex-col items-center gap-1 p-2 text-cellar-400 dark:text-cellar-600" data-mobile="courses"><i class="fas fa-graduation-cap text-base"></i><span class="text-[10px] font-semibold">Cursos</span></button>
     <button onclick="go('videos')" class="flex flex-col items-center gap-1 p-2 text-cellar-400 dark:text-cellar-600" data-mobile="videos"><i class="fas fa-circle-play text-base"></i><span class="text-[10px] font-semibold">Vídeos</span></button>
-    <button onclick="go('notebook')" class="flex flex-col items-center gap-1 p-2 text-cellar-400 dark:text-cellar-600" data-mobile="notebook"><i class="fas fa-book-open text-base"></i><span class="text-[10px] font-semibold">Caderno</span></button>
+    <button onclick="openMobileMore()" class="flex flex-col items-center gap-1 p-2 text-cellar-400 dark:text-cellar-600" data-mobile="more"><i class="fas fa-bars text-base"></i><span class="text-[10px] font-semibold">Mais</span></button>
   </div>
 </nav>
+<div id="mobileMoreOverlay" class="wwa-more-overlay hidden" onclick="if(event.target===this) closeMobileMore()">
+  <div class="wwa-more-sheet">
+    <div class="wwa-more-handle"></div>
+    <h3 class="wwa-more-title">Mais opções</h3>
+    <div class="wwa-more-grid">
+      <button onclick="closeMobileMore();go('grapes')" class="wwa-more-item"><i class="fas fa-seedling"></i><span>Uvas</span></button>
+      <button onclick="closeMobileMore();go('wines')" class="wwa-more-item"><i class="fas fa-wine-bottle"></i><span>Vinhos</span></button>
+      <button onclick="closeMobileMore();go('notebook')" class="wwa-more-item"><i class="fas fa-book-open"></i><span>Meu Caderno</span></button>
+      <button onclick="closeMobileMore();go('tasting')" class="wwa-more-item"><i class="fas fa-clipboard-list"></i><span>Degustação</span></button>
+      <button onclick="closeMobileMore();go('pairing')" class="wwa-more-item"><i class="fas fa-utensils"></i><span>Harmonização</span></button>
+      <button onclick="closeMobileMore();go('quiz')" class="wwa-more-item"><i class="fas fa-brain"></i><span>Quiz</span></button>
+      <button onclick="closeMobileMore();go('progress')" class="wwa-more-item"><i class="fas fa-chart-line"></i><span>Meu Progresso</span></button>
+      <button onclick="closeMobileMore();go('editor')" class="wwa-more-item"><i class="fas fa-pen-fancy"></i><span>Editor de Estudos</span></button>
+    </div>
+    <button onclick="closeMobileMore()" class="wwa-more-close">Fechar</button>
+  </div>
 </div>
+
+</div> <!-- #app -->
+
 <div id="toastHost" class="fixed bottom-20 md:bottom-6 right-4 z-[100] flex flex-col gap-2 items-end"></div>
 
 <script>
@@ -2311,6 +2348,14 @@ function go(page, params){
   if(main) main.scrollTop = 0;
   window.scrollTo(0,0);
 }
+function openMobileMore(){
+  var el = document.getElementById('mobileMoreOverlay');
+  if(el) el.classList.remove('hidden');
+}
+function closeMobileMore(){
+  var el = document.getElementById('mobileMoreOverlay');
+  if(el) el.classList.add('hidden');
+}
 
 function render(){
   var m = document.getElementById('mainContent');
@@ -2351,8 +2396,9 @@ function renderSidebarContinue(){
 
 function updateNav(){
   document.querySelectorAll('.nav-item').forEach(function(el){ el.classList.toggle('active', el.dataset.page===state.page); });
+  var morePages = ['grapes','grape','wines','notebook','tasting','pairing','quiz','progress','editor'];
   document.querySelectorAll('[data-mobile]').forEach(function(el){
-    var active = el.dataset.mobile===state.page;
+    var active = el.dataset.mobile===state.page || (el.dataset.mobile==='more' && morePages.indexOf(state.page)>-1);
     el.className = 'flex flex-col items-center gap-1 p-2 ' + (active ? 'text-claret-600 dark:text-gilt-400' : 'text-cellar-400 dark:text-cellar-600');
   });
   var xpEl = document.getElementById('xpDisplay');
