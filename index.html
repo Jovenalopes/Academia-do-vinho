@@ -2429,18 +2429,9 @@ async function wwaLoadCloud() {
           if (!state.progress.topicQuizzes) state.progress.topicQuizzes = {};
         } else if (key === 'favorites') {
           state.favorites = cloudState[key] || { countries: [], grapes: [], wines: [], videos: [] };
-        } else if (key === 'videos') {
-          // Substituir pelos vídeos da nuvem (mas manter demos)
-          const demos = DB.demoVideos ? DB.demoVideos.slice() : [];
-          const cloudVideos = cloudState[key] || [];
-          // Combinar: demos + vídeos da nuvem (evitar duplicatas por uid)
-          const allVideos = [...demos];
-          cloudVideos.forEach(cv => {
-            if (!allVideos.some(v => v.uid === cv.uid)) {
-              allVideos.push(cv);
-            }
-          });
-          state.videos = allVideos;
+                } else if (key === 'videos') {
+          // Vídeos são carregados exclusivamente via wwaLoadSharedVideos() (tabela global shared_content).
+          // Ignorado de propósito aqui, mesmo que a linha antiga do usuário ainda tenha uma cópia obsoleta.
         } else {
           state[key] = cloudState[key] !== undefined ? cloudState[key] : state[key];
         }
@@ -2465,7 +2456,15 @@ async function wwaLoadCloud() {
   }
 }
 function wwaQueueSync(){if(!wwaCloudReady||!wwaUser)return;clearTimeout(wwaSyncTimer);wwaSyncTimer=setTimeout(wwaSyncNow,700)}
-async function wwaSyncNow(){if(!wwaCloudReady||!wwaUser)return;try{await wwaSB.from('user_states').upsert({user_id:wwaUser.id,state:JSON.parse(JSON.stringify(state)),updated_at:new Date().toISOString()},{onConflict:'user_id'});await wwaSB.from('profiles').update({xp:state.xp||0,updated_at:new Date().toISOString()}).eq('id',wwaUser.id)}catch(e){console.warn('Falha ao sincronizar',e)}}
+async function wwaSyncNow(){
+  if(!wwaCloudReady||!wwaUser)return;
+  try{
+    var toSync = JSON.parse(JSON.stringify(state));
+    delete toSync.videos; // vídeos são globais (tabela shared_content) — nunca salvos por usuário
+    await wwaSB.from('user_states').upsert({user_id:wwaUser.id,state:toSync,updated_at:new Date().toISOString()},{onConflict:'user_id'});
+    await wwaSB.from('profiles').update({xp:state.xp||0,updated_at:new Date().toISOString()}).eq('id',wwaUser.id);
+  }catch(e){console.warn('Falha ao sincronizar',e)}
+}
 async function wwaSession(session) {
   if (!session) {
     wwaUser = null;
