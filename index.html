@@ -1224,10 +1224,11 @@ function testLessonKnowledge(courseId,idx){
   startLessonQuiz(courseId,idx);
 }
 
+// ===== playLessonVideo atualizado com loop=1&playlist=ID&modestbranding=1 =====
 function playLessonVideo(courseId,idx,id){
   var box=document.getElementById('lessonPlayer_'+courseId+'_'+idx);
   if(!box)return;
-  box.innerHTML='<div class="aspect-video w-full bg-black"><iframe class="w-full h-full" src="https://www.youtube-nocookie.com/embed/'+id+'?autoplay=1&playsinline=1&controls=1&rel=0&fs=1" title="Vídeo da aula" frameborder="0" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe></div>';
+  box.innerHTML='<div class="aspect-video w-full bg-black"><iframe class="w-full h-full" src="https://www.youtube-nocookie.com/embed/'+id+'?autoplay=1&playsinline=1&controls=1&rel=0&fs=1&loop=1&playlist='+id+'&modestbranding=1" title="Vídeo da aula" frameborder="0" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe></div>';
 }
 function lessonQuizPanel(c,l,idx){
  var best=lessonQuizBest(c.id,idx),watched=lessonVideoWatched(c.id,idx),s=lessonQuizSession&&lessonQuizSession.courseId===c.id&&lessonQuizSession.idx===idx?lessonQuizSession:null;
@@ -1413,7 +1414,8 @@ function previewVideo(){
   var box = document.getElementById('ytPreview');
   if(!id){ box.innerHTML = '<p class="text-sm text-claret-600 dark:text-claret-400 mt-2"><i class="fas fa-circle-exclamation mr-1"></i>Link inválido. Cole um link completo do YouTube.</p>'; return; }
   var html = '<div class="mt-3 grid md:grid-cols-2 gap-4 items-start">';
-  html += '<div class="aspect-video bg-black rounded-lg overflow-hidden"><iframe class="w-full h-full" src="https://www.youtube-nocookie.com/embed/'+id+'?loop=1&playlist='+id+'&rel=0" frameborder="0" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe></div>';
+  // previewVideo atualizado com controls=1&playsinline=1&modestbranding=1
+  html += '<div class="aspect-video bg-black rounded-lg overflow-hidden"><iframe class="w-full h-full" src="https://www.youtube-nocookie.com/embed/'+id+'?loop=1&playlist='+id+'&rel=0&controls=1&playsinline=1&modestbranding=1" frameborder="0" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe></div>';
   html += '<div class="space-y-2">';
   html += '<input id="ytTitle" placeholder="Título do vídeo" class="w-full px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm">';
   html += '<textarea id="ytDesc" placeholder="Descrição" rows="2" class="w-full px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm"></textarea>';
@@ -1439,6 +1441,13 @@ function toggleVidDone(id){
   if(i>-1) state.progress.videosWatched.splice(i,1);
   else { state.progress.videosWatched.push(id); addXP(15); }
   saveState(); render();
+}
+
+// ===== playLibraryVideo atualizado com loop=1&playlist=ID&modestbranding=1 =====
+function playLibraryVideo(id,btn){
+  var box=btn.parentElement;
+  if(!box)return;
+  box.innerHTML='<iframe class="w-full h-full" src="https://www.youtube-nocookie.com/embed/'+id+'?autoplay=1&playsinline=1&controls=1&rel=0&fs=1&loop=1&playlist='+id+'&modestbranding=1" title="Vídeo" frameborder="0" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>';
 }
 
 // ===================== MEU CADERNO =====================
@@ -1731,7 +1740,7 @@ function renderBlockList(){
     else if(b.type==='pairing') html += '<label class="eyebrow text-cellar-500">🍽️ Harmonização sugerida</label><input value="'+esc(b.value)+'" oninput="editorBlocks['+idx+'].value=this.value" class="w-full mt-1 px-2 py-1.5 rounded border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm">';
     else if(b.type==='youtube'){
       html += '<label class="eyebrow text-cellar-500">🎥 Vídeo do YouTube</label><input placeholder="Cole o link aqui" title="O vídeo será reproduzido em loop automaticamente" value="'+esc(b.url||'')+'" oninput="editorBlocks['+idx+'].url=this.value; editorBlocks['+idx+'].ytid=extractYouTubeId(this.value);" class="w-full mt-1 px-2 py-1.5 rounded border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm">';
-      if(b.ytid) html += '<div class="aspect-video mt-2 rounded-lg overflow-hidden bg-black"><iframe class="w-full h-full" src="https://www.youtube.com/embed/'+b.ytid+'?loop=1&playlist='+b.ytid+'&rel=0" frameborder="0" allowfullscreen></iframe></div>';
+      if(b.ytid) html += '<div class="aspect-video mt-2 rounded-lg overflow-hidden bg-black"><iframe class="w-full h-full" src="https://www.youtube-nocookie.com/embed/'+b.ytid+'?loop=1&playlist='+b.ytid+'&rel=0&controls=1&playsinline=1&modestbranding=1" frameborder="0" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe></div>';
     }
     html += '</div>';
   });
@@ -1994,6 +2003,7 @@ function finishTopicQuiz(key){
   body.innerHTML+='<button onclick="startTopicQuiz(\''+key.replace(/'/g,"\\'")+'\')" class="mt-4 px-4 py-2 border border-gilt-500 text-gilt-700 dark:text-gilt-400 rounded-lg text-sm font-semibold hover:bg-gilt-50 dark:hover:bg-gilt-950/20"><i class="fas fa-rotate-right mr-1"></i>Tentar novamente</button></div>';
 }
 
+// ===== renderStudyPageView atualizado com youtube-nocookie e parâmetros =====
 function renderStudyPageView(el,id){
   var sp = state.studyPages.find(function(x){ return x.id===id; });
   if(!sp) return go('editor');
@@ -2034,7 +2044,8 @@ function renderStudyPageView(el,id){
       html += '<div class="bg-vine-500/10 border border-vine-500/30 rounded-xl p-4 my-4 text-sm"><i class="fas fa-utensils text-vine-600 mr-2"></i>'+esc(b.value)+'</div>';
     } else if(b.type==='youtube' && b.ytid){
       pendingTopicText.text += ' vídeo do YouTube '+b.ytid;
-      html += '<div class="aspect-video rounded-xl overflow-hidden bg-black my-4"><iframe class="w-full h-full" src="https://www.youtube.com/embed/'+b.ytid+'?loop=1&playlist='+b.ytid+'&rel=0" frameborder="0" allowfullscreen></iframe></div>';
+      // Atualizado para youtube-nocookie e parâmetros
+      html += '<div class="aspect-video rounded-xl overflow-hidden bg-black my-4"><iframe class="w-full h-full" src="https://www.youtube-nocookie.com/embed/'+b.ytid+'?loop=1&playlist='+b.ytid+'&rel=0&controls=1&playsinline=1&modestbranding=1" frameborder="0" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe></div>';
     }
   });
 
@@ -2092,11 +2103,6 @@ function confirmDeleteVideo(uid){
 }
 
 // ===================== VÍDEOS CONTEXTUAIS (em cada aba) =====================
-function playLibraryVideo(id,btn){
-  var box=btn.parentElement;
-  if(!box)return;
-  box.innerHTML='<iframe class="w-full h-full" src="https://www.youtube-nocookie.com/embed/'+id+'?autoplay=1&playsinline=1&controls=1&rel=0&fs=1" title="Vídeo" frameborder="0" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>';
-}
 function contextVideoBlock(ctxType, ctxId, ctxLabel){
   var vids = state.videos.filter(function(v){ return v.ctxType===ctxType && v.ctxId===ctxId; });
   var domKey = ctxType+'_'+ctxId;
@@ -2590,7 +2596,6 @@ async function wwaOpenAdmin() {
       const quizzesTaken = pr.quizzesTaken || 0;
       const name = u.full_name || 'Sem nome';
       const avColor = colorFor(u.id || name);
-
       const coursesHtml = courseDefs.map(c => `
         <div style="margin-bottom:7px;">
           <div style="font-size:10px;color:#e4d5c2;margin-bottom:3px;display:flex;align-items:center;gap:4px;">
