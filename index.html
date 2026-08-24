@@ -115,7 +115,8 @@ h1,h2,h3,h4,h5,h6,.font-serif{ font-family:'Fraunces',serif; }
  <div class="wwa-auth-card"><div style="text-align:center;margin-bottom:20px"><div style="font-size:42px">🍷</div><h1 style="margin:5px 0">Wine World Academy</h1><p style="opacity:.72;font-size:13px">Entre para salvar seu aprendizado em qualquer dispositivo.</p></div>
  <div class="wwa-tabs"><button onclick="wwaAuthTab('login')">Entrar</button><button onclick="wwaAuthTab('register')">Criar conta</button></div>
  <form onsubmit="wwaSubmitAuth(event)"><label>Nome <input id="wwaName" class="wwa-auth-input" placeholder="Seu nome"></label><label style="display:block;margin-top:10px">E-mail <input id="wwaEmail" class="wwa-auth-input" type="email" required></label><label style="display:block;margin-top:10px">Senha <input id="wwaPass" class="wwa-auth-input" type="password" minlength="6" required></label><button class="wwa-auth-btn" id="wwaAuthSubmit" style="margin-top:16px">Entrar</button></form>
-  <div style="text-align:center;margin-top:12px"><button onclick="wwaForgot()" style="background:none;border:0;color:#f0c978;cursor:pointer">Esqueci minha senha</button></div><div id="wwaAuthMsg" class="wwa-msg"></div>
+ <button onclick="wwaGoogle()" style="width:100%;margin-top:10px;padding:12px;border-radius:13px;border:1px solid #5b3948;background:transparent;color:#fff;font-weight:700">🇬 Entrar com Google</button>
+ <div style="text-align:center;margin-top:12px"><button onclick="wwaForgot()" style="background:none;border:0;color:#f0c978;cursor:pointer">Esqueci minha senha</button></div><div id="wwaAuthMsg" class="wwa-msg"></div>
  </div></div>
 <div id="wwaUserbar" class="wwa-userbar hidden"><span id="wwaUserName">Aluno</span><span id="wwaUserXP">⭐ 0 XP</span><button onclick="wwaOpenProfile()">👤 Perfil</button><button id="wwaAdminOpen" class="admin hidden" onclick="wwaOpenAdmin()">🛡 Admin</button><button onclick="wwaLogout()">Sair</button></div>
 <div id="wwaAdmin" class="wwa-admin hidden"><div class="wwa-admin-card"><div style="display:flex;justify-content:space-between;align-items:center"><div><h2 style="margin:0">🛡 Dashboard do administrador</h2><p style="opacity:.65">Alunos, XP, cursos, vídeos e quizzes.</p></div><button onclick="wwaCloseAdmin()" style="padding:9px 12px;border-radius:10px">Fechar</button></div><div id="wwaAdminContent">Carregando...</div></div></div>
@@ -633,10 +634,80 @@ function setRating(prefix,v){
 }
 var ratingValues = {};
 
+// ===== NORMALIZAÇÃO DE URL DO YOUTUBE PARA you-tu.be =====
+function normalizeYouTubeUrl(url){
+  if(!url) return url;
+  var trimmed = url.trim();
+  // Substitui domínios comuns por you-tu.be, mantendo caminho e parâmetros
+  var patterns = [
+    /(?:https?:\/\/)?(?:www\.)?youtu\.be\/(.+)/i,
+    /(?:https?:\/\/)?(?:www\.)?youtube\.com\/(?:shorts\/|embed\/|v\/|watch\?v=)(.+)/i
+  ];
+  for(var i=0;i<patterns.length;i++){
+    var m = trimmed.match(patterns[i]);
+    if(m){
+      var rest = m[1];
+      // Se for watch?v=, já pegamos o rest com o ID e possíveis parâmetros
+      // mas pode conter &, então mantemos tudo após o ID
+      var parts = rest.split('?');
+      var id = parts[0];
+      var qs = parts[1] ? '?'+parts[1] : '';
+      // Se a URL original já era youtu.be, mantém os parâmetros
+      // Se era youtube.com/watch?v=, o rest já inclui o ID e pode ter &...
+      // Vamos garantir que o ID tenha 11 caracteres e o restante seja parâmetros
+      var cleanId = id.split('&')[0]; // caso haja & extra
+      if(cleanId.length>=11){
+        var params = '';
+        if(parts[1]) params = '?'+parts[1];
+        // Se havia & extra no ID, recoloca
+        if(id.indexOf('&')>-1){
+          var extra = id.split('&').slice(1).join('&');
+          params = params ? params+'&'+extra : '?'+extra;
+        }
+        return 'https://you-tu.be/'+cleanId+params;
+      }
+    }
+  }
+  // Se não for um link conhecido, retorna o original
+  return trimmed;
+}
+
+// Aplica normalização em campos de entrada de URL do YouTube ao perder o foco
+function normalizeYouTubeInput(input){
+  if(!input) return;
+  var val = input.value;
+  var norm = normalizeYouTubeUrl(val);
+  if(norm !== val) input.value = norm;
+}
+
+// Adiciona listeners de blur para normalização
+document.addEventListener('DOMContentLoaded', function(){
+  // Seletores para os campos de URL do YouTube
+  var selectors = ['#ytUrl', '#changeLessonVideoUrl', '#ctxUrl_', 'input[id^="lessonVideoUrl_"]'];
+  // Para os campos com id dinâmico (ctxUrl_*), usamos um observador ou eventos delegados.
+  // Vamos aplicar via MutationObserver nos campos que surgirem.
+  function attachNormalize(input){
+    if(!input) return;
+    if(input._normalizeAttached) return;
+    input._normalizeAttached = true;
+    input.addEventListener('blur', function(){ normalizeYouTubeInput(this); });
+  }
+  // Aplica nos existentes
+  document.querySelectorAll('#ytUrl, #changeLessonVideoUrl, input[id^="lessonVideoUrl_"], input[id^="ctxUrl_"]').forEach(attachNormalize);
+  // Observador para novos campos
+  var obs = new MutationObserver(function(){
+    document.querySelectorAll('#ytUrl, #changeLessonVideoUrl, input[id^="lessonVideoUrl_"], input[id^="ctxUrl_"]').forEach(attachNormalize);
+  });
+  obs.observe(document.body, { childList: true, subtree: true });
+});
+
 function extractYouTubeId(url){
   if(!url) return null;
   url = url.trim();
-  var m = url.match(/youtu\.be\/([A-Za-z0-9_-]{11})/);
+  // Agora pode ser you-tu.be também
+  var m = url.match(/you-tu\.be\/([A-Za-z0-9_-]{11})/);
+  if(m) return m[1];
+  m = url.match(/youtu\.be\/([A-Za-z0-9_-]{11})/);
   if(m) return m[1];
   m = url.match(/youtube(?:-nocookie)?\.com\/(?:embed|shorts|v)\/([A-Za-z0-9_-]{11})/);
   if(m) return m[1];
@@ -1120,7 +1191,7 @@ async function saveLessonVideo(courseId,idx){
   var inp=document.getElementById('lessonVideoUrl_'+courseId+'_'+idx);
   if(!inp) return;
   var id=extractYouTubeId(inp.value.trim());
-  if(!id){ toast('Cole um link válido do YouTube','fa-circle-exclamation'); return; }
+  if(!id){ toast('Cole um link válido do You-Tube','fa-circle-exclamation'); return; }
   await wwaUpsertLessonVideo(courseId, idx, id);
   toast('Vídeo da aula publicado para todos os alunos','fa-globe');
   render();
@@ -1190,7 +1261,7 @@ function lessonVideoPanel(c,l,idx){
     html+='</div>';
   } else {
     if(wwaIsAdmin()){
-      html+='<div class="rounded-2xl border border-dashed border-cellar-300 dark:border-claret-700 p-5 text-center"><p class="text-sm text-cellar-500 mb-3">Esta aula ainda não possui vídeo associado.</p><div class="flex flex-col sm:flex-row gap-2"><input id="lessonVideoUrl_'+c.id+'_'+idx+'" placeholder="Cole o link do YouTube" class="flex-1 px-3 py-2.5 rounded-xl border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm"><button onclick="saveLessonVideo(\''+c.id+'\','+idx+')" class="px-4 py-2.5 bg-claret-700 hover:bg-claret-800 text-white rounded-xl text-xs font-bold"><i class="fas fa-plus mr-1"></i>Adicionar vídeo</button></div></div>';
+      html+='<div class="rounded-2xl border border-dashed border-cellar-300 dark:border-claret-700 p-5 text-center"><p class="text-sm text-cellar-500 mb-3">Esta aula ainda não possui vídeo associado.</p><div class="flex flex-col sm:flex-row gap-2"><input id="lessonVideoUrl_'+c.id+'_'+idx+'" placeholder="Cole o link do You-Tube" class="flex-1 px-3 py-2.5 rounded-xl border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm"><button onclick="saveLessonVideo(\''+c.id+'\','+idx+')" class="px-4 py-2.5 bg-claret-700 hover:bg-claret-800 text-white rounded-xl text-xs font-bold"><i class="fas fa-plus mr-1"></i>Adicionar vídeo</button></div></div>';
     } else {
       html+='<div class="rounded-2xl border border-dashed border-cellar-300 dark:border-claret-700 p-5 text-center"><p class="text-sm text-cellar-500"><i class="fas fa-hourglass-half mr-1"></i>O vídeo desta aula ainda será disponibilizado.</p></div>';
     }
@@ -1206,9 +1277,9 @@ function openChangeLessonVideo(courseId,idx){
   m.className='fixed inset-0 z-[210] flex items-center justify-center bg-claret-950/70 backdrop-blur-sm p-4';
   m.innerHTML=''
     +'<div class="fade-in bg-white dark:bg-claret-950 rounded-2xl p-6 max-w-lg w-full border border-cellar-200 dark:border-claret-800 shadow-2xl">'
-    +'<div class="flex items-start justify-between gap-3 mb-4"><div><p class="eyebrow text-gilt-500">🎥 EDITAR VÍDEO DA AULA</p><h3 class="font-serif font-bold text-xl text-claret-900 dark:text-cellar-100 mt-1">Trocar vídeo</h3><p class="text-xs text-cellar-500 mt-1">Cole o novo link do YouTube. O conteúdo da aula e o quiz serão preservados.</p></div><button onclick="closeChangeLessonVideoModal()" class="w-9 h-9 rounded-full border border-cellar-200 dark:border-claret-800 text-cellar-500"><i class="fas fa-xmark"></i></button></div>'
-    +'<label class="block text-xs font-bold text-cellar-600 dark:text-cellar-300 mb-1.5">Link ou ID do YouTube</label>'
-    +'<input id="changeLessonVideoUrl" value="https://www.youtube.com/watch?v='+esc(current)+'" class="w-full px-3 py-2.5 rounded-xl border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm outline-none focus:border-gilt-500">'
+    +'<div class="flex items-start justify-between gap-3 mb-4"><div><p class="eyebrow text-gilt-500">🎥 EDITAR VÍDEO DA AULA</p><h3 class="font-serif font-bold text-xl text-claret-900 dark:text-cellar-100 mt-1">Trocar vídeo</h3><p class="text-xs text-cellar-500 mt-1">Cole o novo link do You-Tube. O conteúdo da aula e o quiz serão preservados.</p></div><button onclick="closeChangeLessonVideoModal()" class="w-9 h-9 rounded-full border border-cellar-200 dark:border-claret-800 text-cellar-500"><i class="fas fa-xmark"></i></button></div>'
+    +'<label class="block text-xs font-bold text-cellar-600 dark:text-cellar-300 mb-1.5">Link ou ID do You-Tube</label>'
+    +'<input id="changeLessonVideoUrl" value="https://you-tu.be/'+esc(current)+'" class="w-full px-3 py-2.5 rounded-xl border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm outline-none focus:border-gilt-500">'
     +'<div class="flex justify-end gap-2 mt-5"><button onclick="closeChangeLessonVideoModal()" class="px-4 py-2 rounded-xl border border-cellar-300 dark:border-claret-700 text-sm font-semibold">Cancelar</button><button onclick="confirmChangeLessonVideo(\''+courseId+'\','+idx+')" class="px-5 py-2 rounded-xl bg-claret-700 hover:bg-claret-800 text-white text-sm font-bold"><i class="fas fa-floppy-disk mr-1"></i>Salvar novo vídeo</button></div>'
     +'</div>';
   document.body.appendChild(m);
@@ -1219,7 +1290,7 @@ async function confirmChangeLessonVideo(courseId,idx){
   if(!wwaIsAdmin()){ toast('Apenas o administrador pode trocar vídeos das aulas','fa-lock'); return; }
   var inp=document.getElementById('changeLessonVideoUrl');
   var id=extractYouTubeId(inp?inp.value.trim():'');
-  if(!id){toast('Cole um link válido do YouTube','fa-circle-exclamation');return;}
+  if(!id){toast('Cole um link válido do You-Tube','fa-circle-exclamation');return;}
   await wwaUpsertLessonVideo(courseId, idx, id);
   closeChangeLessonVideoModal();
   toast('Vídeo da aula trocado para todos os alunos','fa-circle-play');
@@ -1354,16 +1425,16 @@ function completeLesson(courseId,idx,total){ updateCourseProgress(courseId,total
 // ===================== VÍDEOS =====================
 function renderVideos(el){
   var html = '<div class="fade-in p-4 md:p-8 max-w-6xl mx-auto">';
-  html += sectionHeader('🎥','Vídeos','Sua biblioteca multimídia: YouTube e Instagram, organizados para estudar, revisar e descobrir novos conteúdos.');
+  html += sectionHeader('🎥','Vídeos','Sua biblioteca multimídia: You-Tube e Instagram, organizados para estudar, revisar e descobrir novos conteúdos.');
   html += '<div class="bg-white dark:bg-claret-950/40 rounded-2xl p-5 border border-cellar-200/70 dark:border-claret-800/70 mb-8">';
   html += '<div class="flex flex-wrap gap-2 mb-4">';
-  html += '<button id="libTabYT" onclick="switchLibraryMediaTab(\'youtube\')" class="px-4 py-2 rounded-full text-xs font-bold bg-claret-700 text-white"><i class="fab fa-youtube mr-1"></i>YouTube</button>';
+  html += '<button id="libTabYT" onclick="switchLibraryMediaTab(\'youtube\')" class="px-4 py-2 rounded-full text-xs font-bold bg-claret-700 text-white"><i class="fab fa-youtube mr-1"></i>You-Tube</button>';
   html += '<button id="libTabIG" onclick="switchLibraryMediaTab(\'instagram\')" class="px-4 py-2 rounded-full text-xs font-bold border border-cellar-300 dark:border-claret-700"><i class="fab fa-instagram mr-1"></i>Instagram</button>';
   html += '</div>';
   html += '<div id="libraryYTForm">';
-  html += '<p class="eyebrow text-cellar-500 mb-2">Adicionar vídeo do YouTube</p>';
+  html += '<p class="eyebrow text-cellar-500 mb-2">Adicionar vídeo do You-Tube</p>';
   html += '<div class="flex flex-col md:flex-row gap-2 mb-3">';
-  html += '<input id="ytUrl" type="text" placeholder="Cole o link do YouTube aqui" class="flex-1 px-3 py-2.5 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm">';
+  html += '<input id="ytUrl" type="text" placeholder="Cole o link do You-Tube aqui" class="flex-1 px-3 py-2.5 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm">';
   html += '<button onclick="previewVideo()" class="px-5 py-2.5 bg-claret-700 hover:bg-claret-800 text-white rounded-lg text-sm font-semibold shrink-0"><i class="fas fa-eye mr-1"></i>Pré-visualizar</button></div>';
   html += '<div id="ytPreview"></div></div>';
   html += '<div id="libraryIGForm" class="hidden">';
@@ -1374,7 +1445,7 @@ function renderVideos(el){
   html += '<button onclick="previewInstagram()" class="px-5 py-2.5 bg-gradient-to-r from-pink-600 to-purple-600 hover:opacity-90 text-white rounded-lg text-sm font-semibold shrink-0"><i class="fab fa-instagram mr-1"></i>Pré-visualizar</button></div>';
   html += '<div id="igPreview"></div></div></div>';
 
-  html += '<div class="flex items-center justify-between mb-4 flex-wrap gap-2"><div><p class="eyebrow text-cellar-500">Biblioteca</p><p class="text-sm text-cellar-500 dark:text-cellar-400">'+state.videos.length+' conteúdos salvos</p></div><div class="flex gap-2 text-xs"><span class="px-2.5 py-1 rounded-full bg-claret-50 dark:bg-claret-900/50">'+state.videos.filter(function(v){return videoKind(v)==='youtube';}).length+' YouTube</span><span class="px-2.5 py-1 rounded-full bg-pink-500/10 text-pink-500">'+state.videos.filter(function(v){return videoKind(v)==='instagram';}).length+' Instagram</span></div></div>';
+  html += '<div class="flex items-center justify-between mb-4 flex-wrap gap-2"><div><p class="eyebrow text-cellar-500">Biblioteca</p><p class="text-sm text-cellar-500 dark:text-cellar-400">'+state.videos.length+' conteúdos salvos</p></div><div class="flex gap-2 text-xs"><span class="px-2.5 py-1 rounded-full bg-claret-50 dark:bg-claret-900/50">'+state.videos.filter(function(v){return videoKind(v)==='youtube';}).length+' You-Tube</span><span class="px-2.5 py-1 rounded-full bg-pink-500/10 text-pink-500">'+state.videos.filter(function(v){return videoKind(v)==='instagram';}).length+' Instagram</span></div></div>';
   html += '<div class="grid grid-cols-1 md:grid-cols-2 gap-5">';
   state.videos.forEach(function(v){
     var done = state.progress.videosWatched.indexOf(v.id)>-1;
@@ -1446,9 +1517,12 @@ function addInstagramVideo(){
 }
 function previewVideo(){
   var url = document.getElementById('ytUrl').value;
-  var id = extractYouTubeId(url);
+  // Normaliza a URL antes de extrair
+  var norm = normalizeYouTubeUrl(url);
+  if(norm !== url) document.getElementById('ytUrl').value = norm;
+  var id = extractYouTubeId(norm);
   var box = document.getElementById('ytPreview');
-  if(!id){ box.innerHTML = '<p class="text-sm text-claret-600 dark:text-claret-400 mt-2"><i class="fas fa-circle-exclamation mr-1"></i>Link inválido. Cole um link completo do YouTube.</p>'; return; }
+  if(!id){ box.innerHTML = '<p class="text-sm text-claret-600 dark:text-claret-400 mt-2"><i class="fas fa-circle-exclamation mr-1"></i>Link inválido. Cole um link completo do You-Tube.</p>'; return; }
   var html = '<div class="mt-3 grid md:grid-cols-2 gap-4 items-start">';
   // previewVideo atualizado com controls=1&playsinline=1&modestbranding=1
   html += '<div class="aspect-video bg-black rounded-lg overflow-hidden"><iframe class="w-full h-full" src="https://www.youtube-nocookie.com/embed/'+id+'?loop=1&playlist='+id+'&rel=0&controls=1&playsinline=1&modestbranding=1" frameborder="0" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe></div>';
@@ -1741,7 +1815,7 @@ function renderEditor(el){
   html += '<input id="pageTitle" placeholder="Título da página de estudo" class="w-full px-3 py-2.5 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-lg font-serif font-bold mb-4">';
   html += '<div id="blockList" class="space-y-3 mb-4"></div>';
   html += '<div class="flex flex-wrap gap-2 border-t border-cellar-200 dark:border-claret-800 pt-4">';
-  [['fa-align-left','Texto','text'],['fa-heading','Subtítulo','heading'],['fa-circle-play','YouTube','youtube'],['fa-lightbulb','Curiosidade','tip'],['fa-quote-left','Citação','quote'],['fa-list','Lista','list'],['fa-utensils','Harmonização','pairing']].forEach(function(b){
+  [['fa-align-left','Texto','text'],['fa-heading','Subtítulo','heading'],['fa-circle-play','You-Tube','youtube'],['fa-lightbulb','Curiosidade','tip'],['fa-quote-left','Citação','quote'],['fa-list','Lista','list'],['fa-utensils','Harmonização','pairing']].forEach(function(b){
     html += '<button onclick="addEditorBlock(\''+b[2]+'\')" class="px-3 py-2 border border-cellar-300 dark:border-claret-700 rounded-lg text-xs font-semibold hover:bg-claret-50 dark:hover:bg-claret-900/40"><i class="fas '+b[0]+' mr-1.5"></i>'+b[1]+'</button>';
   });
   html += '</div></div>';
@@ -1775,7 +1849,7 @@ function renderBlockList(){
     else if(b.type==='list') html += '<label class="eyebrow text-cellar-500">Lista (uma linha por item)</label><textarea rows="3" oninput="editorBlocks['+idx+'].value=this.value" class="w-full mt-1 px-2 py-1.5 rounded border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm">'+esc(b.value)+'</textarea>';
     else if(b.type==='pairing') html += '<label class="eyebrow text-cellar-500">🍽️ Harmonização sugerida</label><input value="'+esc(b.value)+'" oninput="editorBlocks['+idx+'].value=this.value" class="w-full mt-1 px-2 py-1.5 rounded border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm">';
     else if(b.type==='youtube'){
-      html += '<label class="eyebrow text-cellar-500">🎥 Vídeo do YouTube</label><input placeholder="Cole o link aqui" title="O vídeo será reproduzido em loop automaticamente" value="'+esc(b.url||'')+'" oninput="editorBlocks['+idx+'].url=this.value; editorBlocks['+idx+'].ytid=extractYouTubeId(this.value);" class="w-full mt-1 px-2 py-1.5 rounded border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm">';
+      html += '<label class="eyebrow text-cellar-500">🎥 Vídeo do You-Tube</label><input placeholder="Cole o link aqui" title="O vídeo será reproduzido em loop automaticamente" value="'+esc(b.url||'')+'" oninput="editorBlocks['+idx+'].url=this.value; editorBlocks['+idx+'].ytid=extractYouTubeId(this.value);" class="w-full mt-1 px-2 py-1.5 rounded border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm">';
       if(b.ytid) html += '<div class="aspect-video mt-2 rounded-lg overflow-hidden bg-black"><iframe class="w-full h-full" src="https://www.youtube-nocookie.com/embed/'+b.ytid+'?loop=1&playlist='+b.ytid+'&rel=0&controls=1&playsinline=1&modestbranding=1" frameborder="0" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe></div>';
     }
     html += '</div>';
@@ -2079,7 +2153,7 @@ function renderStudyPageView(el,id){
       pendingTopicText.text += ' '+(b.value||'');
       html += '<div class="bg-vine-500/10 border border-vine-500/30 rounded-xl p-4 my-4 text-sm"><i class="fas fa-utensils text-vine-600 mr-2"></i>'+esc(b.value)+'</div>';
     } else if(b.type==='youtube' && b.ytid){
-      pendingTopicText.text += ' vídeo do YouTube '+b.ytid;
+      pendingTopicText.text += ' vídeo do You-Tube '+b.ytid;
       // Atualizado para youtube-nocookie e parâmetros
       html += '<div class="aspect-video rounded-xl overflow-hidden bg-black my-4"><iframe class="w-full h-full" src="https://www.youtube-nocookie.com/embed/'+b.ytid+'?loop=1&playlist='+b.ytid+'&rel=0&controls=1&playsinline=1&modestbranding=1" frameborder="0" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe></div>';
     }
@@ -2145,7 +2219,7 @@ function contextVideoBlock(ctxType, ctxId, ctxLabel){
   var html = '<div class="bg-white dark:bg-claret-950/50 rounded-2xl p-6 border border-cellar-200/70 dark:border-claret-800/70 mt-6">';
   html += '<div class="flex items-center justify-between mb-3 flex-wrap gap-2"><h3 class="font-serif font-bold text-lg text-claret-900 dark:text-cellar-100">🎥 Vídeos da comunidade</h3>';
   html += '<button onclick="toggleCtxForm(\''+domKey+'\')" class="px-3 py-1.5 border border-claret-300 dark:border-claret-700 rounded-lg text-xs font-semibold hover:bg-claret-50 dark:hover:bg-claret-900/40"><i class="fas fa-plus mr-1"></i>Adicionar vídeo</button></div>';
-  if(vids.length===0){ html += '<p class="text-sm text-cellar-500 dark:text-cellar-400">Nenhum vídeo adicionado ainda para '+esc(ctxLabel)+'. Cole um link do YouTube e ajude o grupo a aprender!</p>'; }
+  if(vids.length===0){ html += '<p class="text-sm text-cellar-500 dark:text-cellar-400">Nenhum vídeo adicionado ainda para '+esc(ctxLabel)+'. Cole um link do You-Tube e ajude o grupo a aprender!</p>'; }
   else {
     html += '<div class="grid sm:grid-cols-2 gap-4 mb-2">';
     vids.forEach(function(v){
@@ -2159,7 +2233,7 @@ function contextVideoBlock(ctxType, ctxId, ctxLabel){
     html += '</div>';
   }
   html += '<div id="ctxForm_'+domKey+'" class="hidden mt-4 pt-4 border-t border-cellar-200 dark:border-claret-800 space-y-2">';
-  html += '<input id="ctxUrl_'+domKey+'" placeholder="Cole o link do YouTube aqui" class="w-full px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm">';
+  html += '<input id="ctxUrl_'+domKey+'" placeholder="Cole o link do You-Tube aqui" class="w-full px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm">';
   html += '<input id="ctxTitle_'+domKey+'" placeholder="Título do vídeo" class="w-full px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm">';
   html += '<textarea id="ctxDesc_'+domKey+'" placeholder="Descrição (opcional)" rows="2" class="w-full px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm"></textarea>';
   html += '<div id="ctxPreview_'+domKey+'"></div>';
@@ -2174,9 +2248,12 @@ function toggleCtxForm(domKey){
 function addCtxVideo(ctxType,ctxId,domKey){
   var urlEl = document.getElementById('ctxUrl_'+domKey);
   if(!urlEl) return;
-  var id = extractYouTubeId(urlEl.value);
+  // Normaliza a URL antes de extrair
+  var norm = normalizeYouTubeUrl(urlEl.value);
+  if(norm !== urlEl.value) urlEl.value = norm;
+  var id = extractYouTubeId(norm);
   var prev = document.getElementById('ctxPreview_'+domKey);
-  if(!id){ if(prev) prev.innerHTML = '<p class="text-xs text-claret-600 dark:text-claret-400"><i class="fas fa-circle-exclamation mr-1"></i>Link inválido. Cole um link completo do YouTube.</p>'; return; }
+  if(!id){ if(prev) prev.innerHTML = '<p class="text-xs text-claret-600 dark:text-claret-400"><i class="fas fa-circle-exclamation mr-1"></i>Link inválido. Cole um link completo do You-Tube.</p>'; return; }
   var titleEl = document.getElementById('ctxTitle_'+domKey);
   var descEl = document.getElementById('ctxDesc_'+domKey);
   var title = (titleEl && titleEl.value.trim()) || 'Vídeo sem título';
