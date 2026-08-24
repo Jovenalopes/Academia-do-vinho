@@ -1036,37 +1036,21 @@ async function wwaUpsertLessonVideo(courseId, idx, youtubeId){
 async function wwaDeleteLessonVideo(courseId, idx){
   var key = lessonKey(courseId, idx);
   var uid = 'lesson_'+courseId+'_'+idx;
-
-  // 1. Tenta excluir no Supabase primeiro
-  if(wwaSB && wwaUser){
-    try{
-      var row = {
-        uid: uid,
-        content_type: 'lesson_video',
-        title: 'Vídeo da aula '+courseId+'#'+idx,
-        description: '',
-        data: { courseId: courseId, lessonIndex: idx, youtubeId: '', deleted: true },
-        user_id: wwaUser.id,
-        updated_at: new Date().toISOString()
-      };
-      var r = await wwaSB.from('shared_content').upsert(row, { onConflict: 'uid' });
-      if(r.error) throw r.error;
-    } catch(e){
-      console.warn('Falha ao excluir vídeo da aula:', e.message || e);
-      return false; // falha — não continua
-    }
-  }
-
-  // 2. Se chegou aqui, a exclusão remota foi bem-sucedida → atualiza o cache local
-  globalLessonVideos[key] = { youtubeId: '', uid: uid, deleted: true };
-
+  globalLessonVideos[key] = { youtubeId:'', uid:uid, deleted:true };
   if(state.progress.lessonVideosWatched && state.progress.lessonVideosWatched[courseId]){
     state.progress.lessonVideosWatched[courseId] = state.progress.lessonVideosWatched[courseId].filter(function(n){ return n!==idx; });
   }
-  updateCourseProgress(courseId, (DB.courses.find(function(c){ return c.id===courseId; }) || {lessons:[]}).lessons.length);
+  updateCourseProgress(courseId,(DB.courses.find(function(c){return c.id===courseId;})||{lessons:[]}).lessons.length);
   saveState();
-
-  return true; // sucesso
+  if(!wwaSB || !wwaUser) return;
+  try{
+    var row = { uid:uid, content_type:'lesson_video',
+      title:'Vídeo da aula '+courseId+'#'+idx, description:'',
+      data:{courseId:courseId,lessonIndex:idx,youtubeId:'',deleted:true},
+      user_id:wwaUser.id, updated_at:new Date().toISOString() };
+    var r = await wwaSB.from('shared_content').upsert(row,{onConflict:'uid'});
+    if(r.error) throw r.error;
+  }catch(e){ console.warn('Falha ao excluir vídeo da aula:', e.message||e); }
 }
 
 function lessonKey(courseId, idx){ return courseId+'::'+idx; }
@@ -1228,30 +1212,13 @@ function promptDeleteLessonVideo(courseId,idx){
   var inp=document.getElementById('lessonVideoDeletePwd');if(inp)inp.focus();
 }
 function closeLessonVideoDeleteModal(){var m=document.getElementById('lessonVideoDeleteModal');if(m)m.remove();}
-async function confirmDeleteLessonVideo(courseId, idx){
-  if(!wwaIsAdmin()){
-    toast('Apenas o administrador pode excluir vídeos das aulas', 'fa-lock');
-    return;
-  }
-
-  var pwd = document.getElementById('lessonVideoDeletePwd');
-  if(!pwd || pwd.value !== ADMIN_PASSWORD){
-    var err = document.getElementById('lessonVideoDeleteErr');
-    if(err) err.classList.remove('hidden');
-    if(pwd){ pwd.value = ''; pwd.focus(); }
-    return;
-  }
-
-  // Aguarda a exclusão remota
-  var success = await wwaDeleteLessonVideo(courseId, idx);
-  if(!success){
-    toast('Erro ao excluir vídeo. Verifique o console.', 'fa-circle-exclamation');
-    return;
-  }
-
-  // Sucesso → fecha modal e atualiza a tela
+function confirmDeleteLessonVideo(courseId,idx){
+  if(!wwaIsAdmin()){ toast('Apenas o administrador pode excluir vídeos das aulas','fa-lock'); return; }
+  var pwd=document.getElementById('lessonVideoDeletePwd');
+  if(!pwd||pwd.value!==ADMIN_PASSWORD){var err=document.getElementById('lessonVideoDeleteErr');if(err)err.classList.remove('hidden');if(pwd){pwd.value='';pwd.focus();}return;}
+  wwaDeleteLessonVideo(courseId, idx);
   closeLessonVideoDeleteModal();
-  toast('Vídeo da aula excluído para todos os alunos', 'fa-trash-can');
+  toast('Vídeo da aula excluído para todos os alunos','fa-trash-can');
   render();
 }
 function testLessonKnowledge(courseId,idx){
@@ -2112,6 +2079,7 @@ function closeDeleteModal(){
   if(m) m.remove();
 }
 function confirmDeleteVideo(uid){
+  if(!wwaIsAdmin()){ toast('Apenas o administrador pode excluir vídeos','fa-lock'); closeDeleteModal(); return; }
   var pwdEl = document.getElementById('deletePwd');
   var pwd = pwdEl ? pwdEl.value : '';
   if(pwd !== ADMIN_PASSWORD){
@@ -2297,21 +2265,9 @@ async function loadState(){
       if (!state.progress) state.progress = JSON.parse(JSON.stringify(DEFAULT_STATE.progress));
       if (!state.progress.topicQuizzes) state.progress.topicQuizzes = {};
       // Garante vídeos de demonstração
-      if (state.videos.length === 0 && DB.demoVideos) {
-        state.videos = DB.demoVideos.slice();
-      }
-    } else {
-      // Primeira visita: popula vídeos demo
-      if (DB.demoVideos && state.videos.length === 0) {
-        state.videos = DB.demoVideos.slice();
-      }
-    }
+          }
   }catch(e){
     console.warn('Falha ao carregar estado, usando default:', e);
-    // Fallback: popula vídeos demo
-    if (DB.demoVideos) {
-      state.videos = DB.demoVideos.slice();
-    }
   }
 }
 
@@ -2434,10 +2390,9 @@ async function wwaLoadCloud() {
   if (!wwaUser) return;
   try {
     // 1. Resetar o estado para o padrão (limpo)
-    Object.keys(DEFAULT_STATE).forEach(key => {
+        Object.keys(DEFAULT_STATE).forEach(key => {
       if (key === 'videos') {
-        // Manter vídeos de demonstração, se existirem
-        state.videos = (DB.demoVideos ? DB.demoVideos.slice() : []);
+        state.videos = [];
       } else if (key === 'progress') {
         // Clonar profundamente o progress padrão
         state.progress = JSON.parse(JSON.stringify(DEFAULT_STATE.progress));
@@ -2504,15 +2459,7 @@ async function wwaLoadCloud() {
     }
 
     // Garantir que os vídeos de demonstração estejam sempre presentes
-    if (DB.demoVideos) {
-      DB.demoVideos.forEach(demo => {
-        if (!state.videos.some(v => v.uid === demo.uid)) {
-          state.videos.unshift(demo);
-        }
-      });
-    }
-
-    // Sincronizar lessonVideos com DEFAULT_LESSON_VIDEOS (se não removidos)
+        // Sincronizar lessonVideos com DEFAULT_LESSON_VIDEOS (se não removidos)
     seedDefaultLessonVideos?.();
 
     wwaCloudReady = true;
