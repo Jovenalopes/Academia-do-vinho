@@ -1465,7 +1465,15 @@ function renderVideos(el){
     }
     html += '<div class="p-4">';
     html += '<div class="flex items-start justify-between gap-2"><h3 class="font-serif font-bold text-claret-900 dark:text-cellar-100">'+esc(v.title)+'</h3><span class="shrink-0 text-[10px] px-2 py-1 rounded-full '+(kind==='instagram'?'bg-pink-500/10 text-pink-500':'bg-claret-50 dark:bg-claret-900/50 text-claret-500')+'"><i class="fab '+(kind==='instagram'?'fa-instagram':'fa-youtube')+' mr-1"></i>'+kind+'</span></div>';
-    html += '<p class="text-sm text-cellar-600 dark:text-cellar-300 mt-1 mb-2">'+esc(v.desc||'')+'</p>';
+    
+    // ===== INÍCIO DA ALTERAÇÃO PARA EXIBIÇÃO DA DESCRIÇÃO COM QUEBRAS DE LINHA =====
+    // Substitui a exibição da descrição para preservar quebras de linha, garantindo legibilidade.
+    var descHtml = esc(v.desc || '').split('\n').map(function(line) { 
+      return line.trim() ? line : ' '; 
+    }).join('<br>');
+    html += '<div class="text-sm text-cellar-600 dark:text-cellar-300 mt-1 mb-2" style="white-space: pre-wrap; word-break: break-word;">' + descHtml + '</div>';
+    // ===== FIM DA ALTERAÇÃO =====
+
     html += '<div class="flex flex-wrap gap-1.5 mb-3">';
     if(c) html += '<span class="text-xs px-2 py-1 bg-claret-50 dark:bg-claret-900/40 rounded-full">'+flagHtml(c.flag,'text-xs')+' '+c.name+'</span>';
     if(g) html += '<span class="text-xs px-2 py-1 bg-gilt-50 dark:bg-gilt-950/20 rounded-full">🍇 '+g.name+'</span>';
@@ -1499,7 +1507,7 @@ function previewInstagram(){
   }
   html+='<div class="space-y-2">';
   html+='<input id="igTitle" placeholder="Título do conteúdo" class="w-full px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm">';
-  html+='<textarea id="igDesc" placeholder="Descrição" rows="2" class="w-full px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm"></textarea>';
+  html+='<textarea id="igDesc" placeholder="Descreva o conteúdo com detalhes (use quebras de linha para organizar)" rows="5" class="w-full px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm"></textarea>';
   html+='<div class="grid grid-cols-2 gap-2"><select id="igCountry" class="px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm"><option value="">País (opcional)</option>'+DB.countries.map(function(c){return '<option value="'+escAttr(c.id)+'">'+c.flag+' '+esc(c.name)+'</option>';}).join('')+'</select><select id="igGrape" class="px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm"><option value="">Uva (opcional)</option>'+DB.grapes.map(function(g){return '<option value="'+escAttr(g.id)+'">'+esc(g.name)+'</option>';}).join('')+'</select></div>';
   html+='<input id="igTags" placeholder="Tags separadas por vírgula" class="w-full px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm">';
   html+='<button onclick="addInstagramVideo()" class="w-full px-4 py-2 bg-gradient-to-r from-pink-600 to-purple-600 hover:opacity-90 text-white rounded-lg text-sm font-semibold"><i class="fas fa-plus mr-1"></i>Salvar Instagram na biblioteca</button>';
@@ -1532,7 +1540,11 @@ function previewVideo(){
   html += '<div class="aspect-video bg-black rounded-lg overflow-hidden"><iframe class="w-full h-full" src="https://www.youtube-nocookie.com/embed/'+id+'?loop=1&playlist='+id+'&rel=0&controls=1&playsinline=1&modestbranding=1" frameborder="0" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe></div>';
   html += '<div class="space-y-2">';
   html += '<input id="ytTitle" placeholder="Título do vídeo" class="w-full px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm">';
-  html += '<textarea id="ytDesc" placeholder="Descrição" rows="2" class="w-full px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm"></textarea>';
+  
+  // ===== ALTERAÇÃO: Campo de descrição com mais linhas e placeholder explicativo =====
+  html += '<textarea id="ytDesc" placeholder="Descreva o conteúdo com detalhes (use quebras de linha para organizar)" rows="5" class="w-full px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm"></textarea>';
+  // ===== FIM DA ALTERAÇÃO =====
+
   html += '<div class="grid grid-cols-2 gap-2"><select id="ytCountry" class="px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm"><option value="">País (opcional)</option>'+DB.countries.map(function(c){ return '<option value="'+c.id+'">'+c.flag+' '+c.name+'</option>'; }).join('')+'</select>';
   html += '<select id="ytGrape" class="px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm"><option value="">Uva (opcional)</option>'+DB.grapes.map(function(g){ return '<option value="'+g.id+'">'+g.name+'</option>'; }).join('')+'</select></div>';
   html += '<input id="ytTags" placeholder="Tags separadas por vírgula" class="w-full px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm">';
