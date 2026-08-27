@@ -1465,15 +1465,10 @@ function renderVideos(el){
     }
     html += '<div class="p-4">';
     html += '<div class="flex items-start justify-between gap-2"><h3 class="font-serif font-bold text-claret-900 dark:text-cellar-100">'+esc(v.title)+'</h3><span class="shrink-0 text-[10px] px-2 py-1 rounded-full '+(kind==='instagram'?'bg-pink-500/10 text-pink-500':'bg-claret-50 dark:bg-claret-900/50 text-claret-500')+'"><i class="fab '+(kind==='instagram'?'fa-instagram':'fa-youtube')+' mr-1"></i>'+kind+'</span></div>';
-    
-    // ===== INÍCIO DA ALTERAÇÃO PARA EXIBIÇÃO DA DESCRIÇÃO COM QUEBRAS DE LINHA =====
-    // Substitui a exibição da descrição para preservar quebras de linha, garantindo legibilidade.
     var descHtml = esc(v.desc || '').split('\n').map(function(line) { 
       return line.trim() ? line : ' '; 
     }).join('<br>');
     html += '<div class="text-sm text-cellar-600 dark:text-cellar-300 mt-1 mb-2" style="white-space: pre-wrap; word-break: break-word;">' + descHtml + '</div>';
-    // ===== FIM DA ALTERAÇÃO =====
-
     html += '<div class="flex flex-wrap gap-1.5 mb-3">';
     if(c) html += '<span class="text-xs px-2 py-1 bg-claret-50 dark:bg-claret-900/40 rounded-full">'+flagHtml(c.flag,'text-xs')+' '+c.name+'</span>';
     if(g) html += '<span class="text-xs px-2 py-1 bg-gilt-50 dark:bg-gilt-950/20 rounded-full">🍇 '+g.name+'</span>';
@@ -1529,22 +1524,16 @@ function addInstagramVideo(){
 }
 function previewVideo(){
   var url = document.getElementById('ytUrl').value;
-  // Normaliza a URL antes de extrair
   var norm = normalizeYouTubeUrl(url);
   if(norm !== url) document.getElementById('ytUrl').value = norm;
   var id = extractYouTubeId(norm);
   var box = document.getElementById('ytPreview');
   if(!id){ box.innerHTML = '<p class="text-sm text-claret-600 dark:text-claret-400 mt-2"><i class="fas fa-circle-exclamation mr-1"></i>Link inválido. Cole um link completo do You-Tube.</p>'; return; }
   var html = '<div class="mt-3 grid md:grid-cols-2 gap-4 items-start">';
-  // previewVideo atualizado com controls=1&playsinline=1&modestbranding=1
   html += '<div class="aspect-video bg-black rounded-lg overflow-hidden"><iframe class="w-full h-full" src="https://www.youtube-nocookie.com/embed/'+id+'?loop=1&playlist='+id+'&rel=0&controls=1&playsinline=1&modestbranding=1" frameborder="0" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe></div>';
   html += '<div class="space-y-2">';
   html += '<input id="ytTitle" placeholder="Título do vídeo" class="w-full px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm">';
-  
-  // ===== ALTERAÇÃO: Campo de descrição com mais linhas e placeholder explicativo =====
   html += '<textarea id="ytDesc" placeholder="Descreva o conteúdo com detalhes (use quebras de linha para organizar)" rows="5" class="w-full px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm"></textarea>';
-  // ===== FIM DA ALTERAÇÃO =====
-
   html += '<div class="grid grid-cols-2 gap-2"><select id="ytCountry" class="px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm"><option value="">País (opcional)</option>'+DB.countries.map(function(c){ return '<option value="'+c.id+'">'+c.flag+' '+c.name+'</option>'; }).join('')+'</select>';
   html += '<select id="ytGrape" class="px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm"><option value="">Uva (opcional)</option>'+DB.grapes.map(function(g){ return '<option value="'+g.id+'">'+g.name+'</option>'; }).join('')+'</select></div>';
   html += '<input id="ytTags" placeholder="Tags separadas por vírgula" class="w-full px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm">';
@@ -1569,7 +1558,6 @@ function toggleVidDone(id){
   saveState(); render();
 }
 
-// ===== playLibraryVideo atualizado com loop=1&playlist=ID&modestbranding=1 =====
 function playLibraryVideo(id,btn){
   var box=btn.parentElement;
   if(!box)return;
@@ -2129,7 +2117,6 @@ function finishTopicQuiz(key){
   body.innerHTML+='<button onclick="startTopicQuiz(\''+key.replace(/'/g,"\\'")+'\')" class="mt-4 px-4 py-2 border border-gilt-500 text-gilt-700 dark:text-gilt-400 rounded-lg text-sm font-semibold hover:bg-gilt-50 dark:hover:bg-gilt-950/20"><i class="fas fa-rotate-right mr-1"></i>Tentar novamente</button></div>';
 }
 
-// ===== renderStudyPageView atualizado com youtube-nocookie e parâmetros =====
 function renderStudyPageView(el,id){
   var sp = state.studyPages.find(function(x){ return x.id===id; });
   if(!sp) return go('editor');
@@ -2146,7 +2133,6 @@ function renderStudyPageView(el,id){
   sp.blocks.forEach(function(b,idx){
     if(b.type==='heading'){
       var title=b.value||('Tópico '+(topicIndex+1));
-      // Fecha o tópico anterior com seu quiz quando necessário.
       if(topicIndex>0){
         html += renderTopicQuiz(pendingTopicText.title,pendingTopicText.text,topicIndex-1,id);
       }
@@ -2170,7 +2156,6 @@ function renderStudyPageView(el,id){
       html += '<div class="bg-vine-500/10 border border-vine-500/30 rounded-xl p-4 my-4 text-sm"><i class="fas fa-utensils text-vine-600 mr-2"></i>'+esc(b.value)+'</div>';
     } else if(b.type==='youtube' && b.ytid){
       pendingTopicText.text += ' vídeo do You-Tube '+b.ytid;
-      // Atualizado para youtube-nocookie e parâmetros
       html += '<div class="aspect-video rounded-xl overflow-hidden bg-black my-4"><iframe class="w-full h-full" src="https://www.youtube-nocookie.com/embed/'+b.ytid+'?loop=1&playlist='+b.ytid+'&rel=0&controls=1&playsinline=1&modestbranding=1" frameborder="0" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe></div>';
     }
   });
@@ -2264,7 +2249,6 @@ function toggleCtxForm(domKey){
 function addCtxVideo(ctxType,ctxId,domKey){
   var urlEl = document.getElementById('ctxUrl_'+domKey);
   if(!urlEl) return;
-  // Normaliza a URL antes de extrair
   var norm = normalizeYouTubeUrl(urlEl.value);
   if(norm !== urlEl.value) urlEl.value = norm;
   var id = extractYouTubeId(norm);
@@ -2342,15 +2326,13 @@ if (DB.demoVideos && DEFAULT_STATE.videos.length === 0) {
 // Vídeos iniciais para demonstrar o fluxo profissional aula → vídeo → quiz.
 // Os demais podem ser associados pelo campo de YouTube de cada aula sem substituir links personalizados.
 var DEFAULT_LESSON_VIDEOS = {
-  // Vídeos que já estavam associados ao projeto antes da unificação.
-  // A aula 3 usa o vídeo encontrado no curso Wine World Academy2.
   'intro::0':'s4_IGTQF0fw',
   'intro::1':'s4_IGTQF0fw',
   'intro::2':'4nTYcU_X9D4',
   'intro::3':'TS-_303X-qA',
   'intro::4':'fmlWd527q6k',
   'intro::5':'fmlWd527q6k',
-  };
+};
 
 function seedDefaultLessonVideos(){
   state.lessonVideos=state.lessonVideos||{};
@@ -2369,32 +2351,26 @@ var STORAGE_KEY = 'wwa_state_v1';
 var storageReady = false;
 
 async function loadState(){
-  // Usa o wrapper localStorage definido no início do script
   if(!window.storage) return;
   storageReady = true;
   try{
     var r = await window.storage.get(STORAGE_KEY, false);
     if(r && r.value){
       var saved = JSON.parse(r.value);
-      // Mescla profunda: preserva estruturas do DEFAULT_STATE que podem não estar no saved
       Object.keys(DEFAULT_STATE).forEach(function(k){
         if(saved[k] !== undefined) {
           if (k === 'progress' && saved[k]) {
-            // Mescla campos do progress que podem estar faltando
             Object.keys(DEFAULT_STATE.progress).forEach(function(pk){
               if (saved[k][pk] === undefined) saved[k][pk] = DEFAULT_STATE.progress[pk];
             });
-            // Garante topicQuizzes existe
             if (!saved[k].topicQuizzes) saved[k].topicQuizzes = {};
           }
           state[k] = saved[k];
         }
       });
-      // Garante que todos os campos do progress existam
       if (!state.progress) state.progress = JSON.parse(JSON.stringify(DEFAULT_STATE.progress));
       if (!state.progress.topicQuizzes) state.progress.topicQuizzes = {};
-      // Garante vídeos de demonstração
-          }
+    }
   }catch(e){
     console.warn('Falha ao carregar estado, usando default:', e);
   }
@@ -2414,7 +2390,7 @@ function getStorageKey() {
   if (wwaUser && wwaUser.id) {
     return 'wwa_state_' + wwaUser.id;
   }
-  return STORAGE_KEY; // fallback
+  return STORAGE_KEY;
 }
 
 function saveState(){
@@ -2517,22 +2493,24 @@ function toggleDark(){ document.documentElement.classList.add('dark'); state.dar
 /* ================= WINE WORLD ACADEMY — AUTENTICAÇÃO E NUVEM ================= */
 const WWA_SUPABASE_CONFIG={url:'https://fwwviwjdzokujlvxjxlo.supabase.co',anonKey:'sb_publishable_g7wx5u2ZSNZM69kBvu6vnQ_oCQyrETh'};
 const wwaSB=window.supabase?.createClient(WWA_SUPABASE_CONFIG.url,WWA_SUPABASE_CONFIG.anonKey);
-let wwaMode='login',wwaUser=null,wwaProfile=null,wwaCloudReady=false,wwaSyncTimer=null;
+let wwaMode='login', wwaUser=null, wwaProfile=null, wwaCloudReady=false, wwaSyncTimer=null;
+let wwaSessionUserId = null; // controle para evitar reprocessamento da mesma sessão
+
 function wwaMsg(t,bad){let e=document.getElementById('wwaAuthMsg');if(e){e.textContent=t;e.style.color=bad?'#ff8a9c':'#f0c978'}}
 function wwaAuthTab(m){wwaMode=m;document.getElementById('wwaName').parentElement.style.display=m==='register'?'block':'none';document.getElementById('wwaAuthSubmit').textContent=m==='register'?'Criar minha conta':'Entrar';wwaMsg('')}
 async function wwaSubmitAuth(e){e.preventDefault();if(!wwaSB)return wwaMsg('Supabase não configurado.',true);let email=wwaEmail.value.trim(),pass=wwaPass.value,name=wwaName.value.trim();try{if(wwaMode==='register'){let r=await wwaSB.auth.signUp({email,password:pass,options:{data:{full_name:name}}});if(r.error)throw r.error;wwaMsg('Conta criada! Verifique seu e-mail para confirmar, se solicitado.')}else{let r=await wwaSB.auth.signInWithPassword({email,password:pass});if(r.error)throw r.error}}catch(x){wwaMsg(x.message||'Não foi possível continuar.',true)}}
 async function wwaGoogle(){try{let r=await wwaSB.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+location.pathname}});if(r.error)throw r.error}catch(x){wwaMsg(x.message,true)}}
 async function wwaForgot(){let email=prompt('Digite seu e-mail para receber o link de recuperação:');if(!email)return;let r=await wwaSB.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});wwaMsg(r.error?r.error.message:'Se o e-mail existir, o link de recuperação foi enviado.',!!r.error)}
 async function wwaEnsureProfile(){let r=await wwaSB.from('profiles').select('*').eq('id',wwaUser.id).maybeSingle();wwaProfile=r.data;if(!wwaProfile){let name=wwaUser.user_metadata?.full_name||wwaUser.email.split('@')[0];let u=await wwaSB.from('profiles').upsert({id:wwaUser.id,email:wwaUser.email,full_name:name,xp:0,admin:'student'},{onConflict:'id'}).select('*').single();wwaProfile=u.data}return wwaProfile}
+
 async function wwaLoadCloud() {
   if (!wwaUser) return;
   try {
-    // 1. Resetar o estado para o padrão (limpo)
-        Object.keys(DEFAULT_STATE).forEach(key => {
+    // Resetar estado para o padrão (limpo)
+    Object.keys(DEFAULT_STATE).forEach(key => {
       if (key === 'videos') {
         state.videos = [];
       } else if (key === 'progress') {
-        // Clonar profundamente o progress padrão
         state.progress = JSON.parse(JSON.stringify(DEFAULT_STATE.progress));
       } else if (key === 'favorites') {
         state.favorites = { countries: [], grapes: [], wines: [], videos: [] };
@@ -2540,16 +2518,14 @@ async function wwaLoadCloud() {
         state[key] = Array.isArray(DEFAULT_STATE[key]) ? [] : (typeof DEFAULT_STATE[key] === 'object' && DEFAULT_STATE[key] !== null ? {} : DEFAULT_STATE[key]);
       }
     });
-    // Garantir que campos específicos fiquem vazios
     state.notes = [];
     state.tastings = [];
     state.studyPages = [];
     state.lessonVideos = {};
     state.removedLessonVideos = {};
     state.compareGrapes = [];
-    state.xp = 0; // Será sobrescrito pelo perfil
+    state.xp = 0;
 
-    // 2. Carregar estado da nuvem (se existir)
     const { data, error } = await wwaSB
       .from('user_states')
       .select('state')
@@ -2560,62 +2536,55 @@ async function wwaLoadCloud() {
 
     if (data && data.state) {
       const cloudState = data.state;
-      // Mesclar (sobrescrever) com o estado da nuvem
       Object.keys(cloudState).forEach(key => {
         if (key === 'progress' && cloudState[key]) {
           Object.keys(cloudState[key]).forEach(pk => {
             state.progress[pk] = cloudState[key][pk];
           });
-          // Garantir que campos obrigatórios existam
           if (!state.progress.lessonVideosWatched) state.progress.lessonVideosWatched = {};
           if (!state.progress.lessonQuizBest) state.progress.lessonQuizBest = {};
           if (!state.progress.lessonQuizAttempts) state.progress.lessonQuizAttempts = {};
           if (!state.progress.topicQuizzes) state.progress.topicQuizzes = {};
         } else if (key === 'favorites') {
           state.favorites = cloudState[key] || { countries: [], grapes: [], wines: [], videos: [] };
-                } else if (key === 'videos') {
-          // Vídeos são carregados exclusivamente via wwaLoadSharedVideos() (tabela global shared_content).
-          // Ignorado de propósito aqui, mesmo que a linha antiga do usuário ainda tenha uma cópia obsoleta.
         } else {
           state[key] = cloudState[key] !== undefined ? cloudState[key] : state[key];
         }
       });
     }
 
-    // Atualizar XP do perfil (vem da tabela profiles)
     if (wwaProfile && wwaProfile.xp !== undefined) {
       state.xp = wwaProfile.xp;
     }
 
-    // Garantir que os vídeos de demonstração estejam sempre presentes
-        // Sincronizar lessonVideos com DEFAULT_LESSON_VIDEOS (se não removidos)
     seedDefaultLessonVideos?.();
-
     wwaCloudReady = true;
-    render();
-    updateNav();
+    // REMOVIDO: render() e updateNav() daqui – serão chamados no final de wwaSession
   } catch (e) {
     console.warn('Erro ao carregar estado da nuvem:', e);
-    wwaCloudReady = true; // para não travar
+    wwaCloudReady = true;
   }
 }
+
 function wwaQueueSync(){if(!wwaCloudReady||!wwaUser)return;clearTimeout(wwaSyncTimer);wwaSyncTimer=setTimeout(wwaSyncNow,700)}
 async function wwaSyncNow(){
   if(!wwaCloudReady||!wwaUser)return;
   try{
     var toSync = JSON.parse(JSON.stringify(state));
-    delete toSync.videos; // vídeos são globais (tabela shared_content) — nunca salvos por usuário
+    delete toSync.videos; // vídeos são globais (shared_content)
     await wwaSB.from('user_states').upsert({user_id:wwaUser.id,state:toSync,updated_at:new Date().toISOString()},{onConflict:'user_id'});
     await wwaSB.from('profiles').update({xp:state.xp||0,updated_at:new Date().toISOString()}).eq('id',wwaUser.id);
   }catch(e){console.warn('Falha ao sincronizar',e)}
 }
+
 async function wwaSession(session) {
   if (!session) {
+    wwaSessionUserId = null;
     wwaUser = null;
     wwaCloudReady = false;
     document.getElementById('wwaAuthGate').classList.remove('hidden');
     document.getElementById('wwaUserbar').classList.add('hidden');
-    // Limpar estado ao deslogar
+    // Reset completo para estado padrão
     Object.keys(DEFAULT_STATE).forEach(k => {
       if (k === 'videos') state.videos = (DB.demoVideos ? DB.demoVideos.slice() : []);
       else if (k === 'progress') state.progress = JSON.parse(JSON.stringify(DEFAULT_STATE.progress));
@@ -2632,17 +2601,23 @@ async function wwaSession(session) {
     render();
     return;
   }
+
+  // Se já processamos este usuário e a nuvem está pronta, não repetimos o reset/reload
+  if (wwaSessionUserId === session.user.id && wwaCloudReady) {
+    wwaUser = session.user; // mantém referência atualizada (token)
+    return;
+  }
+  wwaSessionUserId = session.user.id;
+
   wwaUser = session.user;
-  // Garantir perfil
   await wwaEnsureProfile();
-  // Carregar estado da nuvem (reseta e sobrescreve)
-  await wwaLoadCloud();
-  // Carregar vídeos compartilhados
+  await wwaLoadCloud();          // carrega dados (não renderiza)
   await wwaLoadSharedVideos();
   wwaStartSharedRealtime();
   await wwaLoadGlobalLessonVideos();
   wwaStartLessonVideoRealtime();
-  // Atualizar UI
+
+  // Atualiza UI do usuário
   document.getElementById('wwaAuthGate').classList.add('hidden');
   document.getElementById('wwaUserbar').classList.remove('hidden');
   document.getElementById('wwaUserName').textContent = wwaProfile?.full_name || wwaUser.email;
@@ -2652,34 +2627,29 @@ async function wwaSession(session) {
   } else {
     document.getElementById('wwaAdminOpen').classList.add('hidden');
   }
-  render?.();
+
+  render?.();           // renderização única, após tudo carregado
+  updateNav();
 }
+
 async function wwaLogout(){await wwaSB.auth.signOut()}
 function wwaOpenProfile(){alert('Perfil\n\nNome: '+(wwaProfile?.full_name||'')+'\nE-mail: '+(wwaUser?.email||'')+'\nXP: '+(state.xp||0)+'\n\nSeu progresso é sincronizado automaticamente com sua conta.')}
 
-// ===== DASHBOARD DO ADMINISTRADOR — VERSÃO PROFISSIONAL =====
+// ===== DASHBOARD DO ADMINISTRADOR =====
 async function wwaOpenAdmin() {
   if (wwaProfile?.admin !== 'admin') return;
   const modal = document.getElementById('wwaAdmin');
   modal.classList.remove('hidden');
   const content = document.getElementById('wwaAdminContent');
-  content.innerHTML = `
-    <div style="display:flex;align-items:center;justify-content:center;padding:40px 0;color:#c9a67e;">
-      <i class="fas fa-spinner fa-pulse fa-2x"></i>
-      <span style="margin-left:12px;font-size:14px;">Carregando dados do painel...</span>
-    </div>
-  `;
-
+  content.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;padding:40px 0;color:#c9a67e;"><i class="fas fa-spinner fa-pulse fa-2x"></i><span style="margin-left:12px;font-size:14px;">Carregando dados do painel...</span></div>`;
   try {
     const [profilesRes, statesRes] = await Promise.all([
       wwaSB.from('profiles').select('*').order('xp', { ascending: false }),
       wwaSB.from('user_states').select('user_id, state')
     ]);
-
     const students = (profilesRes.data || []).filter(x => x.admin !== 'admin');
     const statesMap = Object.fromEntries((statesRes.data || []).map(x => [x.user_id, x.state || {}]));
     const courseDefs = (typeof DB !== 'undefined' && DB.courses) ? DB.courses : [];
-
     const totalXP = students.reduce((sum, s) => sum + (s.xp || 0), 0);
     const avgXP = students.length ? Math.round(totalXP / students.length) : 0;
     const totalVideos = students.reduce((sum, s) => (statesMap[s.id]?.progress?.videosWatched?.length || 0) + sum, 0);
@@ -2693,21 +2663,18 @@ async function wwaOpenAdmin() {
       });
       return n ? Math.round(sum / n) : 0;
     })();
-
     const initialsOf = (name) => {
       const parts = (name || '?').trim().split(/\s+/);
       return ((parts[0]?.[0] || '') + (parts[1]?.[0] || '')).toUpperCase() || '?';
     };
     const avatarColors = ['#8f2543','#c69a3f','#6f8551','#701a35','#a67c2c','#4f6535'];
     const colorFor = (seed) => avatarColors[Math.abs([...String(seed)].reduce((a,c)=>a+c.charCodeAt(0),0)) % avatarColors.length];
-
     function medal(rank){
       if(rank===0) return '<span style="font-size:16px;">🥇</span>';
       if(rank===1) return '<span style="font-size:16px;">🥈</span>';
       if(rank===2) return '<span style="font-size:16px;">🥉</span>';
       return `<span style="font-size:11px;color:#8a6a76;font-weight:700;">#${rank+1}</span>`;
     }
-
     function courseBar(pct) {
       pct = pct || 0;
       return `<div style="display:flex;align-items:center;gap:6px;min-width:130px;">
@@ -2717,7 +2684,6 @@ async function wwaOpenAdmin() {
         <span style="font-size:10px;color:#c9a67e;width:30px;text-align:right;font-weight:600;">${pct}%</span>
       </div>`;
     }
-
     function statCard(icon, value, label, tint, border) {
       return `<div style="background:${tint};border:1px solid ${border};border-radius:16px;padding:16px;text-align:center;position:relative;overflow:hidden;">
         <div style="width:38px;height:38px;border-radius:50%;background:rgba(0,0,0,0.18);display:flex;align-items:center;justify-content:center;margin:0 auto 8px;font-size:18px;">${icon}</div>
@@ -2725,7 +2691,6 @@ async function wwaOpenAdmin() {
         <div style="font-size:11px;color:#c9a67e;margin-top:4px;letter-spacing:.03em;text-transform:uppercase;">${label}</div>
       </div>`;
     }
-
     let tableRows = students.map((u, idx) => {
       const st = statesMap[u.id] || {};
       const pr = st.progress || {};
@@ -2742,7 +2707,6 @@ async function wwaOpenAdmin() {
           ${courseBar(coursesPct[c.id] || 0)}
         </div>
       `).join('');
-
       return `
         <tr style="border-bottom:1px solid #3d2430;vertical-align:top;transition:background .15s;" onmouseover="this.style.background='rgba(198,154,63,0.05)'" onmouseout="this.style.background='transparent'">
           <td style="padding:14px 10px;text-align:center;width:34px;">${medal(idx)}</td>
@@ -2769,7 +2733,6 @@ async function wwaOpenAdmin() {
         </tr>
       `;
     }).join('');
-
     content.innerHTML = `
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:22px;padding-bottom:16px;border-bottom:1px solid #3d2430;">
         <div>
@@ -2781,7 +2744,6 @@ async function wwaOpenAdmin() {
           <p style="margin:2px 0 0;font-size:20px;font-weight:800;color:#ecd699;">${avgCourseCompletion}%</p>
         </div>
       </div>
-
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;margin-bottom:28px;">
         ${statCard('👥', students.length, 'Alunos', 'rgba(89,25,48,0.35)', '#593042')}
         ${statCard('⭐', totalXP.toLocaleString('pt-BR'), 'XP total', 'rgba(198,154,63,0.14)', '#835f22')}
@@ -2789,12 +2751,10 @@ async function wwaOpenAdmin() {
         ${statCard('🎥', totalVideos, 'Vídeos assistidos', 'rgba(220,184,97,0.10)', '#a67c2c')}
         ${statCard('🧠', totalQuizzes, 'Quizzes feitos', 'rgba(175,54,84,0.16)', '#8f2543')}
       </div>
-
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
         <i class="fas fa-ranking-star" style="color:#c69a3f;"></i>
         <h3 style="margin:0;font-size:15px;font-weight:700;color:#f0ece6;">Ranking e progresso individual</h3>
       </div>
-
       <div style="overflow-x:auto;border-radius:16px;border:1px solid #3d2430;box-shadow:0 12px 30px rgba(0,0,0,.3);">
         <table style="width:100%;border-collapse:collapse;font-size:13px;background:rgba(15,6,9,0.55);">
           <thead>
@@ -2805,35 +2765,22 @@ async function wwaOpenAdmin() {
               <th style="padding:12px 10px;text-align:left;font-weight:700;color:#ecd699;letter-spacing:.03em;font-size:11px;text-transform:uppercase;">Progresso por curso</th>
             </tr>
           </thead>
-          <tbody>
-            ${tableRows || `<tr><td colspan="4" style="padding:36px;text-align:center;color:#8a6a76;"><i class="fas fa-user-slash" style="display:block;font-size:22px;margin-bottom:8px;opacity:.5;"></i>Nenhum aluno encontrado.</td></tr>`}
-          </tbody>
+          <tbody>${tableRows || `<tr><td colspan="4" style="padding:36px;text-align:center;color:#8a6a76;"><i class="fas fa-user-slash" style="display:block;font-size:22px;margin-bottom:8px;opacity:.5;"></i>Nenhum aluno encontrado.</td></tr>`}</tbody>
         </table>
       </div>
-
       <div style="margin-top:14px;font-size:11px;color:#7a5a6a;text-align:right;display:flex;align-items:center;justify-content:flex-end;gap:6px;">
         <i class="fas fa-sync-alt"></i> Painel atualizado em tempo real a cada abertura
       </div>
     `;
   } catch (err) {
-    content.innerHTML = `
-      <div style="padding:36px;text-align:center;color:#e7a9ba;">
-        <i class="fas fa-circle-exclamation fa-2x" style="display:block;margin-bottom:12px;"></i>
-        Erro ao carregar dados: ${wwaEsc(err.message)}
-      </div>
-    `;
+    content.innerHTML = `<div style="padding:36px;text-align:center;color:#e7a9ba;"><i class="fas fa-circle-exclamation fa-2x" style="display:block;margin-bottom:12px;"></i>Erro ao carregar dados: ${wwaEsc(err.message)}</div>`;
   }
 }
-// ===== FIM DA FUNÇÃO wwaOpenAdmin =====
-
 function wwaCloseAdmin(){document.getElementById('wwaAdmin').classList.add('hidden')}
 function wwaEsc(v){return String(v||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
 
-/* ================= VÍDEOS COMPARTILHADOS EM TEMPO REAL =================
-   Somente os vídeos e suas descrições são globais. Progresso, XP, notas,
-   favoritos, degustações e resultados continuam individuais por usuário. */
+/* ================= VÍDEOS COMPARTILHADOS EM TEMPO REAL ================= */
 let wwaSharedChannel=null, wwaSharedReady=false;
-
 function wwaSharedNormalize(row){
   if(!row) return null;
   let d=row.data||row.content_data||row.content||{};
@@ -2857,15 +2804,13 @@ async function wwaLoadSharedVideos(){
     if(r.error) throw r.error;
     (r.data||[]).forEach(row=>wwaMergeSharedVideo(wwaSharedNormalize(row),false));
     wwaSharedReady=true;
-    if(state.page==='videos'||state.page==='country'||state.page==='grape'||state.page==='wines'||state.page==='courses') render();
   }catch(e){console.warn('Vídeos compartilhados indisponíveis:',e.message||e)}
 }
 async function wwaPublishSharedVideo(video){
   if(!wwaSB||!wwaUser||!video)return;
-  // shared_content: conteúdo global. Apenas este registro é compartilhado entre usuários.
   let row={content_type:'video',title:video.title||'Vídeo sem título',description:video.desc||'',data:video,user_id:wwaUser.id,uid:video.uid,updated_at:new Date().toISOString()};
   try{
-    let q=wwaSB.from('shared_content').upsert(row,{onConflict:'uid'}); let r=await q;
+    let r=await wwaSB.from('shared_content').upsert(row,{onConflict:'uid'});
     if(r.error) throw r.error;
   }catch(e){console.warn('Não foi possível publicar o vídeo para todos:',e.message||e);toast('Vídeo salvo localmente; confira a tabela shared_content no Supabase.','fa-triangle-exclamation')}
 }
@@ -2905,7 +2850,31 @@ function wwaStartLessonVideoRealtime(){
     }).subscribe();
 }
 
-(function(){let oldSave=window.saveState;window.saveState=function(){let r=oldSave?oldSave.apply(this,arguments):undefined;wwaQueueSync();return r};let oldAddXP=window.addXP;window.addXP=function(){let r=oldAddXP?oldAddXP.apply(this,arguments):undefined;setTimeout(()=>{document.getElementById('wwaUserXP')&&(document.getElementById('wwaUserXP').textContent='⭐ '+(state.xp||0)+' XP');wwaQueueSync()},0);return r};document.addEventListener('DOMContentLoaded',async()=>{wwaAuthTab('login');if(!wwaSB){wwaMsg('Supabase indisponível.',true);return}let r=await wwaSB.auth.getSession();await wwaSession(r.data.session);wwaSB.auth.onAuthStateChange((ev,s)=>setTimeout(()=>wwaSession(s),0))})})();
+// ===== INICIALIZAÇÃO (BOOT) =====
+(function(){
+  // Sobrescreve saveState para sincronizar com a nuvem (já existente)
+  let oldSave = window.saveState;
+  window.saveState = function(){
+    let r = oldSave ? oldSave.apply(this, arguments) : undefined;
+    wwaQueueSync();
+    return r;
+  };
+  let oldAddXP = window.addXP;
+  window.addXP = function(){
+    let r = oldAddXP ? oldAddXP.apply(this, arguments) : undefined;
+    setTimeout(()=>{
+      document.getElementById('wwaUserXP') && (document.getElementById('wwaUserXP').textContent = '⭐ '+(state.xp||0)+' XP');
+      wwaQueueSync();
+    }, 0);
+    return r;
+  };
+  document.addEventListener('DOMContentLoaded', async () => {
+    wwaAuthTab('login');
+    if (!wwaSB) { wwaMsg('Supabase indisponível.', true); return; }
+    // REMOVIDA a chamada manual getSession() – o listener abaixo já emite a sessão atual
+    wwaSB.auth.onAuthStateChange((ev, s) => setTimeout(() => wwaSession(s), 0));
+  });
+})();
 </script>
 </body>
 </html>
