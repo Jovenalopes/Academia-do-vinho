@@ -264,7 +264,7 @@ countries: [
 {id:"newzealand",name:"Nova Zelândia",flag:"🇳🇿",wines:["Marlborough","Central Otago","Hawke's Bay","Wairarapa"],grapes:["Sauvignon Blanc","Pinot Noir","Chardonnay","Riesling","Pinot Gris"],desc:"Redefiniu o Sauvignon Blanc mundial com sua intensidade aromática única.",climate:"Marítimo fresco, forte influência oceânica.",soil:"Aluvial e cascalho em Marlborough, xisto em Central Otago.",history:"Indústria essencialmente moderna, decolando a partir dos anos 1970-80.",famous:["Cloudy Bay","Greywacke","Felton Road"],temp:"Sauvignon Blanc 6-8°C · Pinot Noir 14-16°C",glass:"Taça média e aromática",curiosity:"Central Otago é a região vinícola mais ao sul do mundo, próxima ao paralelo 45."},
 {id:"southafrica",name:"África do Sul",flag:"🇿🇦",wines:["Stellenbosch","Paarl","Swartland","Walker Bay","Franschhoek"],grapes:["Chenin Blanc","Pinotage","Cabernet Sauvignon","Shiraz","Sauvignon Blanc"],desc:"Onde a tradição europeia encontra um terroir genuinamente africano.",climate:"Mediterrâneo, sob influência de duas correntes oceânicas.",soil:"Granito decomposto e xisto em Stellenbosch.",history:"Primeiras vinhas plantadas em 1652 por colonos holandeses no Cabo.",famous:["Kanonkop Paul Sauer","Meerlust Rubicon","Sadie Family Columella"],temp:"Chenin Blanc 8-10°C · Pinotage 16-18°C",glass:"Taça universal",curiosity:"A Pinotage, cruzamento de Pinot Noir e Cinsault, foi criada na África do Sul em 1925 e não existe em nenhum outro lugar em escala relevante."},
 {id:"greece",name:"Grécia",flag:"🇬🇷",wines:["Santorini","Naoussa","Nemeia","Creta"],grapes:["Assyrtiko","Agiorgitiko","Xinomavro","Moschofilero"],desc:"Uma das mais antigas tradições vinícolas do mundo, revivida por uma nova geração de produtores.",climate:"Mediterrâneo quente e ventoso, sobretudo nas ilhas.",soil:"Solo vulcânico em Santorini, calcário no continente.",history:"A viticultura grega remonta a mais de 4.000 anos, celebrada na mitologia através de Dionísio.",famous:["Sigalas Assyrtiko","Gaia Estate Nemeia","Boutari Naoussa"],temp:"Assyrtiko 8-10°C · Xinomavro 16-18°C",glass:"Taça branca alta para Assyrtiko",curiosity:"As vinhas de Santorini são trançadas em formato de cesta ('kouloura') rente ao chão para resistir aos ventos fortes da ilha."},
-{id:"hungary",name:"Hungria",flag:"🇭🇺",wines:["Tokaj","Eger","Villány","Somló"],grapes:["Furmint","Hárslevelű","Kékfrankos"],desc:"Berço do lendário vinho doce Tokaji, 'o vinho dos reis, o rei dos vinhos'.",climate:"Continental, com neblina outonal que favorece a podridão nobre.",soil:"Vulcânico e loess em Tokaj.",history:"Tokaji Aszú foi um dos primeiros vinhos do mundo a receber uma classificação de qualidade regulamentada, em 1730.",famous:["Royal Tokaji Aszú 5 Puttonyos","Disznókő","Oremus"],temp:"Tokaji Aszú 10-12°C · Furmint seco 8-10°C",glass:"Taça pequena para vinhos de sobremesa",curiosity:"Luís XIV da França chamava o Tokaji de 'vinum regum, rex vinorum' — o vinho dos reis, o rei dos vinhos."},
+{id:"hungary",name:"Hungria",flag:"🇭🇺",wines:["Tokaj","Eger","Villány","Somló"],grapes:["Furmint","Hárslevelű","Kékfrankos"],desc:"Berço do lendário vinho doce Tokaji, 'o vinho dos reis, o rei dos vinhos'.",climate:"Continental, com neblina outonal que favorece a podridão nobre.",soil:"Vulcânico e loess em Tokaj.",history:"Tokaji Aszú foi um dos primeiros vinhos do mundo a receber uma classificação de qualidade regulamentada, em 1730.",famous:["Royal Tokaji Aszú 5 Puttonyos","Disznőkő","Oremus"],temp:"Tokaji Aszú 10-12°C · Furmint seco 8-10°C",glass:"Taça pequena para vinhos de sobremesa",curiosity:"Luís XIV da França chamava o Tokaji de 'vinum regum, rex vinorum' — o vinho dos reis, o rei dos vinhos."},
 {id:"georgia",name:"Geórgia",flag:"🇬🇪",wines:["Kakheti","Kartli","Racha"],grapes:["Saperavi","Rkatsiteli"],desc:"Considerada o berço da vinificação, com 8.000 anos de história contínua.",climate:"Continental temperado, protegido pelo Cáucaso.",soil:"Aluvial e argiloso no vale de Kakheti.",history:"Arqueólogos encontraram vestígios de vinificação de 6.000 a.C. — os mais antigos já registrados no mundo.",famous:["Vinho em ânfora Qvevri","Château Mukhrani","Khareba Saperavi"],temp:"Saperavi 14-16°C · Rkatsiteli 10-12°C",glass:"Taça universal ou 'kutsi' tradicional em chifre",curiosity:"A UNESCO reconheceu o método tradicional georgiano de fermentação em ânforas de barro enterradas (qvevri) como Patrimônio Cultural Imaterial da Humanidade."},
 {id:"uruguay",name:"Uruguai",flag:"🇺🇾",wines:["Canelones","Montevidéu","Maldonado"],grapes:["Tannat","Cabernet Franc"],desc:"Pequeno produtor sul-americano que transformou a Tannat, uva rústica francesa, em sua assinatura.",climate:"Temperado úmido, influência atlântica constante.",soil:"Argiloso e calcário, drenagem moderada.",history:"Imigrantes bascos trouxeram a Tannat no século XIX; hoje é cultivada em mais área no Uruguai do que na própria França.",famous:["Bodega Garzón Tannat","Pisano RPF","Bouza Tannat"],temp:"Tannat 16-18°C",glass:"Taça Bordeaux ampla",curiosity:"Rica em antocianinas, a Tannat uruguaia é uma das uvas tintas com maior concentração de antioxidantes do mundo."}
 ],
@@ -1610,6 +1610,19 @@ function toggleNoteFav(idx){ state.notes[idx].fav = !state.notes[idx].fav; saveS
 // ===================== FICHA DE DEGUSTAÇÃO =====================
 var AROMA_OPTIONS = ['Frutas vermelhas','Cereja','Frutas negras','Ervas','Flores','Especiarias','Carvalho','Chocolate','Café'];
 var selectedAromas = [];
+
+// ===== NOVA FUNÇÃO: alternar detalhes da ficha =====
+function toggleTastingDetails(idx) {
+  var el = document.getElementById('tastingDetails_' + idx);
+  if (el) {
+    el.classList.toggle('hidden');
+    var btn = document.querySelector('[data-tasting-btn="' + idx + '"]');
+    if (btn) {
+      btn.textContent = el.classList.contains('hidden') ? 'Ver ficha completa' : 'Ocultar ficha';
+    }
+  }
+}
+
 function renderTasting(el){
   selectedAromas = [];
   ratingValues['tasting'] = 0;
@@ -1635,11 +1648,31 @@ function renderTasting(el){
 
   if(state.tastings.length){
     html += '<h3 class="font-serif font-bold text-xl text-claret-900 dark:text-cellar-100 mt-8 mb-4">Fichas salvas</h3><div class="space-y-3">';
-    state.tastings.slice().reverse().forEach(function(t){
+    state.tastings.slice().reverse().forEach(function(t, idx){
+      var realIdx = state.tastings.length - 1 - idx;
       html += '<div class="bg-white dark:bg-claret-950/40 rounded-xl p-4 border border-cellar-200/70 dark:border-claret-800/70">';
-      html += '<div class="flex items-center justify-between"><h4 class="font-serif font-bold text-claret-900 dark:text-cellar-100">'+esc(t.wine||'Vinho sem nome')+'</h4><div>'+starRow(t.rating,'text-sm')+'</div></div>';
+      html += '<div class="flex items-center justify-between">';
+      html += '<h4 class="font-serif font-bold text-claret-900 dark:text-cellar-100">'+esc(t.wine||'Vinho sem nome')+'</h4>';
+      html += '<div>'+starRow(t.rating,'text-sm')+'</div>';
+      html += '</div>';
       html += '<p class="text-xs text-cellar-500 mt-1">'+esc(t.producer||'')+' · '+esc(t.region||'')+' · '+esc(t.grape||'')+' · '+t.date+'</p>';
-      if(t.note) html += '<p class="text-sm text-cellar-600 dark:text-cellar-300 mt-2 italic">"'+esc(t.note)+'"</p>';
+      if(t.note) {
+        html += '<p class="text-sm text-cellar-600 dark:text-cellar-300 mt-2 italic">"'+esc(t.note)+'"</p>';
+      }
+      // Botão para ver detalhes
+      html += '<button onclick="toggleTastingDetails('+realIdx+')" data-tasting-btn="'+realIdx+'" class="mt-2 text-xs text-gilt-600 dark:text-gilt-400 hover:underline font-semibold">Ver ficha completa</button>';
+      // Detalhes (inicialmente ocultos)
+      html += '<div id="tastingDetails_'+realIdx+'" class="hidden mt-3 p-3 bg-cellar-50 dark:bg-claret-900/40 rounded-lg border border-cellar-200 dark:border-claret-800">';
+      html += '<div class="grid grid-cols-2 gap-2 text-xs">';
+      html += '<div><span class="font-semibold text-cellar-700 dark:text-cellar-300">Cor:</span> '+(t.color||'N/A')+'</div>';
+      html += '<div><span class="font-semibold text-cellar-700 dark:text-cellar-300">Aromas:</span> '+(t.aromas&&t.aromas.length?esc(t.aromas.join(', ')):'N/A')+'</div>';
+      html += '<div><span class="font-semibold text-cellar-700 dark:text-cellar-300">Acidez:</span> '+(t.acidity||'N/A')+'/5</div>';
+      html += '<div><span class="font-semibold text-cellar-700 dark:text-cellar-300">Taninos:</span> '+(t.tannin||'N/A')+'/5</div>';
+      html += '<div><span class="font-semibold text-cellar-700 dark:text-cellar-300">Álcool:</span> '+(t.alcohol||'N/A')+'/5</div>';
+      html += '<div><span class="font-semibold text-cellar-700 dark:text-cellar-300">Corpo:</span> '+(t.body||'N/A')+'/5</div>';
+      html += '<div><span class="font-semibold text-cellar-700 dark:text-cellar-300">Doçura:</span> '+(t.sweetness||'N/A')+'/5</div>';
+      html += '<div><span class="font-semibold text-cellar-700 dark:text-cellar-300">Avaliação:</span> '+starRow(t.rating,'text-xs')+'</div>';
+      html += '</div></div>';
       html += '</div>';
     });
     html += '</div>';
