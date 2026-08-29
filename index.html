@@ -224,6 +224,9 @@ h1,h2,h3,h4,h5,h6,.font-serif{ font-family:'Fraunces',serif; }
 <div id="toastHost" class="fixed bottom-20 md:bottom-6 right-4 z-[100] flex flex-col gap-2 items-end"></div>
 
 <script>
+// Armazena os valores atuais da ficha (padrão = 3)
+var tastingValues = { acidity: 3, tannin: 3, alcohol: 3, body: 3, sweetness: 3 };
+
 // Gera o HTML de um grupo de bolinhas para um atributo
 function generateDots(attr, current, max) {
   max = max || 5;
@@ -236,9 +239,6 @@ function generateDots(attr, current, max) {
   html += '</div>';
   return html;
 }
-
-// Armazena os valores atuais da ficha de degustação
-var tastingValues = { acidity: 3, tannin: 3, alcohol: 3, body: 3, sweetness: 3 };
 
 // Função chamada ao clicar em uma bolinha
 function setTastingValue(attr, val) {
@@ -1664,7 +1664,7 @@ function toggleTastingDetails(idx) {
 function renderTasting(el) {
   selectedAromas = [];
   ratingValues['tasting'] = 0;
-  // Inicializa valores padrão
+  // Reinicia os valores padrão
   tastingValues = { acidity: 3, tannin: 3, alcohol: 3, body: 3, sweetness: 3 };
 
   var html = '<div class="fade-in p-4 md:p-8 max-w-3xl mx-auto">';
@@ -1692,7 +1692,7 @@ function renderTasting(el) {
   });
   html += '</div></div>';
 
-  // Atributos com bolinhas
+  // Atributos com bolinhas (substitui os sliders)
   var attributes = [
     { id: 'acidity', label: 'Acidez' },
     { id: 'tannin', label: 'Taninos' },
