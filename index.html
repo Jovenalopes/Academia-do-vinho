@@ -224,6 +224,44 @@ h1,h2,h3,h4,h5,h6,.font-serif{ font-family:'Fraunces',serif; }
 <div id="toastHost" class="fixed bottom-20 md:bottom-6 right-4 z-[100] flex flex-col gap-2 items-end"></div>
 
 <script>
+// Gera o HTML de um grupo de bolinhas para um atributo
+function generateDots(attr, current, max) {
+  max = max || 5;
+  var html = '<div class="flex gap-1.5" id="dots_' + attr + '">';
+  for (var i = 1; i <= max; i++) {
+    var filled = (i <= current) ? 'bg-claret-600 dark:bg-gilt-500' : 'bg-white dark:bg-claret-900';
+    var border = (i <= current) ? 'border-claret-600 dark:border-gilt-500' : 'border-cellar-300 dark:border-claret-700';
+    html += '<button type="button" onclick="setTastingValue(\'' + attr + '\',' + i + ')" class="w-6 h-6 rounded-full border-2 ' + border + ' ' + filled + ' hover:scale-110 transition-transform" data-val="' + i + '"></button>';
+  }
+  html += '</div>';
+  return html;
+}
+
+// Armazena os valores atuais da ficha de degustação
+var tastingValues = { acidity: 3, tannin: 3, alcohol: 3, body: 3, sweetness: 3 };
+
+// Função chamada ao clicar em uma bolinha
+function setTastingValue(attr, val) {
+  tastingValues[attr] = val;
+  // Atualiza a aparência do grupo de bolinhas
+  var container = document.getElementById('dots_' + attr);
+  if (!container) return;
+  var buttons = container.querySelectorAll('button');
+  buttons.forEach(function(btn, idx) {
+    var i = idx + 1;
+    if (i <= val) {
+      btn.classList.add('bg-claret-600', 'dark:bg-gilt-500');
+      btn.classList.remove('bg-white', 'dark:bg-claret-900');
+      btn.classList.add('border-claret-600', 'dark:border-gilt-500');
+      btn.classList.remove('border-cellar-300', 'dark:border-claret-700');
+    } else {
+      btn.classList.remove('bg-claret-600', 'dark:bg-gilt-500');
+      btn.classList.add('bg-white', 'dark:bg-claret-900');
+      btn.classList.remove('border-claret-600', 'dark:border-gilt-500');
+      btn.classList.add('border-cellar-300', 'dark:border-claret-700');
+    }
+  });
+}
 // ===================== ARMAZENAMENTO (localStorage nativo) =====================
 // Wrapper que imita a API window.storage, mas usando localStorage.
 // Isso garante persistência mesmo em ambiente sem window.storage.
@@ -1623,61 +1661,100 @@ function toggleTastingDetails(idx) {
   }
 }
 
-function renderTasting(el){
+function renderTasting(el) {
   selectedAromas = [];
   ratingValues['tasting'] = 0;
+  // Inicializa valores padrão
+  tastingValues = { acidity: 3, tannin: 3, alcohol: 3, body: 3, sweetness: 3 };
+
   var html = '<div class="fade-in p-4 md:p-8 max-w-3xl mx-auto">';
-  html += sectionHeader('👃','Ficha de Degustação','Registre sua análise sensorial de forma estruturada.');
+  html += sectionHeader('👃', 'Ficha de Degustação', 'Registre sua análise sensorial de forma estruturada.');
   html += '<div class="bg-white dark:bg-claret-950/40 rounded-2xl p-6 border border-cellar-200/70 dark:border-claret-800/70 space-y-5">';
+  
+  // Campos de texto
   html += '<div class="grid grid-cols-2 gap-3">';
-  ['Vinho','Safra','Produtor','Região','País','Uva'].forEach(function(f){
-    html += '<input id="t_'+f+'" placeholder="'+f+'" class="px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm">';
+  ['Vinho', 'Safra', 'Produtor', 'Região', 'País', 'Uva'].forEach(function(f) {
+    html += '<input id="t_' + f + '" placeholder="' + f + '" class="px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm">';
   });
   html += '</div>';
+
+  // Intensidade da cor
   html += '<div><p class="eyebrow text-cellar-500 mb-2">Intensidade da cor</p><div class="flex flex-wrap gap-2" id="t_color">';
-  ['Muito clara','Clara','Média','Intensa'].forEach(function(o){ html += '<button type="button" onclick="selectRadio(\'t_color\',this)" class="tag-chip px-3 py-1.5 rounded-full text-xs font-semibold border border-cellar-300 dark:border-claret-700">'+o+'</button>'; });
+  ['Muito clara', 'Clara', 'Média', 'Intensa'].forEach(function(o) {
+    html += '<button type="button" onclick="selectRadio(\'t_color\',this)" class="tag-chip px-3 py-1.5 rounded-full text-xs font-semibold border border-cellar-300 dark:border-claret-700">' + o + '</button>';
+  });
   html += '</div></div>';
+
+  // Aromas
   html += '<div><p class="eyebrow text-cellar-500 mb-2">Aromas identificados</p><div class="flex flex-wrap gap-2">';
-  AROMA_OPTIONS.forEach(function(a){ html += '<button type="button" onclick="toggleAroma(this,\''+a+'\')" class="tag-chip px-3 py-1.5 rounded-full text-xs font-semibold border border-cellar-300 dark:border-claret-700">'+a+'</button>'; });
+  AROMA_OPTIONS.forEach(function(a) {
+    html += '<button type="button" onclick="toggleAroma(this,\'' + a + '\')" class="tag-chip px-3 py-1.5 rounded-full text-xs font-semibold border border-cellar-300 dark:border-claret-700">' + a + '</button>';
+  });
   html += '</div></div>';
-  html += '<div class="grid grid-cols-2 gap-4">'+['Acidez','Taninos','Álcool','Corpo','Doçura'].map(function(f){ return '<div><label class="text-xs font-semibold text-cellar-500">'+f+'</label><input type="range" min="1" max="5" value="3" id="t_'+f+'_r" class="w-full accent-claret-600"></div>'; }).join('')+'</div>';
-  html += '<div><p class="eyebrow text-cellar-500 mb-2">Avaliação</p>'+interactiveStars('tasting',0)+'</div>';
+
+  // Atributos com bolinhas
+  var attributes = [
+    { id: 'acidity', label: 'Acidez' },
+    { id: 'tannin', label: 'Taninos' },
+    { id: 'alcohol', label: 'Álcool' },
+    { id: 'body', label: 'Corpo' },
+    { id: 'sweetness', label: 'Doçura' }
+  ];
+  attributes.forEach(function(attr) {
+    html += '<div><p class="eyebrow text-cellar-500 mb-1">' + attr.label + '</p>';
+    html += generateDots(attr.id, tastingValues[attr.id] || 3, 5);
+    html += '</div>';
+  });
+
+  // Avaliação com estrelas
+  html += '<div><p class="eyebrow text-cellar-500 mb-2">Avaliação</p>' + interactiveStars('tasting', 0) + '</div>';
+
+  // Nota pessoal
   html += '<textarea id="t_note" placeholder="Nota pessoal..." rows="3" class="w-full px-3 py-2 rounded-lg border border-cellar-300 dark:border-claret-700 bg-white dark:bg-claret-900 text-sm"></textarea>';
   html += '<button onclick="saveTasting()" class="w-full px-4 py-2.5 bg-claret-700 hover:bg-claret-800 text-white rounded-xl text-sm font-bold"><i class="fas fa-floppy-disk mr-2"></i>Salvar ficha (+15 XP)</button>';
   html += '</div>';
 
-  if(state.tastings.length){
+  // Exibição das fichas salvas
+  if (state.tastings.length) {
     html += '<h3 class="font-serif font-bold text-xl text-claret-900 dark:text-cellar-100 mt-8 mb-4">Fichas salvas</h3><div class="space-y-3">';
-    state.tastings.slice().reverse().forEach(function(t, idx){
+    state.tastings.slice().reverse().forEach(function(t, idx) {
       var realIdx = state.tastings.length - 1 - idx;
       html += '<div class="bg-white dark:bg-claret-950/40 rounded-xl p-4 border border-cellar-200/70 dark:border-claret-800/70">';
       html += '<div class="flex items-center justify-between">';
-      html += '<h4 class="font-serif font-bold text-claret-900 dark:text-cellar-100">'+esc(t.wine||'Vinho sem nome')+'</h4>';
-      html += '<div>'+starRow(t.rating,'text-sm')+'</div>';
+      html += '<h4 class="font-serif font-bold text-claret-900 dark:text-cellar-100">' + esc(t.wine || 'Vinho sem nome') + '</h4>';
+      html += '<div>' + starRow(t.rating, 'text-sm') + '</div>';
       html += '</div>';
-      html += '<p class="text-xs text-cellar-500 mt-1">'+esc(t.producer||'')+' · '+esc(t.region||'')+' · '+esc(t.grape||'')+' · '+t.date+'</p>';
-      if(t.note) {
-        html += '<p class="text-sm text-cellar-600 dark:text-cellar-300 mt-2 italic">"'+esc(t.note)+'"</p>';
+      html += '<p class="text-xs text-cellar-500 mt-1">' + esc(t.producer || '') + ' · ' + esc(t.region || '') + ' · ' + esc(t.grape || '') + ' · ' + t.date + '</p>';
+      if (t.note) {
+        html += '<p class="text-sm text-cellar-600 dark:text-cellar-300 mt-2 italic">"' + esc(t.note) + '"</p>';
       }
-      // Botão para ver detalhes
-      html += '<button onclick="toggleTastingDetails('+realIdx+')" data-tasting-btn="'+realIdx+'" class="mt-2 text-xs text-gilt-600 dark:text-gilt-400 hover:underline font-semibold">Ver ficha completa</button>';
-      // Detalhes (inicialmente ocultos)
-      html += '<div id="tastingDetails_'+realIdx+'" class="hidden mt-3 p-3 bg-cellar-50 dark:bg-claret-900/40 rounded-lg border border-cellar-200 dark:border-claret-800">';
+      html += '<button onclick="toggleTastingDetails(' + realIdx + ')" data-tasting-btn="' + realIdx + '" class="mt-2 text-xs text-gilt-600 dark:text-gilt-400 hover:underline font-semibold">Ver ficha completa</button>';
+      html += '<div id="tastingDetails_' + realIdx + '" class="hidden mt-3 p-3 bg-cellar-50 dark:bg-claret-900/40 rounded-lg border border-cellar-200 dark:border-claret-800">';
       html += '<div class="grid grid-cols-2 gap-2 text-xs">';
-      html += '<div><span class="font-semibold text-cellar-700 dark:text-cellar-300">Cor:</span> '+(t.color||'N/A')+'</div>';
-      html += '<div><span class="font-semibold text-cellar-700 dark:text-cellar-300">Aromas:</span> '+(t.aromas&&t.aromas.length?esc(t.aromas.join(', ')):'N/A')+'</div>';
-      html += '<div><span class="font-semibold text-cellar-700 dark:text-cellar-300">Acidez:</span> '+(t.acidity||'N/A')+'/5</div>';
-      html += '<div><span class="font-semibold text-cellar-700 dark:text-cellar-300">Taninos:</span> '+(t.tannin||'N/A')+'/5</div>';
-      html += '<div><span class="font-semibold text-cellar-700 dark:text-cellar-300">Álcool:</span> '+(t.alcohol||'N/A')+'/5</div>';
-      html += '<div><span class="font-semibold text-cellar-700 dark:text-cellar-300">Corpo:</span> '+(t.body||'N/A')+'/5</div>';
-      html += '<div><span class="font-semibold text-cellar-700 dark:text-cellar-300">Doçura:</span> '+(t.sweetness||'N/A')+'/5</div>';
-      html += '<div><span class="font-semibold text-cellar-700 dark:text-cellar-300">Avaliação:</span> '+starRow(t.rating,'text-xs')+'</div>';
+      html += '<div><span class="font-semibold text-cellar-700 dark:text-cellar-300">Cor:</span> ' + (t.color || 'N/A') + '</div>';
+      html += '<div><span class="font-semibold text-cellar-700 dark:text-cellar-300">Aromas:</span> ' + (t.aromas && t.aromas.length ? esc(t.aromas.join(', ')) : 'N/A') + '</div>';
+      
+      // Atributos com bolinhas (exibição)
+      var attrMap = { acidity: 'Acidez', tannin: 'Taninos', alcohol: 'Álcool', body: 'Corpo', sweetness: 'Doçura' };
+      Object.keys(attrMap).forEach(function(key) {
+        var val = t[key] || 0;
+        var dots = '';
+        for (var i = 1; i <= 5; i++) {
+          var filled = (i <= val) ? 'bg-claret-600 dark:bg-gilt-500' : 'bg-white dark:bg-claret-900';
+          var border = (i <= val) ? 'border-claret-600 dark:border-gilt-500' : 'border-cellar-300 dark:border-claret-700';
+          dots += '<span class="inline-block w-4 h-4 rounded-full border ' + border + ' ' + filled + ' mr-0.5"></span>';
+        }
+        html += '<div><span class="font-semibold text-cellar-700 dark:text-cellar-300">' + attrMap[key] + ':</span> ' + dots + '</div>';
+      });
+
+      html += '<div><span class="font-semibold text-cellar-700 dark:text-cellar-300">Avaliação:</span> ' + starRow(t.rating, 'text-xs') + '</div>';
       html += '</div></div>';
       html += '</div>';
     });
     html += '</div>';
   }
-  html += contextVideoBlock('general','tasting','Ficha de Degustação');
+
+  html += contextVideoBlock('general', 'tasting', 'Ficha de Degustação');
   html += '</div>';
   el.innerHTML = html;
 }
@@ -1690,18 +1767,31 @@ function toggleAroma(btn,name){
   var i = selectedAromas.indexOf(name);
   if(i>-1) selectedAromas.splice(i,1); else selectedAromas.push(name);
 }
-function saveTasting(){
-  var get = function(id){ var e=document.getElementById(id); return e?e.value:''; };
+function saveTasting() {
+  var get = function(id) { var e = document.getElementById(id); return e ? e.value : ''; };
   var colorBtn = document.querySelector('#t_color button.on');
   var entry = {
-    wine:get('t_Vinho'), vintage:get('t_Safra'), producer:get('t_Produtor'), region:get('t_Região'), country:get('t_País'), grape:get('t_Uva'),
-    color: colorBtn?colorBtn.textContent:'', aromas: selectedAromas.slice(),
-    acidity:get('t_Acidez_r'), tannin:get('t_Taninos_r'), alcohol:get('t_Álcool_r'), body:get('t_Corpo_r'), sweetness:get('t_Doçura_r'),
-    rating: ratingValues['tasting']||0, note:get('t_note'), date:new Date().toLocaleDateString('pt-BR')
+    wine: get('t_Vinho'),
+    vintage: get('t_Safra'),
+    producer: get('t_Produtor'),
+    region: get('t_Região'),
+    country: get('t_País'),
+    grape: get('t_Uva'),
+    color: colorBtn ? colorBtn.textContent : '',
+    aromas: selectedAromas.slice(),
+    acidity: tastingValues.acidity || 3,
+    tannin: tastingValues.tannin || 3,
+    alcohol: tastingValues.alcohol || 3,
+    body: tastingValues.body || 3,
+    sweetness: tastingValues.sweetness || 3,
+    rating: ratingValues['tasting'] || 0,
+    note: get('t_note'),
+    date: new Date().toLocaleDateString('pt-BR')
   };
-  if(!entry.wine){ toast('Informe ao menos o nome do vinho','fa-circle-exclamation'); return; }
+  if (!entry.wine) { toast('Informe ao menos o nome do vinho', 'fa-circle-exclamation'); return; }
   state.tastings.push(entry);
-  saveState(); addXP(15);
+  saveState();
+  addXP(15);
   render();
 }
 
