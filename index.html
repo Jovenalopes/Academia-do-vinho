@@ -2611,6 +2611,9 @@ async function wwaLoadCloud() {
     if (data && data.state) {
       const cloudState = data.state;
       Object.keys(cloudState).forEach(key => {
+        // 🔒 CORREÇÃO: nunca restaurar página atual, parâmetros ou sessão de quiz
+        if (key === 'page' || key === 'params' || key === 'quizSession') return;
+
         if (key === 'progress' && cloudState[key]) {
           Object.keys(cloudState[key]).forEach(pk => {
             state.progress[pk] = cloudState[key][pk];
@@ -2640,11 +2643,16 @@ async function wwaLoadCloud() {
 }
 
 function wwaQueueSync(){if(!wwaCloudReady||!wwaUser)return;clearTimeout(wwaSyncTimer);wwaSyncTimer=setTimeout(wwaSyncNow,700)}
+
+// 🔧 CORREÇÃO 1: sincroniza apenas os campos reais do estado, nunca page/params/quizSession
 async function wwaSyncNow(){
   if(!wwaCloudReady||!wwaUser)return;
   try{
-    var toSync = JSON.parse(JSON.stringify(state));
-    delete toSync.videos;
+    var toSync = {};
+    Object.keys(DEFAULT_STATE).forEach(function(k){
+      if(k==='videos') return; // vídeos são sincronizados à parte
+      toSync[k] = state[k];
+    });
     await wwaSB.from('user_states').upsert({user_id:wwaUser.id,state:toSync,updated_at:new Date().toISOString()},{onConflict:'user_id'});
     await wwaSB.from('profiles').update({xp:state.xp||0,updated_at:new Date().toISOString()}).eq('id',wwaUser.id);
   }catch(e){console.warn('Falha ao sincronizar',e)}
@@ -2698,6 +2706,9 @@ async function wwaSession(session) {
     document.getElementById('wwaAdminOpen').classList.add('hidden');
   }
 
+  // 🔧 CORREÇÃO 3: forçar a página inicial após qualquer login/atualização
+  state.page = 'home';
+  state.params = {};
   render?.();
   updateNav();
 }
